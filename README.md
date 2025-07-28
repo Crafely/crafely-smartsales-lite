@@ -293,7 +293,7 @@ All API responses follow a consistent format:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Re-dex/smartsales-lite.git
+   git clone https://github.com/Crafely/smartsales-lite
    cd smartsales-lite
    ```
 
@@ -447,7 +447,7 @@ The plugin is fully internationalized and supports:
 # PHP Unit Tests
 composer test
 
-# JavaScript Tests  
+# JavaScript Tests
 npm test
 
 # E2E Tests
@@ -557,8 +557,8 @@ This project is licensed under the GPL v2 or later - see the [LICENSE](LICENSE) 
 
 For support and questions:
 
-- **GitHub Issues**: [Report bugs and request features](https://github.com/Re-dex/smartsales-lite/issues)
-- **Documentation**: [Read the full documentation](https://github.com/Re-dex/smartsales-lite/wiki)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/Crafely/smartsales-lite/issues)
+- **Documentation**: [Read the full documentation](https://github.com/Crafely/smartsales-lite/wiki)
 - **Email**: support@crafely.com
 - **Community**: Join our community discussions
 
