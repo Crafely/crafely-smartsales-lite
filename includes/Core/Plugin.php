@@ -1,34 +1,35 @@
 <?php
 
 namespace AISMARTSALES\Includes\Core;
+
 if (!defined('ABSPATH')) {
     exit;
 }
 
 /**
  * Main Plugin Class
- * 
+ *
  * @package AI Smart Sales
  */
 class Plugin
 {
     /**
      * Plugin instance
-     * 
+     *
      * @var Plugin
      */
     private static $instance = null;
 
     /**
      * Initialization flag
-     * 
+     *
      * @var bool
      */
     private $initialized = false;
 
     /**
      * Get plugin instance (Singleton)
-     * 
+     *
      * @return Plugin
      */
     public static function instance()
@@ -46,7 +47,7 @@ class Plugin
     private function __construct()
     {
         // Basic setup only in constructor
-        $this->load_textdomain();
+
     }
 
     /**
@@ -89,13 +90,7 @@ class Plugin
         $this->initialized = true;
     }
 
-    /**
-     * Load plugin text domain
-     */
-    private function load_textdomain()
-    {
-        load_plugin_textdomain('aismartsales', false, dirname(plugin_basename(__FILE__)) . '/languages');
-    }
+
 
     /**
      * Initialize core components
