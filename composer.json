@@ -1,0 +1,44 @@
+{
+    "name": "crafely/ai-smart-sales",
+    "description": "AI-powered smart sales plugin for WooCommerce: automate inventory, orders, and insights with seamless integration and scalability.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "AISMARTSALES\\Includes\\": "includes/",
+            "AISMARTSALES\\": "src/"
+        },
+        "files": [
+            "includes/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AISMARTSALES\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "thisisalamin",
+            "email": "thisismdalamin@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "squizlabs/php_codesniffer": "^3.6"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs-check": "phpcs --standard=WordPress",
+        "cs-fix": "phpcbf --standard=WordPress"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

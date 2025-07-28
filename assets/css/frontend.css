@@ -1,0 +1,16 @@
+.error-message{
+    color: red;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.py-2 {
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
+}
+.px-3 {
+    padding-left: .75rem !important;
+    padding-right: .75rem   !important;
+}

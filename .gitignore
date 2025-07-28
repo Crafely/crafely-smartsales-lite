@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Documentation
+aipos-documentation/
+
+# VS Code SFTP configs (contains credentials)
+.vscode/sftp*.json
+
+# Vite cache
+.vite/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDE/Editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Operating System files
+ehthumbs.db
+Icon?
+
+# Build files
+*.log
+*.bak
+*.swp
+
+# Other
+*.env
+*.env.local
+*.env.*.local
+
+package-lock.json
+yarn.lock
+
+/vendor/
