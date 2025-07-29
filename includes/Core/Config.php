@@ -60,9 +60,9 @@ class Config
     {
         self::$config = [
             'plugin' => [
-                'name' => 'smartsales-lite',
+                'name' => 'crafely-smartsales-lite',
                 'version' => SMARTSALES_VERSION,
-                'text_domain' => 'smartsales-lite',
+                'text_domain' => 'crafely-smartsales-lite',
                 'namespace' => 'AISMARTSALES',
                 'min_wp_version' => '5.0',
                 'min_wc_version' => '5.0',

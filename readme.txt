@@ -1,4 +1,4 @@
-=== SmartSales Lite ===
+=== Crafely SmartSales Lite ===
 Contributors: alaminit
 Tags: pos, woocommerce, sales, inventory, ai
 Tested up to: 6.8
@@ -98,7 +98,7 @@ SmartSales Lite provides a comprehensive REST API for developers:
 = Manual Installation =
 
 1. Download the plugin from the repository
-2. Upload the `smartsales-lite` folder to `/wp-content/plugins/`
+2. Upload the `crafely-smartsales-lite` folder to `/wp-content/plugins/`
 3. Activate the plugin through the WordPress admin panel
 
 = Post-Installation Setup =
@@ -199,7 +199,7 @@ For support and documentation, please use the WordPress.org support forum for th
 
 == Contributing ==
 
-SmartSales Lite is open source! Contribute on [GitHub](https://github.com/Crafely/smartsales-lite).
+SmartSales Lite is open source! Contribute on [GitHub](https://github.com/Crafely/crafely-smartsales-lite).
 
 We welcome:
 * Bug reports and feature requests

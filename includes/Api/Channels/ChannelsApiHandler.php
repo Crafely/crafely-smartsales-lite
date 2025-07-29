@@ -29,7 +29,7 @@ class ChannelsApiHandler
     {
         if (!taxonomy_exists($this->taxonomy)) {
             register_taxonomy($this->taxonomy, ['product', 'shop_order', 'customer'], [
-                'label' => __('Channels', 'smartsales-lite'),
+                'label' => __('Channels', 'crafely-smartsales-lite'),
                 'hierarchical' => true,
                 'show_ui' => true,
                 'show_admin_column' => true,

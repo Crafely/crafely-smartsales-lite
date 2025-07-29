@@ -30,7 +30,7 @@ if (!function_exists('aismartsales_is_woocommerce_active')) {
 if (!function_exists('aismartsales_is_active')) {
     function aismartsales_is_active()
     {
-        return is_plugin_active(plugin_basename(SMARTSALES_DIR . 'smartsales-lite.php'));
+        return is_plugin_active(plugin_basename(SMARTSALES_DIR . 'crafely-smartsales-lite.php'));
     }
 }
 
@@ -219,7 +219,7 @@ if (!function_exists('aismartsales_locate_template')) {
     function aismartsales_locate_template($template_name, $template_path = '')
     {
         if (!$template_path) {
-            $template_path = 'smartsales-lite/';
+            $template_path = 'crafely-smartsales-lite/';
         }
 
         // Look in theme first

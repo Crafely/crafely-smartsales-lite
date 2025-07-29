@@ -80,7 +80,7 @@ if (empty($error_message)) {
         // Fallback: if no action hook is available, output directly
         if (!did_action('aipos_render_logo') && !empty($logo_url)) {
             // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- Plugin asset, not user media
-            echo '<img class="h-12 w-auto mx-auto" src="' . esc_url($logo_url) . '" alt="' . esc_attr__('POS System Logo', 'smartsales-lite') . '">';
+            echo '<img class="h-12 w-auto mx-auto" src="' . esc_url($logo_url) . '" alt="' . esc_attr__('POS System Logo', 'crafely-smartsales-lite') . '">';
         }
         ?>
         <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900">Access aiPOS System</h2>

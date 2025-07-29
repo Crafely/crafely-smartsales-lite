@@ -73,7 +73,7 @@ class Plugin
         }
 
         // Load activation hook
-        register_activation_hook(SMARTSALES_DIR . 'smartsales-lite.php', [Activation::class, 'run']);
+        register_activation_hook(SMARTSALES_DIR . 'crafely-smartsales-lite.php', [Activation::class, 'run']);
 
         // Load admin scripts
         add_action('admin_enqueue_scripts', [$this, 'common_admin_scripts']);

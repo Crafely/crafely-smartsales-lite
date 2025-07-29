@@ -127,13 +127,13 @@ Smart Sales Lite is a comprehensive WordPress plugin that transforms your WooCom
 1. **Download the Plugin**: Download Smart Sales Lite from the repository
 2. **Upload to WordPress**:
    - Go to `Plugins` > `Add New` in your WordPress admin
-   - Click `Upload Plugin` and select `smartsales-lite.zip`
+   - Click `Upload Plugin` and select `crafely-smartsales-lite.zip`
    - Click `Install Now` and activate the plugin
 
 ### Manual Installation
 
 1. **Extract Files**: Extract the plugin files to your computer
-2. **Upload via FTP**: Upload the entire `smartsales-lite` folder to `/wp-content/plugins/`
+2. **Upload via FTP**: Upload the entire `crafely-smartsales-lite` folder to `/wp-content/plugins/`
 3. **Activate**: Go to WordPress admin > Plugins and activate Smart Sales Lite
 
 ### Post-Installation Setup
@@ -293,8 +293,8 @@ All API responses follow a consistent format:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Crafely/smartsales-lite
-   cd smartsales-lite
+   git clone https://github.com/Crafely/crafely-smartsales-lite
+   cd crafely-smartsales-lite
    ```
 
 2. **Install PHP dependencies**:
@@ -325,7 +325,7 @@ All API responses follow a consistent format:
 ### File Structure
 
 ```
-smartsales-lite/
+crafely-smartsales-lite/
 ├── includes/                 # Core PHP classes
 │   ├── Api/                 # REST API handlers
 │   │   ├── Products/ProductApiHandler.php
@@ -360,7 +360,7 @@ smartsales-lite/
 ├── vendor/                  # Composer dependencies
 ├── composer.json            # PHP dependencies
 ├── package.json             # Node.js dependencies
-├── smartsales-lite.php      # Main plugin file
+├── crafely-smartsales-lite.php      # Main plugin file
 └── README.md               # This file
 ```
 
@@ -433,7 +433,7 @@ The plugin utilizes WordPress custom post types and meta fields:
 
 The plugin is fully internationalized and supports:
 
-- **Text Domain**: `smartsales-lite`
+- **Text Domain**: `crafely-smartsales-lite`
 - **Translation Ready**: All strings are translatable using WordPress i18n functions
 - **RTL Support**: Right-to-left language support
 - **Multi-Language**: Compatible with translation plugins like WPML
@@ -557,8 +557,8 @@ This project is licensed under the GPL v2 or later - see the [LICENSE](LICENSE) 
 
 For support and questions:
 
-- **GitHub Issues**: [Report bugs and request features](https://github.com/Crafely/smartsales-lite/issues)
-- **Documentation**: [Read the full documentation](https://github.com/Crafely/smartsales-lite/wiki)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/Crafely/crafely-smartsales-lite/issues)
+- **Documentation**: [Read the full documentation](https://github.com/Crafely/crafely-smartsales-lite/wiki)
 - **Email**: support@crafely.com
 - **Community**: Join our community discussions
 

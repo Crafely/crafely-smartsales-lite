@@ -21,7 +21,7 @@ class POS
     public function __construct()
     {
         if (!defined('SMARTSALES_DIR') || !defined('SMARTSALES_URL')) {
-            wp_die(esc_html__('SMARTSALES_DIR or SMARTSALES_URL is not defined.', 'smartsales-lite'));
+            wp_die(esc_html__('SMARTSALES_DIR or SMARTSALES_URL is not defined.', 'crafely-smartsales-lite'));
         }
 
         // Add high-priority handlers for POS URLs
@@ -284,7 +284,7 @@ class POS
         // Simple role check
         $user = wp_get_current_user();
         if (!is_user_logged_in() || !in_array('aipos_cashier', (array)$user->roles)) {
-            wp_die(esc_html__('Unauthorized access', 'smartsales-lite'));
+            wp_die(esc_html__('Unauthorized access', 'crafely-smartsales-lite'));
         }
 
         // Remove all existing scripts and styles

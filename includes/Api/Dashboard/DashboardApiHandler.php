@@ -118,7 +118,7 @@ class DashboardApiHandler
             // Validate custom date range
             if ($range === 'custom' && (!$custom_start || !$custom_end)) {
                 return $this->format_error_response(
-                    __('Start date and end date are required for custom range.', 'smartsales-lite'),
+                    __('Start date and end date are required for custom range.', 'crafely-smartsales-lite'),
                     'invalid_date_range'
                 );
             }
@@ -174,7 +174,7 @@ class DashboardApiHandler
             ];
         } catch (Exception $e) {
             return $this->format_error_response(
-                __('Invalid date range provided.', 'smartsales-lite'),
+                __('Invalid date range provided.', 'crafely-smartsales-lite'),
                 'invalid_date_range'
             );
         }
@@ -211,7 +211,7 @@ class DashboardApiHandler
                 $outlet = get_post($outlet_id);
                 if (!$outlet || $outlet->post_type !== 'outlet') {
                     return $this->format_error_response(
-                        __('Invalid outlet ID specified.', 'smartsales-lite'),
+                        __('Invalid outlet ID specified.', 'crafely-smartsales-lite'),
                         'invalid_outlet',
                         400
                     );
@@ -267,7 +267,7 @@ class DashboardApiHandler
                 }
 
                 // Track payment methods
-                $method = $order->get_payment_method_title() ?: __('Unknown', 'smartsales-lite');
+                $method = $order->get_payment_method_title() ?: __('Unknown', 'crafely-smartsales-lite');
                 if (!isset($payment_methods[$method])) {
                     $payment_methods[$method] = 0;
                 }
@@ -352,7 +352,7 @@ class DashboardApiHandler
             ), 200);
         } catch (Exception $e) {
             return $this->format_error_response(
-                __('An error occurred while fetching dashboard summary.', 'smartsales-lite') . ' ' . $e->getMessage(),
+                __('An error occurred while fetching dashboard summary.', 'crafely-smartsales-lite') . ' ' . $e->getMessage(),
                 'dashboard_summary_error',
                 500
             );

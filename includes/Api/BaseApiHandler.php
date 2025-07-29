@@ -52,7 +52,7 @@ abstract class BaseApiHandler
         if (!is_user_logged_in()) {
             return new WP_Error(
                 'rest_forbidden',
-                __('You must be logged in to access this endpoint.', 'smartsales-lite'),
+                __('You must be logged in to access this endpoint.', 'crafely-smartsales-lite'),
                 ['status' => 401]
             );
         }
@@ -67,7 +67,7 @@ abstract class BaseApiHandler
         if (empty(array_intersect($allowed_roles, $user_roles))) {
             return new WP_Error(
                 'rest_forbidden',
-                __('You do not have permission to access this endpoint.', 'smartsales-lite'),
+                __('You do not have permission to access this endpoint.', 'crafely-smartsales-lite'),
                 ['status' => 403]
             );
         }
@@ -93,7 +93,7 @@ abstract class BaseApiHandler
                 return new WP_Error(
                     'missing_parameter',
                     // translators: %s is the name of the missing required parameter.
-                    sprintf(__('Missing required parameter: %s', 'smartsales-lite'), $field),
+                    sprintf(__('Missing required parameter: %s', 'crafely-smartsales-lite'), $field),
                     ['status' => 400]
                 );
             }
@@ -105,7 +105,7 @@ abstract class BaseApiHandler
                     return new WP_Error(
                         'invalid_parameter',
                         // translators: %1$s is the parameter name; %2$s is the expected data type.
-                        sprintf(__('Invalid parameter type for %1$s. Expected %2$s.', 'smartsales-lite'), $field, $type),
+                        sprintf(__('Invalid parameter type for %1$s. Expected %2$s.', 'crafely-smartsales-lite'), $field, $type),
                         ['status' => 400]
                     );
                 }

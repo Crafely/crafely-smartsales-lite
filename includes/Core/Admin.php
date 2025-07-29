@@ -11,7 +11,7 @@ class Admin
     public function __construct()
     {
         if (!defined('SMARTSALES_DIR') || !defined('SMARTSALES_URL')) {
-            wp_die(esc_html__('SMARTSALES_DIR or SMARTSALES_URL is not defined.', 'smartsales-lite'));
+            wp_die(esc_html__('SMARTSALES_DIR or SMARTSALES_URL is not defined.', 'crafely-smartsales-lite'));
         }
 
         // Add admin menu and settings
@@ -105,8 +105,8 @@ class Admin
         }
 
         add_menu_page(
-            esc_html__('Smart sales lite', 'smartsales-lite'),
-            esc_html__('Smart Sales Lite', 'smartsales-lite'),
+            esc_html__('Smart sales lite', 'crafely-smartsales-lite'),
+            esc_html__('Smart Sales Lite', 'crafely-smartsales-lite'),
             'read', // Use 'read' instead of 'manage_options' to allow POS managers
             'smartsales',
             [$this, 'smartsales_render_dashboard_page'],

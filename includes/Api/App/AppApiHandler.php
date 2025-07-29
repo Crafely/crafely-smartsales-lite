@@ -62,7 +62,7 @@ class AppApiHandler
         if (!is_user_logged_in()) {
             return new \WP_Error(
                 'rest_forbidden',
-                __('You must be logged in to access this resource.', 'smartsales-lite'),
+                __('You must be logged in to access this resource.', 'crafely-smartsales-lite'),
                 ['status' => 401]
             );
         }
@@ -74,7 +74,7 @@ class AppApiHandler
         if (!in_array('administrator', (array) $user->roles)) {
             return new \WP_Error(
                 'rest_forbidden',
-                __('You do not have permission to update app data. Administrator role required.', 'smartsales-lite'),
+                __('You do not have permission to update app data. Administrator role required.', 'crafely-smartsales-lite'),
                 ['status' => 403]
             );
         }

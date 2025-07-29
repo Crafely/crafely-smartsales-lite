@@ -17,8 +17,8 @@ class PostTypes
         // Register Outlet post type
         register_post_type('smartsales_outlet', [
             'labels' => [
-                'name' => __('Outlets', 'smartsales-lite'),
-                'singular_name' => __('Outlet', 'smartsales-lite'),
+                'name' => __('Outlets', 'crafely-smartsales-lite'),
+                'singular_name' => __('Outlet', 'crafely-smartsales-lite'),
             ],
             'public' => false,
             'show_ui' => true,
@@ -38,8 +38,8 @@ class PostTypes
         // Register Counter post type
         register_post_type('smartsales_counter', [
             'labels' => [
-                'name' => __('Counters', 'smartsales-lite'),
-                'singular_name' => __('Counter', 'smartsales-lite'),
+                'name' => __('Counters', 'crafely-smartsales-lite'),
+                'singular_name' => __('Counter', 'crafely-smartsales-lite'),
             ],
             'public' => false,
             'show_ui' => true,
@@ -59,8 +59,8 @@ class PostTypes
         // Register Assignment History post type
         register_post_type('smsl_assign_hist', [
             'labels' => [
-                'name' => __('Assignment History', 'smartsales-lite'),
-                'singular_name' => __('Assignment History', 'smartsales-lite'),
+                'name' => __('Assignment History', 'crafely-smartsales-lite'),
+                'singular_name' => __('Assignment History', 'crafely-smartsales-lite'),
             ],
             'public' => false,
             'show_ui' => true,
@@ -71,8 +71,8 @@ class PostTypes
         // Register Invoice post type
         register_post_type('smartsales_invoice', [
             'labels' => [
-                'name' => __('Invoices', 'smartsales-lite'),
-                'singular_name' => __('Invoice', 'smartsales-lite'),
+                'name' => __('Invoices', 'crafely-smartsales-lite'),
+                'singular_name' => __('Invoice', 'crafely-smartsales-lite'),
             ],
             'public' => false,
             'show_ui' => true,

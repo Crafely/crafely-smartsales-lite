@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: SmartSales Lite
- * Plugin URI: https://github.com/Crafely/smartsales-lite
+ * Plugin Name: Crafely SmartSales Lite
+ * Plugin URI: https://github.com/Crafely/crafely-crafely-smartsales-lite
  * Description: SmartSales Lite is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
  * Version: 1.0.0
  * Requires at least: 5.0
@@ -10,7 +10,7 @@
  * Author URI: https://profiles.wordpress.org/alaminit/
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: smartsales-lite
+ * Text Domain: crafely-smartsales-lite
  * Domain Path: /languages
  */
 
@@ -84,7 +84,7 @@ function aismartsales_init()
 {
     if (!aismartsales_is_woocommerce_active()) {
         add_action('admin_notices', function () {
-            echo '<div class="notice notice-error"><p>' . esc_html__('WooCommerce is required for AI Smart Sales to function properly.', 'smartsales-lite') . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html__('WooCommerce is required for AI Smart Sales to function properly.', 'crafely-smartsales-lite') . '</p></div>';
         });
         return;
     }
@@ -101,7 +101,7 @@ function aismartsales_init()
                     '<div class="notice notice-error"><p>%s</p></div>',
                     esc_html(sprintf(
                         // translators: %s is the error message returned during plugin initialization failure.
-                        __('AI Smart Sales failed to initialize: %s', 'smartsales-lite'),
+                        __('AI Smart Sales failed to initialize: %s', 'crafely-smartsales-lite'),
                         $e->getMessage()
                     ))
                 );
