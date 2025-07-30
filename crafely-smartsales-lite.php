@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Crafely SmartSales Lite
- * Plugin URI: https://github.com/Crafely/crafely-crafely-smartsales-lite
+ * Plugin URI: https://github.com/Crafely/crafely-smartsales-lite
  * Description: SmartSales Lite is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
  * Version: 1.0.0
  * Requires at least: 5.0
