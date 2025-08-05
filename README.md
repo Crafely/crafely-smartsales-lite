@@ -2,7 +2,36 @@
 
 Smart Sales Lite is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. This plugin provides a full-featured business management solution for both online and offline sales, making it perfect for retail stores, restaurants, and service businesses.
 
-## 🚀 Features Overview
+## � Development & Source Code
+
+**Source Code**: All development source code is available at: https://github.com/Crafely/crafely-smartsales-lite
+
+**Build Instructions**:
+```bash
+# Clone the repository
+git clone https://github.com/Crafely/crafely-smartsales-lite.git
+
+# Install dependencies
+npm install
+composer install
+
+# Build for production
+npm run build
+
+# Development mode with watch
+npm run dev
+```
+
+**Development Dependencies**:
+- Node.js 16+ and npm
+- Composer for PHP dependencies
+- Vue.js 3 for frontend framework
+- Vite for build tooling
+- Tailwind CSS for styling
+
+All JavaScript and CSS files in the `dist/` directory are compiled from source files. The original source code includes Vue.js components, JavaScript modules, and Tailwind CSS configurations that are processed through Vite build system.
+
+## �🚀 Features Overview
 
 ### 💻 Point of Sale (POS) System
 
