@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     function fixAdminLayout() {
         let adminMenu = document.getElementById("adminmenu");

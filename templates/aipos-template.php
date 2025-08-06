@@ -42,6 +42,42 @@ $css_file  = ! empty( $css_files ) ? esc_url( SMARTSALES_URL . 'dist/css/' . bas
 // Validate and sanitize JS file path
 $js_files = glob( SMARTSALES_DIR . 'dist/js/main.*.js' );
 $js_file  = ! empty( $js_files ) ? esc_url( SMARTSALES_URL . 'dist/js/' . basename( $js_files[0] ) ) : '';
+
+// Enqueue styles and scripts properly
+if ( $css_file ) {
+	$css_version = ! empty( $css_files ) ? filemtime( $css_files[0] ) : null;
+	wp_enqueue_style( 'aipos-main-style', $css_file, array(), $css_version );
+}
+
+if ( $js_file ) {
+	$js_version = ! empty( $js_files ) ? filemtime( $js_files[0] ) : null;
+	wp_register_script( 'aipos-main-script', $js_file, array(), $js_version, true );
+	
+	// Add async attribute for better performance (WordPress 6.3+)
+	wp_script_add_data( 'aipos-main-script', 'async', true );
+	
+	// Properly localize the script with WordPress API settings using wp_json_encode
+	wp_localize_script(
+		'aipos-main-script',
+		'wpApiSettings',
+		$api_data
+	);
+	
+	wp_enqueue_script( 'aipos-main-script' );
+}
+
+// Add the module type via script_loader_tag filter
+add_filter(
+	'script_loader_tag',
+	function ( $tag, $handle ) {
+		if ( 'aipos-main-script' === $handle ) {
+			return str_replace( '<script ', '<script type="module" ', $tag );
+		}
+		return $tag;
+	},
+	10,
+	2
+);
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -52,55 +88,12 @@ $js_file  = ! empty( $js_files ) ? esc_url( SMARTSALES_URL . 'dist/js/' . basena
 	<meta http-equiv="Content-Security-Policy"
 		content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: *.wp.com *.wordpress.com *.cloudflareinsights.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.cloudflareinsights.com; img-src * data:;">
 	<title><?php echo esc_html( wp_get_document_title() ); ?></title>
-	<?php
-	// Enqueue the CSS file if it exists
-	if ( $css_file ) {
-		// Use file modification time as version to prevent caching issues
-		$css_version = ! empty( $css_files ) ? filemtime( $css_files[0] ) : null;
-		wp_enqueue_style( 'aipos-main-style', $css_file, array(), $css_version );
-		// Print enqueued styles in the head
-		wp_print_styles( 'aipos-main-style' );
-	}
-	?>
+	<?php wp_head(); ?>
 </head>
 
 <body class="aipos-app">
 	<div id="app" data-nonce="<?php echo esc_attr( $template_nonce ); ?>"></div>
-	<?php
-	if ( $js_file ) {
-		// Use file modification time as version to prevent caching issues
-		$js_version = ! empty( $js_files ) ? filemtime( $js_files[0] ) : null;
-
-		// Register and enqueue the script first
-		wp_register_script( 'aipos-main-script', $js_file, array(), $js_version, true );
-
-		// Add WordPress API data inline before the main script
-		wp_add_inline_script(
-			'aipos-main-script',
-			'window.wpApiSettings = ' . wp_json_encode( $api_data ) . ';',
-			'before'
-		);
-
-		// Add the module type via script_loader_tag filter
-		add_filter(
-			'script_loader_tag',
-			function ( $tag, $handle ) {
-				if ( 'aipos-main-script' === $handle ) {
-					return str_replace( '<script ', '<script type="module" ', $tag );
-				}
-				return $tag;
-			},
-			10,
-			2
-		);
-
-		wp_enqueue_script( 'aipos-main-script' );
-		wp_print_scripts( 'aipos-main-script' );
-
-		// Remove the filter after use
-		remove_all_filters( 'script_loader_tag' );
-	}
-	?>
+	<?php wp_footer(); ?>
 </body>
 
 </html>

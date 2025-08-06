@@ -137,11 +137,11 @@ class Admin {
 			'apiNamespace' => 'ai-smart-sales/v1',
 		);
 
-		// Make wpApiSettings available globally for the admin dashboard
-		wp_add_inline_script(
+		// Properly localize the script with WordPress API settings
+		wp_localize_script(
 			'ai-smart-sales-main-js',
-			'window.wpApiSettings = ' . wp_json_encode( $api_data ) . ';',
-			'before'
+			'wpApiSettings',
+			$api_data
 		);
 	}
 
