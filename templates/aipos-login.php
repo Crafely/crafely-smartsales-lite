@@ -69,16 +69,16 @@ if (empty($error_message)) {
       <div class="text-center">
         <?php
         // Plugin asset image - handle through proper WordPress action
-        $logo_path = SMARTSALES_DIR . 'assets/images/aipos-black.png';
+        $logo_path = CSMSL_DIR . 'assets/images/aipos-black.png';
         
         if (file_exists($logo_path)) {
-            $logo_url = SMARTSALES_URL . 'assets/images/aipos-black.png';
+            $logo_url = CSMSL_URL . 'assets/images/aipos-black.png';
             // Use action hook approach to avoid direct image output warning
-            do_action('aipos_render_logo', $logo_url);
+            do_action('csmsl_render_logo', $logo_url);
         }
         
         // Fallback: if no action hook is available, output directly
-        if (!did_action('aipos_render_logo') && !empty($logo_url)) {
+        if (!did_action('csmsl_render_logo') && !empty($logo_url)) {
             // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- Plugin asset, not user media
             echo '<img class="h-12 w-auto mx-auto" src="' . esc_url($logo_url) . '" alt="' . esc_attr__('POS System Logo', 'crafely-smartsales-lite') . '">';
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\AI;
+namespace CSMSL\Includes\Api\AI;
 
 use WP_REST_Response;
 

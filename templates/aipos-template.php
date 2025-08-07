@@ -20,57 +20,57 @@ remove_filter( 'the_content', 'wpautop' );
 remove_filter( 'the_excerpt', 'wpautop' );
 
 // Create a specific nonce for this template
-$template_nonce = wp_create_nonce( 'aipos_template_nonce' );
+$template_nonce = wp_create_nonce( 'csmsl_template_nonce' );
 $rest_nonce     = wp_create_nonce( 'wp_rest' );
 
 $api_data = array(
 	'root'          => esc_url_raw( rest_url() ),
 	'nonce'         => $rest_nonce,
-	'baseUrl'       => esc_url_raw( SMARTSALES_URL ),
-	'assetsUrl'     => esc_url_raw( SMARTSALES_URL . 'dist/' ),
+	'baseUrl'       => esc_url_raw( CSMSL_URL ),
+	'assetsUrl'     => esc_url_raw( CSMSL_URL . 'dist/' ),
 	'isLoggedIn'    => is_user_logged_in(),
 	'templateNonce' => $template_nonce,
 	'currentUser'   => is_user_logged_in() ? wp_get_current_user()->ID : 0,
 	'userRoles'     => is_user_logged_in() ? wp_get_current_user()->roles : array(),
-	'apiNamespace'  => 'ai-smart-sales/v1',
+	'apiNamespace'  => 'csmsl/v1',
 );
 
 // Validate and sanitize CSS file path
-$css_files = glob( SMARTSALES_DIR . 'dist/css/main.*.css' );
-$css_file  = ! empty( $css_files ) ? esc_url( SMARTSALES_URL . 'dist/css/' . basename( $css_files[0] ) ) : '';
+$css_files = glob( CSMSL_DIR . 'dist/css/main.*.css' );
+$css_file  = ! empty( $css_files ) ? esc_url( CSMSL_URL . 'dist/css/' . basename( $css_files[0] ) ) : '';
 
 // Validate and sanitize JS file path
-$js_files = glob( SMARTSALES_DIR . 'dist/js/main.*.js' );
-$js_file  = ! empty( $js_files ) ? esc_url( SMARTSALES_URL . 'dist/js/' . basename( $js_files[0] ) ) : '';
+$js_files = glob( CSMSL_DIR . 'dist/js/main.*.js' );
+$js_file  = ! empty( $js_files ) ? esc_url( CSMSL_URL . 'dist/js/' . basename( $js_files[0] ) ) : '';
 
 // Enqueue styles and scripts properly
 if ( $css_file ) {
 	$css_version = ! empty( $css_files ) ? filemtime( $css_files[0] ) : null;
-	wp_enqueue_style( 'aipos-main-style', $css_file, array(), $css_version );
+	wp_enqueue_style( 'csmsl-main-style', $css_file, array(), $css_version );
 }
 
 if ( $js_file ) {
 	$js_version = ! empty( $js_files ) ? filemtime( $js_files[0] ) : null;
-	wp_register_script( 'aipos-main-script', $js_file, array(), $js_version, true );
+	wp_register_script( 'csmsl-main-script', $js_file, array(), $js_version, true );
 	
 	// Add async attribute for better performance (WordPress 6.3+)
-	wp_script_add_data( 'aipos-main-script', 'async', true );
+	wp_script_add_data( 'csmsl-main-script', 'async', true );
 	
 	// Properly localize the script with WordPress API settings using wp_json_encode
 	wp_localize_script(
-		'aipos-main-script',
+		'csmsl-main-script',
 		'wpApiSettings',
 		$api_data
 	);
 	
-	wp_enqueue_script( 'aipos-main-script' );
+	wp_enqueue_script( 'csmsl-main-script' );
 }
 
 // Add the module type via script_loader_tag filter
 add_filter(
 	'script_loader_tag',
 	function ( $tag, $handle ) {
-		if ( 'aipos-main-script' === $handle ) {
+		if ( 'csmsl-main-script' === $handle ) {
 			return str_replace( '<script ', '<script type="module" ', $tag );
 		}
 		return $tag;

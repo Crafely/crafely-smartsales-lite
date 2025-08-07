@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Orders;
+namespace CSMSL\Includes\Api\Orders;
 
 use WP_REST_Response;
 use WP_Error;

@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\DB;
+namespace CSMSL\Includes\DB;
 
 if (!defined('ABSPATH')) {
     exit;

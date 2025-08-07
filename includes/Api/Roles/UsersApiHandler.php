@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Roles;
+namespace CSMSL\Includes\Api\Roles;
 
 use WP_REST_Response;
 use WP_Error;

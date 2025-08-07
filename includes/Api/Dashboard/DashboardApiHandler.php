@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Dashboard;
+namespace CSMSL\Includes\Api\Dashboard;
 
 use WP_REST_Response;
 use WP_Error;

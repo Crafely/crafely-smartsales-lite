@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Customers;
+namespace CSMSL\Includes\Api\Customers;
 
 use WP_REST_Response;
 use WP_Error;

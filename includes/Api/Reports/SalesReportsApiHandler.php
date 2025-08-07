@@ -1,5 +1,5 @@
 <?php
-namespace AISMARTSALES\Includes\Api\Reports;
+namespace CSMSL\Includes\Api\Reports;
 
 if (!defined('ABSPATH')) {
     exit;

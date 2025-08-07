@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Categories;
+namespace CSMSL\Includes\Api\Categories;
 
 use WP_REST_Response;
 use WP_Term;

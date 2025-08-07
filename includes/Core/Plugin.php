@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Core;
+namespace CSMSL\Includes\Core;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -73,7 +73,7 @@ class Plugin
         }
 
         // Load activation hook
-        register_activation_hook(SMARTSALES_DIR . 'crafely-smartsales-lite.php', [Activation::class, 'run']);
+        register_activation_hook(CSMSL_DIR . 'crafely-smartsales-lite.php', [Activation::class, 'run']);
 
         // Load admin scripts
         add_action('admin_enqueue_scripts', [$this, 'common_admin_scripts']);
@@ -85,7 +85,7 @@ class Plugin
         $this->init_api_handlers();
 
         // Allow addons to register their functionality
-        do_action('aismartsales_register_addons');
+        do_action('csmsl_register_addons');
 
         $this->initialized = true;
     }
@@ -98,14 +98,14 @@ class Plugin
     private function init_core_components()
     {
         // Initialize RolesManager first to ensure roles exist
-        new \AISMARTSALES\Includes\Api\Roles\RolesManager();
+        new \CSMSL\Includes\Api\Roles\RolesManager();
 
         // Initialize core functionality
         new Admin();
         new AuthManager();
         new Activation();
         new POS();
-        new \AISMARTSALES\Includes\CPT\PostTypes();
+        new \CSMSL\Includes\CPT\PostTypes();
     }
 
     /**
@@ -114,24 +114,24 @@ class Plugin
     private function init_api_handlers()
     {
         $api_handlers = [
-            'AISMARTSALES\Includes\Api\Products\ProductApiHandler',
-            'AISMARTSALES\Includes\Api\Categories\CategoriesApiHandler',
-            'AISMARTSALES\Includes\Api\Orders\OrdersApiHandler',
-            'AISMARTSALES\Includes\Api\Media\MediaApiHandler',
-            'AISMARTSALES\Includes\Api\Customers\CustomersApiHandler',
-            'AISMARTSALES\Includes\Api\Invoices\InvoiceApiHandler',
-            'AISMARTSALES\Includes\Api\Reports\SalesReportsApiHandler',
-            'AISMARTSALES\Includes\Api\Channels\ChannelsApiHandler',
-            'AISMARTSALES\Includes\Api\Outlets\OutletsApiHandler',
-            'AISMARTSALES\Includes\Api\Roles\UsersApiHandler',
-            'AISMARTSALES\Includes\Api\AI\AIAssistancesApiHandler',
-            'AISMARTSALES\Includes\Api\App\AppApiHandler',
-            'AISMARTSALES\Includes\Api\Outlets\CountersApiHandler',
-            'AISMARTSALES\Includes\Api\Dashboard\DashboardApiHandler',
-            'AISMARTSALES\Includes\Api\App\WizardApiHandler',
+            'CSMSL\Includes\Api\Products\ProductApiHandler',
+            'CSMSL\Includes\Api\Categories\CategoriesApiHandler',
+            'CSMSL\Includes\Api\Orders\OrdersApiHandler',
+            'CSMSL\Includes\Api\Media\MediaApiHandler',
+            'CSMSL\Includes\Api\Customers\CustomersApiHandler',
+            'CSMSL\Includes\Api\Invoices\InvoiceApiHandler',
+            'CSMSL\Includes\Api\Reports\SalesReportsApiHandler',
+            'CSMSL\Includes\Api\Channels\ChannelsApiHandler',
+            'CSMSL\Includes\Api\Outlets\OutletsApiHandler',
+            'CSMSL\Includes\Api\Roles\UsersApiHandler',
+            'CSMSL\Includes\Api\AI\AIAssistancesApiHandler',
+            'CSMSL\Includes\Api\App\AppApiHandler',
+            'CSMSL\Includes\Api\Outlets\CountersApiHandler',
+            'CSMSL\Includes\Api\Dashboard\DashboardApiHandler',
+            'CSMSL\Includes\Api\App\WizardApiHandler',
         ];
 
-        $api_handlers = apply_filters('aismartsales_api_handlers', $api_handlers);
+        $api_handlers = apply_filters('csmsl_api_handlers', $api_handlers);
 
         foreach ($api_handlers as $handler) {
             if (class_exists($handler)) {
@@ -143,7 +143,7 @@ class Plugin
 
     public function common_admin_scripts()
     {
-        wp_enqueue_style('aismartsales-admin-css', SMARTSALES_URL . 'assets/css/admin.css', [], SMARTSALES_VERSION);
+        wp_enqueue_style('csmsl-admin-css', CSMSL_URL . 'assets/css/admin.css', [], CSMSL_VERSION);
     }
 
     /**

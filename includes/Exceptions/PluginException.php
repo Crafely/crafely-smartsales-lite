@@ -5,7 +5,7 @@
  * @package AI Smart Sales
  */
 
-namespace AISMARTSALES\Includes\Exceptions;
+namespace CSMSL\Includes\Exceptions;
 
 use Exception;
 
@@ -82,7 +82,7 @@ class PluginException extends Exception {
             'data' => $this->data
         ];
         
-        aismartsales_log($error_data, 'error');
+        csmsl_log($error_data, 'error');
     }
 }
 

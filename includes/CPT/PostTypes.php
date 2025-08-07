@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\CPT;
+namespace CSMSL\Includes\CPT;
 
 if (!defined('ABSPATH')) {
     exit;

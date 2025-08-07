@@ -1,8 +1,8 @@
 <?php
 
-namespace AISMARTSALES\Includes\Core;
+namespace CSMSL\Includes\Core;
 
-use AISMARTSALES\Includes\Api\Roles\RolesManager;
+use CSMSL\Includes\Api\Roles\RolesManager;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -21,7 +21,7 @@ class Activation
 
     public static function deactivate()
     {
-        if (defined('SMARTSALES_DEV_MODE') && SMARTSALES_DEV_MODE) {
+        if (defined('CSMSL_DEV_MODE') && CSMSL_DEV_MODE) {
             self::cleanup_roles();
         }
         self::cleanup_tables();
@@ -40,7 +40,7 @@ class Activation
 
     private static function set_default_options()
     {
-        add_option('SMARTSALES_VERSION', SMARTSALES_VERSION);
+        add_option('CSMSL_VERSION', CSMSL_VERSION);
     }
 
     private static function cleanup_tables()
@@ -51,7 +51,7 @@ class Activation
 
     private static function cleanup_options()
     {
-        delete_option('SMARTSALES_VERSION');
+        delete_option('CSMSL_VERSION');
     }
 
     private static function cleanup_roles()
@@ -75,12 +75,12 @@ class Activation
             }
         }
 
-        update_option('aismartsales_user_roles_backup', $backup);
+        update_option('csmsl_user_roles_backup', $backup);
     }
 
     private static function restore_user_roles()
     {
-        $backup = get_option('aismartsales_user_roles_backup', array());
+        $backup = get_option('csmsl_user_roles_backup', array());
 
         foreach ($backup as $user_id => $data) {
             $user = get_user_by('id', $user_id);
@@ -108,7 +108,7 @@ class Activation
             }
         }
 
-        delete_option('aismartsales_user_roles_backup');
+        delete_option('csmsl_user_roles_backup');
     }
 
     /**
@@ -116,10 +116,10 @@ class Activation
      */
     public static function force_flush_rewrite_rules()
     {
-        update_option('aipos_flush_rewrite_rules', true);
+        update_option('csmsl_flush_rewrite_rules', true);
         // Try to flush immediately
         flush_rewrite_rules();
         // Set flag to ensure it gets flushed on next page load
-        update_option('aipos_permalinks_flushed', '');
+        update_option('csmsl_permalinks_flushed', '');
     }
 }

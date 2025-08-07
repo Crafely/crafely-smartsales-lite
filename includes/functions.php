@@ -15,8 +15,8 @@ if (!defined('ABSPATH')) {
  * 
  * @return bool
  */
-if (!function_exists('aismartsales_is_woocommerce_active')) {
-    function aismartsales_is_woocommerce_active()
+if (!function_exists('csmsl_is_woocommerce_active')) {
+    function csmsl_is_woocommerce_active()
     {
         return in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
     }
@@ -27,22 +27,22 @@ if (!function_exists('aismartsales_is_woocommerce_active')) {
  * 
  * @return bool
  */
-if (!function_exists('aismartsales_is_active')) {
-    function aismartsales_is_active()
+if (!function_exists('csmsl_is_active')) {
+    function csmsl_is_active()
     {
-        return is_plugin_active(plugin_basename(SMARTSALES_DIR . 'crafely-smartsales-lite.php'));
+        return is_plugin_active(plugin_basename(CSMSL_DIR . 'crafely-smartsales-lite.php'));
     }
 }
 
 /**
  * Get plugin instance
  * 
- * @return AISMARTSALES\Includes\Core\Plugin
+ * @return CSMSL\Includes\Core\Plugin
  */
-if (!function_exists('aismartsales')) {
-    function aismartsales()
+if (!function_exists('csmsl')) {
+    function csmsl()
     {
-        return AISMARTSALES\Includes\Core\Plugin::instance();
+        return CSMSL\Includes\Core\Plugin::instance();
     }
 }
 
@@ -51,10 +51,10 @@ if (!function_exists('aismartsales')) {
  * 
  * @return string
  */
-if (!function_exists('aismartsales_get_version')) {
-    function aismartsales_get_version()
+if (!function_exists('csmsl_get_version')) {
+    function csmsl_get_version()
     {
-        return defined('SMARTSALES_VERSION') ? SMARTSALES_VERSION : '1.0.0';
+        return defined('CSMSL_VERSION') ? CSMSL_VERSION : '1.0.0';
     }
 }
 
@@ -64,10 +64,10 @@ if (!function_exists('aismartsales_get_version')) {
  * @param string $path Optional path to append
  * @return string
  */
-if (!function_exists('aismartsales_get_plugin_path')) {
-    function aismartsales_get_plugin_path($path = '')
+if (!function_exists('csmsl_get_plugin_path')) {
+    function csmsl_get_plugin_path($path = '')
     {
-        return SMARTSALES_DIR . ltrim($path, '/');
+        return CSMSL_DIR . ltrim($path, '/');
     }
 }
 
@@ -77,10 +77,10 @@ if (!function_exists('aismartsales_get_plugin_path')) {
  * @param string $path Optional path to append
  * @return string
  */
-if (!function_exists('aismartsales_get_plugin_url')) {
-    function aismartsales_get_plugin_url($path = '')
+if (!function_exists('csmsl_get_plugin_url')) {
+    function csmsl_get_plugin_url($path = '')
     {
-        return SMARTSALES_URL . ltrim($path, '/');
+        return CSMSL_URL . ltrim($path, '/');
     }
 }
 
@@ -90,10 +90,10 @@ if (!function_exists('aismartsales_get_plugin_url')) {
  * @param mixed $message
  * @param string $level
  */
-if (!function_exists('aismartsales_log')) {
-    function aismartsales_log($message, $level = 'info')
+if (!function_exists('csmsl_log')) {
+    function csmsl_log($message, $level = 'info')
     {
-        if (!defined('SMARTSALES_DEV_MODE') || !SMARTSALES_DEV_MODE) {
+        if (!defined('CSMSL_DEV_MODE') || !CSMSL_DEV_MODE) {
             return;
         }
     }
@@ -104,8 +104,8 @@ if (!function_exists('aismartsales_log')) {
  * 
  * @return bool
  */
-if (!function_exists('aismartsales_user_has_pos_access')) {
-    function aismartsales_user_has_pos_access()
+if (!function_exists('csmsl_user_has_pos_access')) {
+    function csmsl_user_has_pos_access()
     {
         if (!is_user_logged_in()) {
             return false;
@@ -124,8 +124,8 @@ if (!function_exists('aismartsales_user_has_pos_access')) {
  * @param float $amount
  * @return string
  */
-if (!function_exists('aismartsales_format_currency')) {
-    function aismartsales_format_currency($amount)
+if (!function_exists('csmsl_format_currency')) {
+    function csmsl_format_currency($amount)
     {
         if (function_exists('wc_price')) {
             return wc_price($amount);
@@ -142,8 +142,8 @@ if (!function_exists('aismartsales_format_currency')) {
  * @param string $type
  * @return mixed
  */
-if (!function_exists('aismartsales_sanitize_data')) {
-    function aismartsales_sanitize_data($data, $type = 'text')
+if (!function_exists('csmsl_sanitize_data')) {
+    function csmsl_sanitize_data($data, $type = 'text')
     {
         switch ($type) {
             case 'email':
@@ -170,8 +170,8 @@ if (!function_exists('aismartsales_sanitize_data')) {
  * @param string $message
  * @param bool $success
  */
-if (!function_exists('aismartsales_ajax_response')) {
-    function aismartsales_ajax_response($data = null, $message = '', $success = true)
+if (!function_exists('csmsl_ajax_response')) {
+    function csmsl_ajax_response($data = null, $message = '', $success = true)
     {
         $response = [
             'success' => $success,
@@ -190,17 +190,17 @@ if (!function_exists('aismartsales_ajax_response')) {
  * @param array $args
  * @param string $template_path
  */
-if (!function_exists('aismartsales_get_template')) {
-    function aismartsales_get_template($template_name, $args = [], $template_path = '')
+if (!function_exists('csmsl_get_template')) {
+    function csmsl_get_template($template_name, $args = [], $template_path = '')
     {
         if (!empty($args) && is_array($args)) {
             extract($args);
         }
 
-        $located = aismartsales_locate_template($template_name, $template_path);
+        $located = csmsl_locate_template($template_name, $template_path);
 
         if (!file_exists($located)) {
-            aismartsales_log("Template not found: {$template_name}", 'error');
+            csmsl_log("Template not found: {$template_name}", 'error');
             return;
         }
 
@@ -215,8 +215,8 @@ if (!function_exists('aismartsales_get_template')) {
  * @param string $template_path
  * @return string
  */
-if (!function_exists('aismartsales_locate_template')) {
-    function aismartsales_locate_template($template_name, $template_path = '')
+if (!function_exists('csmsl_locate_template')) {
+    function csmsl_locate_template($template_name, $template_path = '')
     {
         if (!$template_path) {
             $template_path = 'crafely-smartsales-lite/';
@@ -230,9 +230,9 @@ if (!function_exists('aismartsales_locate_template')) {
 
         // Get default template
         if (!$template) {
-            $template = aismartsales_get_plugin_path('templates/' . $template_name);
+            $template = csmsl_get_plugin_path('templates/' . $template_name);
         }
 
-        return apply_filters('aismartsales_locate_template', $template, $template_name, $template_path);
+        return apply_filters('csmsl_locate_template', $template, $template_name, $template_path);
     }
 }

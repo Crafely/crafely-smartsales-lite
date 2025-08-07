@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Channels;
+namespace CSMSL\Includes\Api\Channels;
 
 use WP_Query;
 use WP_REST_Response;

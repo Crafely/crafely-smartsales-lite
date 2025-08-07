@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Roles;
+namespace CSMSL\Includes\Api\Roles;
 
 if (!defined('ABSPATH')) {
     exit;

@@ -1,5 +1,5 @@
 <?php
-namespace AISMARTSALES\Includes\Api\Media;
+namespace CSMSL\Includes\Api\Media;
 
 
 use WP_REST_Response;

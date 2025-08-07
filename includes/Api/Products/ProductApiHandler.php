@@ -1,8 +1,8 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Products;
+namespace CSMSL\Includes\Api\Products;
 
-use AISMARTSALES\Includes\Api\BaseApiHandler;
+use CSMSL\Includes\Api\BaseApiHandler;
 use WP_Query;
 use WP_REST_Response;
 use WC_Product_Simple;

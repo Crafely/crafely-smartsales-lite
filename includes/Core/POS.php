@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Core;
+namespace CSMSL\Includes\Core;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,8 +18,8 @@ class POS {
 	private $authManager;
 
 	public function __construct() {
-		if ( ! defined( 'SMARTSALES_DIR' ) || ! defined( 'SMARTSALES_URL' ) ) {
-			wp_die( esc_html__( 'SMARTSALES_DIR or SMARTSALES_URL is not defined.', 'crafely-smartsales-lite' ) );
+		if ( ! defined( 'CSMSL_DIR' ) || ! defined( 'CSMSL_URL' ) ) {
+			wp_die( esc_html__( 'CSMSL_DIR or CSMSL_URL is not defined.', 'crafely-smartsales-lite' ) );
 		}
 
 		// Add high-priority handlers for POS URLs
@@ -45,7 +45,7 @@ class POS {
 		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ) );
 
 		// Force the rewrite rules to be flushed on next page load
-		update_option( 'crafsmli_flush_rewrite_rules', true );
+		update_option( 'csmsl_flush_rewrite_rules', true );
 	}
 
 	/**
@@ -147,10 +147,10 @@ class POS {
 	 */
 	private function render_pos_template() {
 		// Include the template directly
-		$template = realpath( SMARTSALES_DIR . 'templates/aipos-template.php' );
+		$template = realpath( CSMSL_DIR . 'templates/aipos-template.php' );
 
 		// Validate template path for security
-		if ( $template && strpos( $template, realpath( SMARTSALES_DIR ) ) === 0 ) {
+		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
 			// Set up WordPress
 			if ( ! defined( 'WP_USE_THEMES' ) ) {
 				define( 'WP_USE_THEMES', false );
@@ -163,9 +163,9 @@ class POS {
 	}
 
 	public function initialize_api_handlers() {
-		$this->usersApiHandler    = new \AISMARTSALES\Includes\Api\Roles\UsersApiHandler();
-		$this->outletsApiHandler  = new \AISMARTSALES\Includes\Api\Outlets\OutletsApiHandler();
-		$this->countersApiHandler = new \AISMARTSALES\Includes\Api\Outlets\CountersApiHandler();
+		$this->usersApiHandler    = new \CSMSL\Includes\Api\Roles\UsersApiHandler();
+		$this->outletsApiHandler  = new \CSMSL\Includes\Api\Outlets\OutletsApiHandler();
+		$this->countersApiHandler = new \CSMSL\Includes\Api\Outlets\CountersApiHandler();
 	}
 
 	public function add_pos_rewrite_rules() {
@@ -213,7 +213,7 @@ class POS {
 
 	public function load_pos_template( $template ) {
 		// Add file path validation
-		$template_dir = realpath( SMARTSALES_DIR . 'templates' );
+		$template_dir = realpath( CSMSL_DIR . 'templates' );
 
 		// Handle login page
 		if ( get_query_var( 'pos_login_page' ) ) {
@@ -231,7 +231,7 @@ class POS {
 			}
 
 			// Load login template
-			$login_template = realpath( SMARTSALES_DIR . 'templates/aipos-login.php' );
+			$login_template = realpath( CSMSL_DIR . 'templates/aipos-login.php' );
 			if ( $login_template && strpos( $login_template, $template_dir ) === 0 ) {
 				set_query_var( 'login_error', get_transient( 'crafsmli_login_error' ) );
 				delete_transient( 'crafsmli_login_error' );
@@ -264,7 +264,7 @@ class POS {
 
 			// User is authenticated, load the main POS template
 
-			$template_path = realpath( SMARTSALES_DIR . 'templates/aipos-template.php' );
+			$template_path = realpath( CSMSL_DIR . 'templates/aipos-template.php' );
 			if ( $template_path && strpos( $template_path, $template_dir ) === 0 ) {
 				return $template_path;
 			}
@@ -327,14 +327,14 @@ class POS {
 		}
 
 		// Ensure the file exists before using filemtime to prevent errors
-		$tailwind_css_path = SMARTSALES_DIR . 'assets/css/tailwind-output.css';
-		$frontend_css_path = SMARTSALES_DIR . 'assets/css/frontend.css';
+		$tailwind_css_path = CSMSL_DIR . 'assets/css/tailwind-output.css';
+		$frontend_css_path = CSMSL_DIR . 'assets/css/frontend.css';
 
 		if ( file_exists( $tailwind_css_path ) ) {
 			$css_version = filemtime( $tailwind_css_path );
 			wp_enqueue_style(
 				'ai-smart-sales-login-tailwind',
-				SMARTSALES_URL . 'assets/css/tailwind-output.css',
+				CSMSL_URL . 'assets/css/tailwind-output.css',
 				array(),
 				$css_version
 			);
@@ -343,7 +343,7 @@ class POS {
 			// Fallback to a version number if file doesn't exist
 			wp_enqueue_style(
 				'ai-smart-sales-login-tailwind',
-				SMARTSALES_URL . 'assets/css/tailwind-output.css',
+				CSMSL_URL . 'assets/css/tailwind-output.css',
 				array(),
 				'1.0.0'
 			);
@@ -354,7 +354,7 @@ class POS {
 			$css_version = filemtime( $frontend_css_path );
 			wp_enqueue_style(
 				'ai-smart-sales-login',
-				SMARTSALES_URL . 'assets/css/frontend.css',
+				CSMSL_URL . 'assets/css/frontend.css',
 				array( 'ai-smart-sales-login-tailwind' ),
 				$css_version
 			);
@@ -363,19 +363,19 @@ class POS {
 			// Fallback to a version number if file doesn't exist
 			wp_enqueue_style(
 				'ai-smart-sales-login',
-				SMARTSALES_URL . 'assets/css/frontend.css',
+				CSMSL_URL . 'assets/css/frontend.css',
 				array( 'ai-smart-sales-login-tailwind' ),
 				'1.0.0'
 			);
 		}
 
 		// Enqueue login JS
-		$login_js_path = SMARTSALES_DIR . 'assets/js/login.js';
+		$login_js_path = CSMSL_DIR . 'assets/js/login.js';
 		if ( file_exists( $login_js_path ) ) {
 			$js_version = filemtime( $login_js_path );
 			wp_enqueue_script(
 				'ai-smart-sales-login-js',
-				SMARTSALES_URL . 'assets/js/login.js',
+				CSMSL_URL . 'assets/js/login.js',
 				array(),
 				$js_version,
 				true
@@ -383,12 +383,12 @@ class POS {
 		}
 
 		// Enqueue spinner CSS
-		$spinner_css_path = SMARTSALES_DIR . 'assets/css/login-spinner.css';
+		$spinner_css_path = CSMSL_DIR . 'assets/css/login-spinner.css';
 		if ( file_exists( $spinner_css_path ) ) {
 			$css_version = filemtime( $spinner_css_path );
 			wp_enqueue_style(
 				'ai-smart-sales-login-spinner',
-				SMARTSALES_URL . 'assets/css/login-spinner.css',
+				CSMSL_URL . 'assets/css/login-spinner.css',
 				array(),
 				$css_version
 			);

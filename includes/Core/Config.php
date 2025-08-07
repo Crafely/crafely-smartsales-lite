@@ -6,7 +6,7 @@
  * @package AI Smart Sales
  */
 
-namespace AISMARTSALES\Includes\Core;
+namespace CSMSL\Includes\Core;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -61,9 +61,9 @@ class Config
         self::$config = [
             'plugin' => [
                 'name' => 'crafely-smartsales-lite',
-                'version' => SMARTSALES_VERSION,
+                'version' => CSMSL_VERSION,
                 'text_domain' => 'crafely-smartsales-lite',
-                'namespace' => 'AISMARTSALES',
+                'namespace' => 'CSMSL',
                 'min_wp_version' => '5.0',
                 'min_wc_version' => '5.0',
                 'min_php_version' => '7.4'
@@ -89,10 +89,10 @@ class Config
                 'auto_logout' => true
             ],
             'security' => [
-                'nonce_action' => 'aismartsales_nonce',
+                'nonce_action' => 'csmsl_nonce',
                 'allowed_file_types' => ['jpg', 'jpeg', 'png', 'gif', 'pdf'],
                 'max_file_size' => 5242880, // 5MB
-                'enable_logging' => defined('SMARTSALES_DEV_MODE') && SMARTSALES_DEV_MODE
+                'enable_logging' => defined('CSMSL_DEV_MODE') && CSMSL_DEV_MODE
             ],
             'database' => [
                 'tables' => [

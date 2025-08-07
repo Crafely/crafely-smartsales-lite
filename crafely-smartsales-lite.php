@@ -31,60 +31,60 @@ add_action(
 // Define constants
 // get plugin version from the plugin header
 $plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
-define( 'SMARTSALES_VERSION', $plugin_data['Version'] );
-define( 'SMARTSALES_NAME', 'AI Smart Sales' );
-define( 'SMARTSALES_DIR', plugin_dir_path( __FILE__ ) );
-define( 'SMARTSALES_URL', plugin_dir_url( __FILE__ ) );
-define( 'AIPOS_PLUGIN_FILE', __FILE__ );
-define( 'SMARTSALES_DEV_MODE', false ); // Set to false in production
+define( 'CSMSL_VERSION', $plugin_data['Version'] );
+define( 'CSMSL_NAME', 'Crafely SmartSales Lite' );
+define( 'CSMSL_DIR', plugin_dir_path( __FILE__ ) );
+define( 'CSMSL_URL', plugin_dir_url( __FILE__ ) );
+define( 'CSMSL_PLUGIN_FILE', __FILE__ );
+define( 'CSMSL_DEV_MODE', false ); // Set to false in production
 
 // Include essential files
-require_once SMARTSALES_DIR . 'includes/functions.php';
+require_once CSMSL_DIR . 'includes/functions.php';
 
 // Autoload dependencies
-if ( file_exists( SMARTSALES_DIR . 'vendor/autoload.php' ) ) {
-	require_once SMARTSALES_DIR . 'vendor/autoload.php';
+if ( file_exists( CSMSL_DIR . 'vendor/autoload.php' ) ) {
+	require_once CSMSL_DIR . 'vendor/autoload.php';
 }
 
 // Include essential core files and API handlers (fallback for when autoloader is not available)
-$core_includes = array(
-	'includes/Core/Plugin.php',
-	'includes/Core/Admin.php',
-	'includes/Core/POS.php',
-	'includes/Core/Activation.php',
-	'includes/Core/AuthManager.php',
-	'includes/Api/Roles/RolesManager.php',
-	'includes/CPT/PostTypes.php',
-	'includes/Api/BaseApiHandler.php',
-	'includes/Api/Roles/UsersApiHandler.php',
-	'includes/Api/Outlets/OutletsApiHandler.php',
-	'includes/Api/Outlets/CountersApiHandler.php',
-	'includes/Api/Products/ProductApiHandler.php',
-	'includes/Api/Customers/CustomersApiHandler.php',
-	'includes/Api/Orders/OrdersApiHandler.php',
-	'includes/Api/Categories/CategoriesApiHandler.php',
-	'includes/Api/Dashboard/DashboardApiHandler.php',
-	'includes/Api/Reports/SalesReportsApiHandler.php',
-	'includes/Api/Invoices/InvoiceApiHandler.php',
-	'includes/Api/Media/MediaApiHandler.php',
-	'includes/Api/Channels/ChannelsApiHandler.php',
-	'includes/Api/AI/AIAssistancesApiHandler.php',
-	'includes/Api/App/AppApiHandler.php',
-	'includes/Api/App/WizardApiHandler.php',
-);
+// $core_includes = array(
+// 	'includes/Core/Plugin.php',
+// 	'includes/Core/Admin.php',
+// 	'includes/Core/POS.php',
+// 	'includes/Core/Activation.php',
+// 	'includes/Core/AuthManager.php',
+// 	'includes/Api/Roles/RolesManager.php',
+// 	'includes/CPT/PostTypes.php',
+// 	'includes/Api/BaseApiHandler.php',
+// 	'includes/Api/Roles/UsersApiHandler.php',
+// 	'includes/Api/Outlets/OutletsApiHandler.php',
+// 	'includes/Api/Outlets/CountersApiHandler.php',
+// 	'includes/Api/Products/ProductApiHandler.php',
+// 	'includes/Api/Customers/CustomersApiHandler.php',
+// 	'includes/Api/Orders/OrdersApiHandler.php',
+// 	'includes/Api/Categories/CategoriesApiHandler.php',
+// 	'includes/Api/Dashboard/DashboardApiHandler.php',
+// 	'includes/Api/Reports/SalesReportsApiHandler.php',
+// 	'includes/Api/Invoices/InvoiceApiHandler.php',
+// 	'includes/Api/Media/MediaApiHandler.php',
+// 	'includes/Api/Channels/ChannelsApiHandler.php',
+// 	'includes/Api/AI/AIAssistancesApiHandler.php',
+// 	'includes/Api/App/AppApiHandler.php',
+// 	'includes/Api/App/WizardApiHandler.php',
+// );
 
-foreach ( $core_includes as $file ) {
-	if ( file_exists( SMARTSALES_DIR . $file ) ) {
-		require_once SMARTSALES_DIR . $file;
-	}
-}
+// foreach ( $core_includes as $file ) {
+// 	if ( file_exists( CSMSL_DIR . $file ) ) {
+// 		require_once CSMSL_DIR . $file;
+// 	}
+// }
 
 // Check if WooCommerce is active - moved to functions.php
 // function aismartsales_is_woocommerce_active() - now in functions.php
 
 // Initialize the plugin
-function aismartsales_init() {
-	if ( ! aismartsales_is_woocommerce_active() ) {
+function csmsl_init() {
+	if ( ! csmsl_is_woocommerce_active() ) {
 		add_action(
 			'admin_notices',
 			function () {
@@ -96,7 +96,7 @@ function aismartsales_init() {
 
 	try {
 		// Initialize the main plugin class using singleton
-		$plugin = AISMARTSALES\Includes\Core\Plugin::instance();
+		$plugin = CSMSL\Includes\Core\Plugin::instance();
 		$plugin->init();
 	} catch ( Exception $e ) {
 
@@ -119,10 +119,10 @@ function aismartsales_init() {
 		}
 	}
 }
-add_action( 'plugins_loaded', 'aismartsales_init', 15 );
+add_action( 'plugins_loaded', 'csmsl_init', 15 );
 
 // Very early interception of POS URLs - run before everything else
-function aismartsales_early_url_handler() {
+function csmsl_early_url_handler() {
 	// Only run on frontend requests
 	if ( is_admin() && ! wp_doing_ajax() ) {
 		return;
@@ -145,11 +145,11 @@ function aismartsales_early_url_handler() {
 }
 
 // Run this very early in WordPress initialization
-add_action( 'plugins_loaded', 'aismartsales_early_url_handler', 1 );
+add_action( 'plugins_loaded', 'csmsl_early_url_handler', 1 );
 
 // Add direct access check to handle direct aipos URLs BEFORE WordPress routing
-if ( ! function_exists( 'SMARTSALES_DIRect_access_handler' ) ) {
-	function SMARTSALES_DIRect_access_handler() {
+if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
+	function CSMSL_direct_access_handler() {
 		// Only check non-admin requests with aipos in the URL
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
@@ -161,7 +161,7 @@ if ( ! function_exists( 'SMARTSALES_DIRect_access_handler' ) ) {
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 		// Make sure the plugin has initialized
-		if ( defined( 'SMARTSALES_DIR' ) && file_exists( SMARTSALES_DIR . 'templates/aipos-login.php' ) ) {
+		if ( defined( 'CSMSL_DIR' ) && file_exists( CSMSL_DIR . 'templates/aipos-login.php' ) ) {
 			// Check if it's a login URL
 			if ( strpos( $request_uri, '/aipos/login' ) === 0 || strpos( $request_uri, '/aipos/auth/login' ) === 0 ) {
 				// If already logged in, check permissions
@@ -206,50 +206,50 @@ if ( ! function_exists( 'SMARTSALES_DIRect_access_handler' ) ) {
 }
 
 // Run direct access handler before WordPress processes the request
-add_action( 'init', 'SMARTSALES_DIRect_access_handler', 5 );
+add_action( 'init', 'CSMSL_direct_access_handler', 5 );
 
 // Check if AI Smart Sales is active - moved to functions.php
 // function aismartsales_is_active() - now in functions.php
 
 // Register activation and deactivation hooks without role removal
-register_activation_hook( __FILE__, array( 'AISMARTSALES\Includes\Core\Activation', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'AISMARTSALES\Includes\Core\Activation', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'deactivate' ) );
 
 // Add activation hook to create default roles and capabilities
-function aismartsales_activate() {
+function csmsl_activate() {
 	// Initialize RolesManager to create roles
-	$roles_manager = new AISMARTSALES\Includes\Api\Roles\RolesManager();
+	$roles_manager = new CSMSL\Includes\Api\Roles\RolesManager();
 	$roles_manager->register_custom_roles();
 
 	// Initialize PostTypes to register post types
-	$post_types = new AISMARTSALES\Includes\CPT\PostTypes();
+	$post_types = new CSMSL\Includes\CPT\PostTypes();
 	$post_types->register_post_types();
 
 	// Create default outlet and counter using the Core\Plugin class
-	$plugin = AISMARTSALES\Includes\Core\Plugin::instance();
+	$plugin = CSMSL\Includes\Core\Plugin::instance();
 	$plugin->activate();
 
 	// Clear permalinks
 	flush_rewrite_rules();
 
 	// Set version
-	update_option( 'SMARTSALES_VERSION', SMARTSALES_VERSION );
+	update_option( 'CSMSL_VERSION', CSMSL_VERSION );
 
 	// Mark that rewrite rules should be flushed
-	update_option( 'crafsmli_flush_rewrite_rules', true );
+	update_option( 'csmsl_flush_rewrite_rules', true );
 }
 
 // Fix for rewrite rules not working properly
-function aismartsales_fix_rewrite_rules() {
-	if ( get_option( 'crafsmli_permalinks_flushed' ) !== SMARTSALES_VERSION ) {
+function csmsl_fix_rewrite_rules() {
+	if ( get_option( 'csmsl_permalinks_flushed' ) !== CSMSL_VERSION ) {
 		// Set flag to flush rewrite rules
-		update_option( 'crafsmli_flush_rewrite_rules', true );
-		update_option( 'crafsmli_permalinks_flushed', SMARTSALES_VERSION );
+		update_option( 'csmsl_flush_rewrite_rules', true );
+		update_option( 'csmsl_permalinks_flushed', CSMSL_VERSION );
 	}
 }
-add_action( 'init', 'aismartsales_fix_rewrite_rules', 20 );
+add_action( 'init', 'csmsl_fix_rewrite_rules', 20 );
 
 // Remove deactivation hook or modify it to preserve roles
-register_activation_hook( __FILE__, 'aismartsales_activate' );
+register_activation_hook( __FILE__, 'csmsl_activate' );
 // Do not remove roles on deactivation
-register_deactivation_hook( __FILE__, array( 'AISMARTSALES\Includes\Core\Activation', 'deactivate' ) );
+register_deactivation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'deactivate' ) );

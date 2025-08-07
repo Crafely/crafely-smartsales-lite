@@ -6,7 +6,7 @@
  * @package AI Smart Sales
  */
 
-namespace AISMARTSALES\Includes\Api;
+namespace CSMSL\Includes\Api;
 
 use WP_REST_Response;
 use WP_Error;
@@ -188,7 +188,7 @@ abstract class BaseApiHandler
 
         foreach ($fields as $field => $type) {
             if (isset($data[$field])) {
-                $sanitized[$field] = aismartsales_sanitize_data($data[$field], $type);
+                $sanitized[$field] = csmsl_sanitize_data($data[$field], $type);
             }
         }
 
@@ -211,6 +211,6 @@ abstract class BaseApiHandler
             'timestamp' => current_time('mysql')
         ];
 
-        aismartsales_log($log_data, 'activity');
+        csmsl_log($log_data, 'activity');
     }
 }

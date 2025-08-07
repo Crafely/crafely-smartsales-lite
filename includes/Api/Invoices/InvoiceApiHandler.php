@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\Invoices;
+namespace CSMSL\Includes\Api\Invoices;
 
 use WP_REST_Response;
 use WP_Error;

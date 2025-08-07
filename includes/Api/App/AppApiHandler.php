@@ -1,6 +1,6 @@
 <?php
 
-namespace AISMARTSALES\Includes\Api\App;
+namespace CSMSL\Includes\Api\App;
 
 use WP_REST_Request;
 use WP_REST_Response;
