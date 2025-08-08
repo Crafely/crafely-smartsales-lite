@@ -169,7 +169,7 @@ class InvoiceApiHandler {
 		if ( $customer ) {
 			// Profile image
 			$profile_image_id  = get_user_meta( $customer_id, 'profile_image', true );
-			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : ( defined( 'SMARTSALES_URL' ) ? SMARTSALES_URL . 'assets/images/avatar.png' : '' );
+			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : ( defined( 'CSMSL_URL' ) ? CSMSL_URL . 'assets/images/avatar.png' : '' );
 
 			// WooCommerce customer object
 			$wc_customer = null;
@@ -364,7 +364,7 @@ class InvoiceApiHandler {
 		$outlet_id = intval( $data['outlet_id'] ?? 0 );
 		if ( $outlet_id > 0 ) {
 			$outlet = get_post( $outlet_id );
-			if ( ! $outlet || $outlet->post_type !== 'smartsales_outlet' ) {
+			if ( ! $outlet || $outlet->post_type !== 'csmsl_outlet' ) {
 				$errors['outlet_id'] = "The outlet with the ID '{$outlet_id}' does not exist.";
 			}
 		}
@@ -454,7 +454,7 @@ class InvoiceApiHandler {
 
 		// Create invoice post
 		$invoice_data = array(
-			'post_type'   => 'smartsales_invoice',
+			'post_type'   => 'csmsl_invoice',
 			'post_status' => 'publish',
 			'post_author' => get_current_user_id(),
 		);
@@ -504,7 +504,7 @@ class InvoiceApiHandler {
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 
 		$args = array(
-			'post_type'      => 'smartsales_invoice',
+			'post_type'      => 'csmsl_invoice',
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $current_page,
@@ -554,7 +554,7 @@ class InvoiceApiHandler {
 		$invoice_id = $request->get_param( 'id' );
 		$invoice    = get_post( $invoice_id );
 
-		if ( ! $invoice || $invoice->post_type !== 'smartsales_invoice' ) {
+		if ( ! $invoice || $invoice->post_type !== 'csmsl_invoice' ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invoice not found.',
@@ -582,7 +582,7 @@ class InvoiceApiHandler {
 		$invoice_id = $request->get_param( 'id' );
 		$invoice    = get_post( $invoice_id );
 
-		if ( ! $invoice || $invoice->post_type !== 'smartsales_invoice' ) {
+		if ( ! $invoice || $invoice->post_type !== 'csmsl_invoice' ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invoice not found.',
@@ -614,7 +614,7 @@ class InvoiceApiHandler {
 			$outlet_id = intval( $data['outlet_id'] );
 			if ( $outlet_id > 0 ) {
 				$outlet = get_post( $outlet_id );
-				if ( ! $outlet || $outlet->post_type !== 'smartsales_outlet' ) {
+				if ( ! $outlet || $outlet->post_type !== 'csmsl_outlet' ) {
 					$errors['outlet_id'] = "The outlet with the ID '{$outlet_id}' does not exist.";
 				}
 			}
@@ -777,7 +777,7 @@ class InvoiceApiHandler {
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 
 		$args = array(
-			'post_type'      => 'smartsales_invoice',
+			'post_type'      => 'csmsl_invoice',
 			'post_status'    => 'trash',
 			'posts_per_page' => $per_page,
 			'paged'          => $current_page,

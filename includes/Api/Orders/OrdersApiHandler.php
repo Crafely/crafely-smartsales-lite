@@ -249,7 +249,7 @@ class OrdersApiHandler {
 		if ( $customer_id && $customer ) {
 			// Registered customer
 			$profile_image_id  = get_user_meta( $customer_id, 'profile_image', true );
-			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : SMARTSALES_URL . 'assets/images/avatar.png';
+			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : CSMSL_URL . 'assets/images/avatar.png';
 
 			$customer_data = array(
 				'id'            => (int) $customer_id,
@@ -321,7 +321,7 @@ class OrdersApiHandler {
 					'postcode'   => $order->get_shipping_postcode(),
 					'country'    => $order->get_shipping_country(),
 				),
-				'profile_image' => SMARTSALES_URL . 'assets/images/avatar.png',
+				'profile_image' => CSMSL_URL . 'assets/images/avatar.png',
 				'is_guest'      => true,
 			);
 		}

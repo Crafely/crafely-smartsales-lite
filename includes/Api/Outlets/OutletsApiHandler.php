@@ -83,7 +83,7 @@ class OutletsApiHandler
     {
         // Get all counters for this outlet
         $counters = get_posts([
-            'post_type' => 'smartsales_counter',
+            'post_type' => 'csmsl_counter',
             'posts_per_page' => -1,
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
             'meta_query' => [
@@ -153,7 +153,7 @@ class OutletsApiHandler
     public function get_outlets($request)
     {
         $outlets = get_posts([
-            'post_type'      => 'smartsales_outlet',
+            'post_type'      => 'csmsl_outlet',
             'posts_per_page' => -1,
         ]);
 
@@ -245,7 +245,7 @@ class OutletsApiHandler
 
         // Create the outlet
         $outlet_id = wp_insert_post([
-            'post_type'   => 'smartsales_outlet',
+            'post_type'   => 'csmsl_outlet',
             'post_title'  => $data['name'],
             'post_status' => 'publish',
         ]);
@@ -261,7 +261,7 @@ class OutletsApiHandler
 
         // Create default counter
         $counter_id = wp_insert_post([
-            'post_type'   => 'smartsales_counter',
+            'post_type'   => 'csmsl_counter',
             'post_title'  => 'Main Counter',
             'post_status' => 'publish',
         ]);

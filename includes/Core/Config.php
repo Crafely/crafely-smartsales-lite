@@ -122,7 +122,7 @@ class Config
         ];
 
         // Apply filters to allow customization
-        self::$config = apply_filters('aismartsales_config', self::$config);
+        self::$config = apply_filters('csmsl_config', self::$config);
     }
 
     /**

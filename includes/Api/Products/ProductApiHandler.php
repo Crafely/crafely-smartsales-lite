@@ -102,7 +102,7 @@ class ProductApiHandler extends BaseApiHandler
 
     private function format_product_response($product)
     {
-        $default_image_url = SMARTSALES_URL . 'assets/images/product.png';
+        $default_image_url = CSMSL_URL . 'assets/images/product.png';
         $default_sku = 'N/A';
 
         // Get the product image ID

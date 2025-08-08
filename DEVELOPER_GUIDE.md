@@ -50,7 +50,7 @@ ai-smart-sales/
 **Purpose**: Main plugin file that bootstraps everything
 
 **Key Responsibilities**:
-- Define plugin constants (`SMARTSALES_VERSION`, `SMARTSALES_DIR`, etc.)
+- Define plugin constants (`CSMSL_VERSION`, `CSMSL_DIR`, etc.)
 - Include essential files and autoloader
 - Initialize the main Plugin class
 - Handle WooCommerce dependency check
@@ -60,15 +60,15 @@ ai-smart-sales/
 **Critical Code Sections**:
 ```php
 // Constants definition
-define('SMARTSALES_VERSION', $plugin_data['Version']);
-define('SMARTSALES_DIR', plugin_dir_path(__FILE__));
+define('CSMSL_VERSION', $plugin_data['Version']);
+define('CSMSL_DIR', plugin_dir_path(__FILE__));
 
 // Main initialization
-function aismartsales_init() {
-    $plugin = AISMARTSALES\Includes\Core\Plugin::instance();
+function csmsl_init() {
+    $plugin = CSMSL\Includes\Core\Plugin::instance();
     $plugin->init();
 }
-add_action('plugins_loaded', 'aismartsales_init', 15);
+add_action('plugins_loaded', 'csmsl_init', 15);
 ```
 
 ### **2. Core Plugin Class (`includes/Core/Plugin.php`)**
@@ -154,12 +154,12 @@ URL Request → Early URL Handler → Authentication Check → Template Loading 
 **3. URL Handling**
 ```php
 // Early URL interception
-function aismartsales_early_url_handler() {
+function csmsl_early_url_handler() {
     // Detects /aipos URLs and prepares routing
 }
 
 // Direct access handler
-function SMARTSALES_DIRect_access_handler() {
+function CSMSL_DIRect_access_handler() {
     // Handles authentication and redirects
 }
 ```
@@ -363,10 +363,10 @@ composer test
 
 ### **Plugin Constants**
 ```php
-SMARTSALES_VERSION    // Plugin version
-SMARTSALES_DIR        // Plugin directory path
-SMARTSALES_URL        // Plugin URL
-SMARTSALES_DEV_MODE   // Development mode flag
+CSMSL_VERSION    // Plugin version
+CSMSL_DIR        // Plugin directory path
+CSMSL_URL        // Plugin URL
+CSMSL_DEV_MODE   // Development mode flag
 ```
 
 ### **Configuration System**
@@ -444,8 +444,8 @@ Config::set('pos.session_timeout', 3600);
 
 ### **Logs & Debugging**
 - Error logs in `/wp-content/debug.log`
-- Custom logging via `aismartsales_log()` function
-- Debug mode via `SMARTSALES_DEV_MODE` constant
+- Custom logging via `csmsl_log()` function
+- Debug mode via `CSMSL_DEV_MODE` constant
 
 ### **Performance Considerations**
 - Caching system in place

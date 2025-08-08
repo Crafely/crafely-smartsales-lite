@@ -123,7 +123,7 @@ class RolesManager
         }
 
         // Store the backup with a timestamp
-        update_option('aismartsales_backed_up_roles', [
+        update_option('csmsl_backed_up_roles', [
             'timestamp' => current_time('timestamp'),
             'roles' => $users_with_custom_roles
         ]);
@@ -131,7 +131,7 @@ class RolesManager
 
     private function reassign_users_to_subscriber()
     {
-        $backup = get_option('aismartsales_backed_up_roles', []);
+        $backup = get_option('csmsl_backed_up_roles', []);
         if (!empty($backup['roles'])) {
             foreach ($backup['roles'] as $user_id => $role) {
                 $user = get_user_by('id', $user_id);

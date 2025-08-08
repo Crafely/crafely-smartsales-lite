@@ -116,7 +116,7 @@ class CountersApiHandler
     {
         // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
         $args = [
-            'post_type'      => 'smartsales_counter',
+            'post_type'      => 'csmsl_counter',
             'post_status'    => 'publish',
             'title'          => $name,
             'posts_per_page' => 1,
@@ -141,7 +141,7 @@ class CountersApiHandler
         $outlet_id = $request['outlet_id'];
 
         $args = [
-            'post_type'      => 'smartsales_counter',
+            'post_type'      => 'csmsl_counter',
             'posts_per_page' => -1,
             'meta_query'     => [
                 [
@@ -217,7 +217,7 @@ class CountersApiHandler
         }
 
         $counter_id = wp_insert_post([
-            'post_type'   => 'smartsales_counter',
+            'post_type'   => 'csmsl_counter',
             'post_title'  => $data['name'],
             'post_status' => 'publish',
         ]);
@@ -470,7 +470,7 @@ class CountersApiHandler
 
         // Verify the counter still exists and is active
         $counter = get_post($assigned_counter_id);
-        if (!$counter || $counter->post_type !== 'smartsales_counter') {
+        if (!$counter || $counter->post_type !== 'csmsl_counter') {
             return false;
         }
 

@@ -191,7 +191,7 @@ class CustomersApiHandler {
 										'postcode' => $order->get_shipping_postcode(),
 										'country' => $order->get_shipping_country(),
 									),
-									'profile_image' => SMARTSALES_URL . 'assets/images/avatar.png',
+									'profile_image' => CSMSL_URL . 'assets/images/avatar.png',
 									'total_orders' => 1,
 									'orders' => array(
 										array(
@@ -304,7 +304,7 @@ class CustomersApiHandler {
 
 		// Get profile image
 		$profile_image_id  = get_user_meta( $user_id, 'profile_image', true );
-		$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : SMARTSALES_URL . 'assets/images/avatar.png';
+		$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : CSMSL_URL . 'assets/images/avatar.png';
 
 		// Get order data if WooCommerce is available
 		$order_data   = array();

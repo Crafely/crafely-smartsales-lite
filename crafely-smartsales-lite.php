@@ -47,40 +47,37 @@ if ( file_exists( CSMSL_DIR . 'vendor/autoload.php' ) ) {
 }
 
 // Include essential core files and API handlers (fallback for when autoloader is not available)
-// $core_includes = array(
-// 	'includes/Core/Plugin.php',
-// 	'includes/Core/Admin.php',
-// 	'includes/Core/POS.php',
-// 	'includes/Core/Activation.php',
-// 	'includes/Core/AuthManager.php',
-// 	'includes/Api/Roles/RolesManager.php',
-// 	'includes/CPT/PostTypes.php',
-// 	'includes/Api/BaseApiHandler.php',
-// 	'includes/Api/Roles/UsersApiHandler.php',
-// 	'includes/Api/Outlets/OutletsApiHandler.php',
-// 	'includes/Api/Outlets/CountersApiHandler.php',
-// 	'includes/Api/Products/ProductApiHandler.php',
-// 	'includes/Api/Customers/CustomersApiHandler.php',
-// 	'includes/Api/Orders/OrdersApiHandler.php',
-// 	'includes/Api/Categories/CategoriesApiHandler.php',
-// 	'includes/Api/Dashboard/DashboardApiHandler.php',
-// 	'includes/Api/Reports/SalesReportsApiHandler.php',
-// 	'includes/Api/Invoices/InvoiceApiHandler.php',
-// 	'includes/Api/Media/MediaApiHandler.php',
-// 	'includes/Api/Channels/ChannelsApiHandler.php',
-// 	'includes/Api/AI/AIAssistancesApiHandler.php',
-// 	'includes/Api/App/AppApiHandler.php',
-// 	'includes/Api/App/WizardApiHandler.php',
-// );
+$core_includes = array(
+	'includes/Core/Plugin.php',
+	'includes/Core/Admin.php',
+	'includes/Core/POS.php',
+	'includes/Core/Activation.php',
+	'includes/Core/AuthManager.php',
+	'includes/Api/Roles/RolesManager.php',
+	'includes/CPT/PostTypes.php',
+	'includes/Api/BaseApiHandler.php',
+	'includes/Api/Roles/UsersApiHandler.php',
+	'includes/Api/Outlets/OutletsApiHandler.php',
+	'includes/Api/Outlets/CountersApiHandler.php',
+	'includes/Api/Products/ProductApiHandler.php',
+	'includes/Api/Customers/CustomersApiHandler.php',
+	'includes/Api/Orders/OrdersApiHandler.php',
+	'includes/Api/Categories/CategoriesApiHandler.php',
+	'includes/Api/Dashboard/DashboardApiHandler.php',
+	'includes/Api/Reports/SalesReportsApiHandler.php',
+	'includes/Api/Invoices/InvoiceApiHandler.php',
+	'includes/Api/Media/MediaApiHandler.php',
+	'includes/Api/Channels/ChannelsApiHandler.php',
+	'includes/Api/AI/AIAssistancesApiHandler.php',
+	'includes/Api/App/AppApiHandler.php',
+	'includes/Api/App/WizardApiHandler.php',
+);
 
-// foreach ( $core_includes as $file ) {
-// 	if ( file_exists( CSMSL_DIR . $file ) ) {
-// 		require_once CSMSL_DIR . $file;
-// 	}
-// }
-
-// Check if WooCommerce is active - moved to functions.php
-// function aismartsales_is_woocommerce_active() - now in functions.php
+foreach ( $core_includes as $file ) {
+	if ( file_exists( CSMSL_DIR . $file ) ) {
+		require_once CSMSL_DIR . $file;
+	}
+}
 
 // Initialize the plugin
 function csmsl_init() {
@@ -208,8 +205,6 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 // Run direct access handler before WordPress processes the request
 add_action( 'init', 'CSMSL_direct_access_handler', 5 );
 
-// Check if AI Smart Sales is active - moved to functions.php
-// function aismartsales_is_active() - now in functions.php
 
 // Register activation and deactivation hooks without role removal
 register_activation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'activate' ) );

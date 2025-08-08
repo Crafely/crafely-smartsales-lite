@@ -406,8 +406,8 @@ crafely-smartsales-lite/
 
 ### Backend Architecture
 
-- **Namespace**: `AISMARTSALES\Includes`
-- **Main Class**: `AISMARTSALES\Includes\Core\Plugin`
+- **Namespace**: `CSMSL\Includes`
+- **Main Class**: `CSMSL\Includes\Core\Plugin`
 - **API Handlers**: RESTful API endpoints for all operations
 - **Custom Post Types**:
   - `outlet` - Store locations with custom meta fields

@@ -127,10 +127,10 @@ class POS {
 		set_query_var( 'login_error', $error_message );
 
 		// Include the template directly
-		$template = realpath( SMARTSALES_DIR . 'templates/aipos-login.php' );
+		$template = realpath( CSMSL_DIR . 'templates/aipos-login.php' );
 
 		// Validate template path for security
-		if ( $template && strpos( $template, realpath( SMARTSALES_DIR ) ) === 0 ) {
+		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
 			// Set up WordPress
 			if ( ! defined( 'WP_USE_THEMES' ) ) {
 				define( 'WP_USE_THEMES', false );
