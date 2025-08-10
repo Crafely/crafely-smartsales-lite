@@ -41,9 +41,9 @@ class RolesManager
     ];
 
     private $custom_roles = [
-        'aipos_outlet_manager',
-        'aipos_cashier',
-        'aipos_shop_manager'
+        'csmsl_pos_outlet_manager',
+        'csmsl_pos_cashier',
+        'csmsl_pos_shop_manager'
     ];
 
     public function __construct()
@@ -82,22 +82,22 @@ class RolesManager
 
     private function create_outlet_manager_role()
     {
-        if (!get_role('aipos_outlet_manager')) {
-            add_role('aipos_outlet_manager', 'aiPos Outlet Manager', self::OUTLET_MANAGER_CAPS);
+        if (!get_role('csmsl_pos_outlet_manager')) {
+            add_role('csmsl_pos_outlet_manager', 'Pos Outlet Manager', self::OUTLET_MANAGER_CAPS);
         }
     }
 
     private function create_cashier_role()
     {
-        if (!get_role('aipos_cashier')) {
-            add_role('aipos_cashier', 'aiPos Cashier', self::CASHIER_CAPS);
+        if (!get_role('csmsl_pos_cashier')) {
+            add_role('csmsl_pos_cashier', 'Pos Cashier', self::CASHIER_CAPS);
         }
     }
 
     private function create_shop_manager_role()
     {
-        if (!get_role('aipos_shop_manager')) {
-            add_role('aipos_shop_manager', 'aiPos Shop Manager', self::SHOP_MANAGER_CAPS);
+        if (!get_role('csmsl_pos_shop_manager')) {
+            add_role('csmsl_pos_shop_manager', 'Pos Shop Manager', self::SHOP_MANAGER_CAPS);
         }
     }
 

@@ -118,7 +118,7 @@ class InvoiceApiHandler {
 		$user = wp_get_current_user();
 
 		// Define role-based permissions
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		// Check if user has appropriate role
@@ -129,7 +129,7 @@ class InvoiceApiHandler {
 		// For destructive operations, require higher privileges
 		if (
 			in_array( $request->get_method(), array( 'DELETE', 'PUT' ) ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager' ), $user_roles )
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager' ), $user_roles )
 		) {
 			return false;
 		}

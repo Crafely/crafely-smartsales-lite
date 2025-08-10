@@ -95,7 +95,7 @@ class Admin {
 	public function csmsl_add_admin_menu() {
 		// Check if user has required role
 		$user          = wp_get_current_user();
-		$allowed_roles = array( 'administrator', 'aipos_shop_manager', 'aipos_outlet_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_shop_manager', 'csmsl_pos_outlet_manager' );
 
 		if ( ! array_intersect( $allowed_roles, (array) $user->roles ) ) {
 			return;

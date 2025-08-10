@@ -76,9 +76,9 @@ class Config
             ],
             'pos' => [
                 'roles' => [
-                    'aipos_cashier',
-                    'aipos_outlet_manager',
-                    'aipos_shop_manager'
+                    'csmsl_pos_cashier',
+                    'csmsl_pos_outlet_manager',
+                    'csmsl_pos_shop_manager'
                 ],
                 'urls' => [
                     'base' => '/aipos',

@@ -69,7 +69,7 @@ class DashboardApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
@@ -248,8 +248,8 @@ class DashboardApiHandler {
 				$total_items += $order->get_item_count();
 
 				// Track sales by channel - with proper error handling
-				if ( taxonomy_exists( 'crafsmli_channel' ) ) {
-					$channels = wp_get_post_terms( $order->get_id(), 'crafsmli_channel' );
+				if ( taxonomy_exists( 'csmsl_channel' ) ) {
+					$channels = wp_get_post_terms( $order->get_id(), 'csmsl_channel' );
 					if ( ! is_wp_error( $channels ) && ! empty( $channels ) ) {
 						foreach ( $channels as $channel ) {
 							if ( ! isset( $channels_data[ $channel->name ] ) ) {

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AuthManager {
 
-	private const POS_ROLES = array( 'aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager' );
+	private const POS_ROLES = array( 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' );
 
 	public function __construct() {
 		add_filter( 'woocommerce_prevent_admin_access', array( $this, 'allow_pos_admin_access' ), 20 );
@@ -74,18 +74,18 @@ class AuthManager {
 		}
 
 		// Shop managers always have access (they manage all outlets)
-		if ( in_array( 'aipos_shop_manager', $user->roles ) ) {
+		if ( in_array( 'csmsl_pos_shop_manager', $user->roles ) ) {
 			return true;
 		}
 
 		// Outlet managers need an assigned outlet
-		if ( in_array( 'aipos_outlet_manager', $user->roles ) ) {
+		if ( in_array( 'csmsl_pos_outlet_manager', $user->roles ) ) {
 			$outlet_id = get_user_meta( $user->ID, 'assigned_outlet_id', true );
 			return ! empty( $outlet_id );
 		}
 
 		// Cashiers need both an outlet and a counter
-		if ( in_array( 'aipos_cashier', $user->roles ) ) {
+		if ( in_array( 'csmsl_pos_cashier', $user->roles ) ) {
 			$outlet_id  = get_user_meta( $user->ID, 'assigned_outlet_id', true );
 			$counter_id = get_user_meta( $user->ID, 'assigned_counter_id', true );
 			return ( ! empty( $outlet_id ) && ! empty( $counter_id ) );
@@ -101,9 +101,9 @@ class AuthManager {
 	 * @return string
 	 */
 	private function get_missing_assignment_message( $user ) {
-		if ( in_array( 'aipos_outlet_manager', $user->roles ) ) {
+		if ( in_array( 'csmsl_pos_outlet_manager', $user->roles ) ) {
 			return 'You need to be assigned to an outlet before accessing the POS system.';
-		} elseif ( in_array( 'aipos_cashier', $user->roles ) ) {
+		} elseif ( in_array( 'csmsl_pos_cashier', $user->roles ) ) {
 			$outlet_id  = get_user_meta( $user->ID, 'assigned_outlet_id', true );
 			$counter_id = get_user_meta( $user->ID, 'assigned_counter_id', true );
 
@@ -154,7 +154,7 @@ class AuthManager {
 		$user  = wp_get_current_user();
 		$roles = (array) $user->roles;
 
-		if ( in_array( 'aipos_cashier', $roles ) ) {
+		if ( in_array( 'csmsl_pos_cashier', $roles ) ) {
 			if ( ! wp_doing_ajax() ) {
 				wp_safe_redirect( home_url( '/aipos' ) );
 				exit;
@@ -162,7 +162,7 @@ class AuthManager {
 			return;
 		}
 
-		if ( in_array( 'aipos_shop_manager', $roles ) || in_array( 'aipos_outlet_manager', $roles ) ) {
+		if ( in_array( 'csmsl_pos_shop_manager', $roles ) || in_array( 'csmsl_pos_outlet_manager', $roles ) ) {
 			remove_filter( 'woocommerce_prevent_admin_access', '__return_true' );
 			return;
 		}
@@ -188,7 +188,7 @@ class AuthManager {
 
 		if ( $this->is_pos_manager( $user ) ) {
 			return admin_url();
-		} elseif ( in_array( 'aipos_cashier', (array) $user->roles ) ) {
+		} elseif ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 			return home_url( '/aipos' );
 		}
 
@@ -211,12 +211,12 @@ class AuthManager {
 
 	private function is_pos_manager( $user ) {
 		$roles = (array) $user->roles;
-		return in_array( 'aipos_shop_manager', $roles ) ||
-			in_array( 'aipos_outlet_manager', $roles );
+		return in_array( 'csmsl_pos_shop_manager', $roles ) ||
+			in_array( 'csmsl_pos_outlet_manager', $roles );
 	}
 
 	private function set_login_error( $message ) {
-		set_transient( 'crafsmli_login_error', $message, 30 );
+		set_transient( 'csmsl_login_error', $message, 30 );
 		wp_redirect( home_url( '/aipos/login' ) );
 		exit;
 	}
@@ -224,7 +224,7 @@ class AuthManager {
 	private function handle_successful_login( $user ) {
 		update_user_meta( $user->ID, 'last_login', current_time( 'mysql' ) );
 
-		// Always redirect aiPOS users to the POS system, regardless of role
+		// Always redirect POS users to the POS system, regardless of role
 		if ( $this->verify_pos_access( $user ) ) {
 			wp_safe_redirect( home_url( '/aipos' ) );
 			exit;

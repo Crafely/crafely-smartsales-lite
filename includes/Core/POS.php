@@ -23,7 +23,7 @@ class POS {
 		}
 
 		// Add high-priority handlers for POS URLs
-		add_action( 'parse_request', array( $this, 'handle_aipos_endpoint' ), 1 );
+		add_action( 'parse_request', array( $this, 'handle_csmsl_pos_endpoint' ), 1 );
 
 		// Add this high priority redirect handling
 		add_action( 'template_redirect', array( $this, 'intercept_pos_redirects' ), 1 );
@@ -33,7 +33,7 @@ class POS {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_front_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'login_page_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'dequeue_unnecessary_assets' ), 999 );
-		add_action( 'admin_bar_menu', array( $this, 'add_aipos_toolbar_menu' ), 100 );
+		add_action( 'admin_bar_menu', array( $this, 'add_csmsl_pos_toolbar_menu' ), 100 );
 		add_action( 'init', array( $this, 'initialize_api_handlers' ), 5 );
 		// Remove the force_module_type filter
 		// add_filter('script_loader_tag', [$this, 'force_module_type'], 10, 3);
@@ -52,7 +52,7 @@ class POS {
 	 * Ultra high-priority handler for /aipos endpoints to bypass WordPress routing
 	 * This runs at parse_request which is even earlier than template_redirect
 	 */
-	public function handle_aipos_endpoint( $wp ) {
+	public function handle_csmsl_pos_endpoint( $wp ) {
 		// Get the request path
 		$path = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
@@ -71,7 +71,7 @@ class POS {
 				$user = wp_get_current_user();
 
 				// Simple role check for aipos_cashier
-				if ( in_array( 'aipos_cashier', (array) $user->roles ) ) {
+				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 					wp_redirect( home_url( '/aipos' ) );
 					exit;
 				} else {
@@ -97,7 +97,7 @@ class POS {
 			$user = wp_get_current_user();
 
 			// Simple role check for aipos_cashier
-			if ( ! in_array( 'aipos_cashier', (array) $user->roles ) ) {
+			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 				wp_redirect( home_url( '/aipos/auth/login' ) );
 				exit;
 			}
@@ -118,9 +118,9 @@ class POS {
 		if ( isset( $_GET['login_error'] ) ) {
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$error_message = urldecode( sanitize_text_field( wp_unslash( $_GET['login_error'] ) ) );
-		} elseif ( $error = get_transient( 'crafsmli_login_error' ) ) {
+		} elseif ( $error = get_transient( 'csmsl_login_error' ) ) {
 			$error_message = $error;
-			delete_transient( 'crafsmli_login_error' );
+			delete_transient( 'csmsl_login_error' );
 		}
 
 		// Set up the query var so template can use it
@@ -149,9 +149,9 @@ class POS {
 		// Include the template directly
 		$template = realpath( CSMSL_DIR . 'templates/aipos-template.php' );
 
-		// Validate template path for security
+				// Validate template path for security
 		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
-			// Set up WordPress
+			// Set up WordPress for this specific template only
 			if ( ! defined( 'WP_USE_THEMES' ) ) {
 				define( 'WP_USE_THEMES', false );
 			}
@@ -205,7 +205,7 @@ class POS {
 		}
 
 		// Simple role check - if user has cashier role, redirect to POS
-		if ( in_array( 'aipos_cashier', (array) $user->roles ) ) {
+		if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 			return home_url( '/aipos' );
 		}
 		return $redirect_to;
@@ -221,7 +221,7 @@ class POS {
 			if ( is_user_logged_in() ) {
 				$user = wp_get_current_user();
 				// Simple role check
-				if ( in_array( 'aipos_cashier', (array) $user->roles ) ) {
+				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 					wp_redirect( home_url( '/aipos' ) );
 					exit;
 				}
@@ -233,8 +233,8 @@ class POS {
 			// Load login template
 			$login_template = realpath( CSMSL_DIR . 'templates/aipos-login.php' );
 			if ( $login_template && strpos( $login_template, $template_dir ) === 0 ) {
-				set_query_var( 'login_error', get_transient( 'crafsmli_login_error' ) );
-				delete_transient( 'crafsmli_login_error' );
+				set_query_var( 'login_error', get_transient( 'csmsl_login_error' ) );
+				delete_transient( 'csmsl_login_error' );
 				return $login_template;
 			}
 		}
@@ -247,7 +247,7 @@ class POS {
 				// Store the current URL as the redirect destination after login
 				global $wp;
 				$current_url = home_url( add_query_arg( array(), $wp->request ) );
-				set_transient( 'aipos_redirect_after_login', $current_url, HOUR_IN_SECONDS );
+				set_transient( 'csmsl_pos_redirect_after_login', $current_url, HOUR_IN_SECONDS );
 
 				// Redirect to login
 				wp_safe_redirect( home_url( '/aipos/auth/login' ) );
@@ -256,7 +256,7 @@ class POS {
 
 			// Simple role check
 			$user = wp_get_current_user();
-			if ( ! in_array( 'aipos_cashier', (array) $user->roles ) ) {
+			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 
 				wp_safe_redirect( home_url( '/aipos/auth/login' ) );
 				exit;
@@ -280,7 +280,7 @@ class POS {
 
 		// Simple role check
 		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'aipos_cashier', (array) $user->roles ) ) {
+		if ( ! is_user_logged_in() || ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 			wp_die( esc_html__( 'Unauthorized access', 'crafely-smartsales-lite' ) );
 		}
 
@@ -310,7 +310,7 @@ class POS {
 		add_action( 'wp_head', 'rest_output_link_wp_head' );
 
 		// When you enqueue your main app script, also localize it with authentication data
-		if ( wp_script_is( 'aipos-app', 'registered' ) ) {
+		if ( wp_script_is( 'csmsl-pos-app', 'registered' ) ) {
 			$this->localize_pos_scripts();
 		}
 	}
@@ -427,15 +427,15 @@ class POS {
 		remove_action( 'wp_head', 'wp_oembed_add_host_js' );
 	}
 
-	public function add_aipos_toolbar_menu( $wp_admin_bar ) {
+	public function add_csmsl_pos_toolbar_menu( $wp_admin_bar ) {
 		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
 		$wp_admin_bar->add_node(
 			array(
-				'id'     => 'aipos',
-				'title'  => 'View aiPOS',
+				'id'     => 'csmsl_pos',
+				'title'  => 'View POS',
 				'href'   => home_url( '/aipos' ),
 				'meta'   => array( 'target' => '_blank' ),
 				'parent' => 'top-secondary',
@@ -448,11 +448,11 @@ class POS {
 	 * This helps ensure the /aipos URL works properly
 	 */
 	public function maybe_flush_rewrite_rules() {
-		$flush_rules = get_option( 'crafsmli_flush_rewrite_rules', false );
+		$flush_rules = get_option( 'csmsl_flush_rewrite_rules', false );
 
 		if ( $flush_rules ) {
 			flush_rewrite_rules();
-			update_option( 'crafsmli_flush_rewrite_rules', false );
+			update_option( 'csmsl_flush_rewrite_rules', false );
 		}
 	}
 
@@ -472,7 +472,7 @@ class POS {
 				// If it's a login URL
 				if ( is_user_logged_in() ) {
 					$user = wp_get_current_user();
-					if ( in_array( 'aipos_cashier', (array) $user->roles ) ) {
+					if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 						// User has cashier role, redirect to POS
 						wp_redirect( home_url( '/aipos' ) );
 						exit;
@@ -495,7 +495,7 @@ class POS {
 
 				// Check for cashier role
 				$user = wp_get_current_user();
-				if ( ! in_array( 'aipos_cashier', (array) $user->roles ) ) {
+				if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 					// User doesn't have cashier role, redirect to login
 					wp_redirect( home_url( '/aipos/auth/login' ) );
 					exit;
@@ -510,8 +510,8 @@ class POS {
 	// Add this function to localize scripts with auth data
 	public function localize_pos_scripts() {
 		wp_localize_script(
-			'aipos-app',
-			'aiposData',
+			'csmsl-pos-app',
+			'csmslPosData',
 			array(
 				'root'            => esc_url_raw( rest_url() ),
 				'nonce'           => wp_create_nonce( 'wp_rest' ),

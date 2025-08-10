@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ChannelsApiHandler {
 
-	private $taxonomy = 'crafsmli_channel';
+	private $taxonomy = 'csmsl_channel';
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
@@ -36,7 +36,7 @@ class ChannelsApiHandler {
 					'show_admin_column' => true,
 					'query_var'         => true,
 					'rewrite'           => array(
-						'slug'       => 'crafsmli-channel',
+						'slug'       => 'csmsl-channel',
 						'with_front' => false,
 					),
 				)
@@ -112,7 +112,7 @@ class ChannelsApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {

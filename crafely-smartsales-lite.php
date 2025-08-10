@@ -164,7 +164,7 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 				// If already logged in, check permissions
 				if ( is_user_logged_in() ) {
 					$user      = wp_get_current_user();
-					$pos_roles = array( 'aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager' );
+					$pos_roles = array( 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' );
 
 					// Check if user has any POS roles
 					$has_pos_access = ! empty( array_intersect( $pos_roles, (array) $user->roles ) );
@@ -186,7 +186,7 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 
 				// Check permissions for logged in users
 				$user           = wp_get_current_user();
-				$pos_roles      = array( 'aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager' );
+				$pos_roles      = array( 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' );
 				$has_pos_access = ! empty( array_intersect( $pos_roles, (array) $user->roles ) );
 
 				if ( ! $has_pos_access ) {

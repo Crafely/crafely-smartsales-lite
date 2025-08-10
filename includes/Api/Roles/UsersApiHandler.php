@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 class UsersApiHandler
 {
-    private const VALID_ROLES = ['aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+    private const VALID_ROLES = ['csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
     private const API_NAMESPACE = 'ai-smart-sales/v1';
 
     public function __construct()
@@ -73,7 +73,7 @@ class UsersApiHandler
         }
 
         // For read operations, allow authenticated users with POS roles
-        $allowed_roles = ['administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+        $allowed_roles = ['administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
         $user_roles = (array) $user->roles;
 
         return !empty(array_intersect($allowed_roles, $user_roles));
@@ -167,7 +167,7 @@ class UsersApiHandler
                 ]);
 
                 // For cashiers, only include their assigned counter in the outlet's counter list
-                if (in_array('aipos_cashier', $user->roles)) {
+                if (in_array('csmsl_pos_cashier', $user->roles)) {
                     $assigned_counter_id = get_user_meta($user->ID, 'assigned_counter_id', true);
                     if ($assigned_counter_id) {
                         // Use strict string comparison since WordPress often stores IDs as strings
@@ -215,7 +215,7 @@ class UsersApiHandler
         }
 
         // Add counter information for cashiers with proper meta keys
-        if (in_array('aipos_cashier', $user->roles)) {
+        if (in_array('csmsl_pos_cashier', $user->roles)) {
             $counter_id = get_user_meta($user->ID, 'assigned_counter_id', true);
             if ($counter_id) {
                 $counter = get_post($counter_id);
@@ -355,7 +355,7 @@ class UsersApiHandler
                 'manage_customers'    => true,
                 'manage_discounts'    => true,
             ];
-        } elseif (in_array('aipos_outlet_manager', $user->roles)) {
+        } elseif (in_array('csmsl_pos_outlet_manager', $user->roles)) {
             $permissions = [
                 'manage_users'        => false,
                 'manage_outlets'      => true,
@@ -366,7 +366,7 @@ class UsersApiHandler
                 'manage_customers'    => true,
                 'manage_discounts'    => true,
             ];
-        } elseif (in_array('aipos_cashier', $user->roles)) {
+        } elseif (in_array('csmsl_pos_cashier', $user->roles)) {
             $permissions = [
                 'manage_users'        => false,
                 'manage_outlets'      => false,
@@ -536,7 +536,7 @@ class UsersApiHandler
 
         foreach ($users as $user) {
             // Show users with any of our custom POS roles
-            if (array_intersect(['aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'], $user->roles)) {
+            if (array_intersect(['csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'], $user->roles)) {
                 $response_data[] = $this->format_user_response($user);
             }
         }
@@ -586,7 +586,7 @@ class UsersApiHandler
         }
 
         // Validate role
-        $valid_roles = ['aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+        $valid_roles = ['csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
         if (!in_array($parameters['role'], $valid_roles)) {
             return new WP_REST_Response($this->format_error_response(
                 'Invalid role',
@@ -596,7 +596,7 @@ class UsersApiHandler
         }
 
         // If creating outlet manager, outlet_id is required
-        if ($parameters['role'] === 'aipos_outlet_manager' && empty($parameters['outlet_id'])) {
+        if ($parameters['role'] === 'csmsl_pos_outlet_manager' && empty($parameters['outlet_id'])) {
             return new WP_REST_Response($this->format_error_response(
                 'Missing outlet',
                 ['outlet_id' => 'Outlet ID is required for outlet managers'],
@@ -670,7 +670,7 @@ class UsersApiHandler
         }
 
         // Save counter assignment for cashiers
-        if ($parameters['role'] === 'aipos_cashier' && isset($parameters['counter_id'])) {
+        if ($parameters['role'] === 'csmsl_pos_cashier' && isset($parameters['counter_id'])) {
             update_user_meta($user_id, 'assigned_counter_id', $parameters['counter_id']);
 
             // Also update counter's current user assignment
@@ -728,7 +728,7 @@ class UsersApiHandler
 
         // Validate roles if provided
         if (isset($parameters['roles']) && is_array($parameters['roles'])) {
-            $valid_roles = ['administrator', 'editor', 'author', 'contributor', 'subscriber', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+            $valid_roles = ['administrator', 'editor', 'author', 'contributor', 'subscriber', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
             foreach ($parameters['roles'] as $role) {
                 if (!in_array($role, $valid_roles)) {
                     $errors['roles'] = "The role '{$role}' is not valid.";
@@ -796,7 +796,7 @@ class UsersApiHandler
         }
 
         // Update counter assignment for cashiers
-        if (in_array('aipos_cashier', $user->roles) && isset($parameters['counter_id'])) {
+        if (in_array('csmsl_pos_cashier', $user->roles) && isset($parameters['counter_id'])) {
             // Get previous counter assignment if any
             $previous_counter_id = get_user_meta($user->ID, 'assigned_counter_id', true);
 
@@ -950,7 +950,7 @@ class UsersApiHandler
         return new WP_REST_Response($this->format_success_response(
             'User logged out successfully.',
             [
-                'redirect_url' => home_url('/aipos/auth/login'),
+                    'redirect_url' => home_url('/aipos/auth/login'),
                 'logged_out' => true
             ],
             200

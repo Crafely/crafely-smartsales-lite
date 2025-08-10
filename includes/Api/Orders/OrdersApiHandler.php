@@ -107,7 +107,7 @@ class OrdersApiHandler {
 		$user = wp_get_current_user();
 
 		// Define role-based permissions
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		// Check if user has appropriate role
@@ -118,7 +118,7 @@ class OrdersApiHandler {
 		// For destructive operations, require higher privileges
 		if (
 			in_array( $request->get_method(), array( 'DELETE', 'PUT' ) ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager' ), $user_roles )
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager' ), $user_roles )
 		) {
 			return false;
 		}
@@ -199,7 +199,7 @@ class OrdersApiHandler {
 		$created_by_outlet_id = $order->get_meta( '_created_by_outlet_id' ); // Get the stored outlet ID
 
 		// Check if this is a website order
-		$channels = wp_get_post_terms( $order->get_id(), 'crafsmli_channel', array( 'fields' => 'slugs' ) );
+		$channels = wp_get_post_terms( $order->get_id(), 'csmsl_channel', array( 'fields' => 'slugs' ) );
 
 		// Handle potential WP_Error from wp_get_post_terms
 		if ( is_wp_error( $channels ) ) {
@@ -380,8 +380,8 @@ class OrdersApiHandler {
 		// Check user role and apply restrictions for cashiers
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles ) &&
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
 		// Query args for getting total count
 		$count_args = array(
@@ -483,8 +483,8 @@ class OrdersApiHandler {
 		// Check user role and apply restrictions for cashiers
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles ) &&
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
 		// Query args for getting total count of trash orders
 		$count_args = array(
@@ -590,8 +590,8 @@ class OrdersApiHandler {
 		// Check user role and apply restrictions for cashiers
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles ) &&
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
 		// If user is a cashier, check if they created this order
 		if ( $is_cashier ) {
@@ -840,10 +840,10 @@ class OrdersApiHandler {
 
 		// Assign channel for POS users
 		$current_user = get_userdata( $current_user_id );
-		if ( in_array( 'aipos_outlet_manager', $current_user->roles ) ) {
-			$pos_channel = get_term_by( 'slug', 'pos-system', 'crafsmli_channel' );
+		if ( in_array( 'csmsl_pos_outlet_manager', $current_user->roles ) ) {
+			$pos_channel = get_term_by( 'slug', 'pos-system', 'csmsl_channel' );
 			if ( $pos_channel ) {
-				wp_set_object_terms( $order->get_id(), $pos_channel->term_id, 'crafsmli_channel' );
+				wp_set_object_terms( $order->get_id(), $pos_channel->term_id, 'csmsl_channel' );
 			}
 		}
 
@@ -896,8 +896,8 @@ class OrdersApiHandler {
 		// Check user role and apply restrictions for cashiers
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles ) &&
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
 		// If user is a cashier, check if they created this order
 		if ( $is_cashier ) {

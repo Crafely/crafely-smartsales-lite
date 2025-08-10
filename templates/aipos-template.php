@@ -91,7 +91,7 @@ add_filter(
 	<?php wp_head(); ?>
 </head>
 
-<body class="aipos-app">
+<body class="csmsl-pos-app">
 	<div id="app" data-nonce="<?php echo esc_attr( $template_nonce ); ?>"></div>
 	<?php wp_footer(); ?>
 </body>

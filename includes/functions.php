@@ -112,7 +112,7 @@ if (!function_exists('csmsl_user_has_pos_access')) {
         }
 
         $user = wp_get_current_user();
-        $pos_roles = ['aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager'];
+        $pos_roles = ['csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager'];
 
         return !empty(array_intersect($pos_roles, (array)$user->roles));
     }

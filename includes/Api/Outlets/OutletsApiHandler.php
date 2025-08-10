@@ -69,7 +69,7 @@ class OutletsApiHandler
         $user = wp_get_current_user();
 
         // Check if user has any of our POS roles or is an administrator
-        $allowed_roles = ['administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+        $allowed_roles = ['administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
         $user_roles = (array) $user->roles;
 
         if (!array_intersect($allowed_roles, $user_roles)) {
@@ -466,7 +466,7 @@ class OutletsApiHandler
         $user = get_user_by('id', $user_id);
         if (!$user) return false;
 
-        if (user_can($user, 'aipos_outlet_manager')) {
+        if (user_can($user, 'csmsl_pos_outlet_manager')) {
             $assigned_outlet = get_user_meta($user_id, 'assigned_outlet_id', true);
             return $assigned_outlet == $outlet_id;
         }

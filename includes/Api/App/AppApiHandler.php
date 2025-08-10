@@ -51,7 +51,7 @@ class AppApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
@@ -109,7 +109,7 @@ class AppApiHandler {
 
 		// Get wizard data
 		$wizard_data = get_option(
-			'ai_wizard_data',
+			'csmsl_wizard_data',
 			array(
 				'business_type'    => 'retail',
 				'inventory_range'  => 'small',
@@ -141,7 +141,7 @@ class AppApiHandler {
 			'store_postcode'    => $store_postcode,
 			'store_country'     => $store_country,
 			'currency'          => $currency,
-			'email'             => get_option( 'admin_email', '' ),
+			'email'             => get_option( 'csmsl_admin_email', get_option( 'admin_email', '' ) ),
 			'business_type'     => $wizard_data['business_type'] ?: 'retail',
 			'inventory_range'   => $wizard_data['inventory_range'] ?: 'small',
 			'inventory_size'    => $inventory_size,
@@ -150,7 +150,7 @@ class AppApiHandler {
 			'plugin_name'       => defined( 'CSMSL_NAME' ) ? CSMSL_NAME : 'AI Smart Sales',
 			'plugin_version'    => defined( 'CSMSL_VERSION' ) ? CSMSL_VERSION : '1.0.0',
 			'site_url'          => get_site_url(),
-			'site_name'         => get_bloginfo( 'name' ),
+			'site_name'         => get_option( 'csmsl_site_name', get_bloginfo( 'name' ) ),
 			'wordpress_version' => get_bloginfo( 'version' ),
 			'php_version'       => phpversion(),
 			'active_theme'      => wp_get_theme()->get( 'Name' ),
@@ -198,24 +198,24 @@ class AppApiHandler {
 			}
 		}
 
-		// Update admin email
+		// Update admin email (store in plugin-specific option instead of WordPress core)
 		if ( isset( $params['email'] ) ) {
 			if ( is_email( $params['email'] ) ) {
-				update_option( 'admin_email', $params['email'] );
+				update_option( 'csmsl_admin_email', $params['email'] );
 				$updated_fields['email'] = $params['email'];
 			} else {
 				$errors[] = "Invalid email address: {$params['email']}";
 			}
 		}
 
-		// Update site name
+		// Update site name (store in plugin-specific option instead of WordPress core)
 		if ( isset( $params['site_name'] ) ) {
-			update_option( 'blogname', $params['site_name'] );
+			update_option( 'csmsl_site_name', $params['site_name'] );
 			$updated_fields['site_name'] = $params['site_name'];
 		}
 
 		// Update wizard data
-		$wizard_data   = get_option( 'crafsmli_wizard_data', array() );
+		$wizard_data   = get_option( 'csmsl_wizard_data', array() );
 		$wizard_fields = array( 'business_type', 'inventory_range', 'has_outlet', 'additional_notes' );
 
 		$wizard_updated = false;
@@ -228,7 +228,7 @@ class AppApiHandler {
 		}
 
 		if ( $wizard_updated ) {
-			update_option( 'crafsmli_wizard_data', $wizard_data );
+			update_option( 'csmsl_wizard_data', $wizard_data );
 		}
 
 		// Return response

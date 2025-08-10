@@ -62,7 +62,7 @@ class CategoriesApiHandler {
         }
         
         // For read operations, allow authenticated users with POS roles
-        $allowed_roles = ['administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
+        $allowed_roles = ['administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager'];
         $user_roles = (array) $user->roles;
         
         return !empty(array_intersect($allowed_roles, $user_roles));

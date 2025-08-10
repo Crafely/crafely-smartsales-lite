@@ -61,7 +61,7 @@ abstract class BaseApiHandler
         $user = wp_get_current_user();
 
         // Check if user has any of our POS roles or is an administrator
-        $allowed_roles = ['administrator', 'aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager'];
+        $allowed_roles = ['administrator', 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager'];
         $user_roles = (array) $user->roles;
 
         if (empty(array_intersect($allowed_roles, $user_roles))) {

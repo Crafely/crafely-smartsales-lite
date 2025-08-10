@@ -22,7 +22,7 @@ class PostTypes
             ],
             'public' => false,
             'show_ui' => true,
-            'show_in_menu' => 'aipos',
+            'show_in_menu' => 'pos',
             'supports' => ['title'],
             'capabilities' => [
                 'edit_post' => 'csmsl_manage_outlet',
@@ -43,7 +43,7 @@ class PostTypes
             ],
             'public' => false,
             'show_ui' => true,
-            'show_in_menu' => 'aipos',
+            'show_in_menu' => 'pos',
             'supports' => ['title'],
             'capabilities' => [
                 'edit_post' => 'csmsl_manage_counters',
@@ -64,7 +64,7 @@ class PostTypes
             ],
             'public' => false,
             'show_ui' => true,
-            'show_in_menu' => 'aipos',
+            'show_in_menu' => 'pos',
             'supports' => ['title', 'editor'],
         ]);
 
@@ -76,7 +76,7 @@ class PostTypes
             ],
             'public' => false,
             'show_ui' => true,
-            'show_in_menu' => 'aipos',
+            'show_in_menu' => 'pos',
             'show_in_rest' => true,  // Important for REST API
             'supports' => ['title'],
             'capabilities' => [

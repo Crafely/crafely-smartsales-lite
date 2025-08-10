@@ -9,11 +9,11 @@ class UserRoles
 {
     public function create_outlet_manager_role()
     {
-        if (!get_role('aipos_outlet_manager')) {
+        if (!get_role('csmsl_pos_outlet_manager')) {
             // Log role creation attempt
 
 
-            add_role('aipos_outlet_manager', 'aiPos Outlet Manager', [
+            add_role('csmsl_pos_outlet_manager', 'Pos Outlet Manager', [
                 // WordPress Admin Capabilities
                 'read' => true,
                 'edit_posts' => true,
@@ -54,11 +54,11 @@ class UserRoles
     public function create_cashier_role()
     {
         // Cashiers only get basic POS access
-        if (!get_role('aipos_cashier')) {
+        if (!get_role('csmsl_pos_cashier')) {
 
 
 
-            add_role('aipos_cashier', 'aiPos Cashier', [
+            add_role('csmsl_pos_cashier', 'Pos Cashier', [
                 'read' => true,
                 'upload_files' => true,
                 'manage_orders' => true,
@@ -70,10 +70,10 @@ class UserRoles
 
     public function create_shop_manager_role()
     {
-        if (!get_role('aipos_shop_manager')) {
+        if (!get_role('csmsl_pos_shop_manager')) {
 
 
-            add_role('aipos_shop_manager', 'aiPos Shop Manager', [
+            add_role('csmsl_pos_shop_manager', 'Pos Shop Manager', [
                 // WordPress Admin Capabilities
                 'read' => true,
                 'edit_posts' => true,

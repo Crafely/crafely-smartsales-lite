@@ -23,8 +23,8 @@ if (isset($_POST['login']) && isset($_POST['password']) && isset($_POST['pos_log
       wp_set_current_user($user->ID);
       wp_set_auth_cookie($user->ID, $remember);
 
-      // Simple check if user has aipos_cashier role
-      if (in_array('aipos_cashier', (array)$user->roles)) {
+      // Simple check if user has csmsl_pos_cashier role
+      if (in_array('csmsl_pos_cashier', (array)$user->roles)) {
         // User has cashier role, redirect to POS
         wp_redirect(home_url('/aipos'));
         exit;
@@ -69,10 +69,10 @@ if (empty($error_message)) {
       <div class="text-center">
         <?php
         // Plugin asset image - handle through proper WordPress action
-        $logo_path = CSMSL_DIR . 'assets/images/aipos-black.png';
+        $logo_path = CSMSL_DIR . 'assets/images/csmsl-pos-black.png';
         
         if (file_exists($logo_path)) {
-            $logo_url = CSMSL_URL . 'assets/images/aipos-black.png';
+            $logo_url = CSMSL_URL . 'assets/images/csmsl-pos-black.png';
             // Use action hook approach to avoid direct image output warning
             do_action('csmsl_render_logo', $logo_url);
         }
@@ -83,7 +83,7 @@ if (empty($error_message)) {
             echo '<img class="h-12 w-auto mx-auto" src="' . esc_url($logo_url) . '" alt="' . esc_attr__('POS System Logo', 'crafely-smartsales-lite') . '">';
         }
         ?>
-        <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900">Access aiPOS System</h2>
+        <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900">Access POS System</h2>
         <?php if (!empty($error_message)): ?>
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative mt-4" role="alert">
             <strong class="font-bold">Error!</strong>
