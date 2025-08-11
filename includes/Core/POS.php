@@ -333,7 +333,7 @@ class POS {
 		if ( file_exists( $tailwind_css_path ) ) {
 			$css_version = filemtime( $tailwind_css_path );
 			wp_enqueue_style(
-				'ai-smart-sales-login-tailwind',
+				'csmsl-login-tailwind',
 				CSMSL_URL . 'assets/css/tailwind-output.css',
 				array(),
 				$css_version
@@ -342,7 +342,7 @@ class POS {
 
 			// Fallback to a version number if file doesn't exist
 			wp_enqueue_style(
-				'ai-smart-sales-login-tailwind',
+				'csmsl-login-tailwind',
 				CSMSL_URL . 'assets/css/tailwind-output.css',
 				array(),
 				'1.0.0'
@@ -353,18 +353,18 @@ class POS {
 		if ( file_exists( $frontend_css_path ) ) {
 			$css_version = filemtime( $frontend_css_path );
 			wp_enqueue_style(
-				'ai-smart-sales-login',
+				'csmsl-login',
 				CSMSL_URL . 'assets/css/frontend.css',
-				array( 'ai-smart-sales-login-tailwind' ),
+				array( 'csmsl-login-tailwind' ),
 				$css_version
 			);
 		} else {
 
 			// Fallback to a version number if file doesn't exist
 			wp_enqueue_style(
-				'ai-smart-sales-login',
+				'csmsl-login',
 				CSMSL_URL . 'assets/css/frontend.css',
-				array( 'ai-smart-sales-login-tailwind' ),
+				array( 'csmsl-login-tailwind' ),
 				'1.0.0'
 			);
 		}
@@ -374,7 +374,7 @@ class POS {
 		if ( file_exists( $login_js_path ) ) {
 			$js_version = filemtime( $login_js_path );
 			wp_enqueue_script(
-				'ai-smart-sales-login-js',
+				'csmsl-login-js',
 				CSMSL_URL . 'assets/js/login.js',
 				array(),
 				$js_version,
@@ -387,7 +387,7 @@ class POS {
 		if ( file_exists( $spinner_css_path ) ) {
 			$css_version = filemtime( $spinner_css_path );
 			wp_enqueue_style(
-				'ai-smart-sales-login-spinner',
+				'csmsl-login-spinner',
 				CSMSL_URL . 'assets/css/login-spinner.css',
 				array(),
 				$css_version
