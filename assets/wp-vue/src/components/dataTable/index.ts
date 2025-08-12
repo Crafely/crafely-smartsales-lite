@@ -1,0 +1,6 @@
+export { default as DataTable } from './DataTable.vue'
+export { default as DataTableToolbar } from './DataTableToolbar.vue'
+export { default as DataTableFacetedFilter } from './DataTableFacetedFilter.vue'
+export { default as DataTableViewOptions } from './DataTableViewOptions.vue'
+export { default as DataTableSearch } from './DataTableSearch.vue'
+export { default as DataTableBody } from './DataTableBody.vue'

@@ -54,12 +54,12 @@ class Admin {
 
 
 	private function csmsl_enqueue_vue_assets() {
-		$js_files  = glob( CSMSL_DIR . 'dist/js/main.*.js' );
-		$css_files = glob( CSMSL_DIR . 'dist/css/main.*.css' );
+		$js_files  = glob( CSMSL_DIR . 'assets/dist/js/main.*.js' );
+		$css_files = glob( CSMSL_DIR . 'assets/dist/css/main.*.css' );
 
 		// Enqueue Vue app's main JS
 		if ( ! empty( $js_files ) ) {
-			$js_url = CSMSL_URL . 'dist/js/' . basename( $js_files[0] );
+			$js_url = CSMSL_URL . 'assets/dist/js/' . basename( $js_files[0] );
 			wp_enqueue_script( 'csmsl-main-js', $js_url, array(), filemtime( $js_files[0] ), true );
 
 			// Localize script with WordPress API settings
@@ -68,7 +68,7 @@ class Admin {
 
 		// Enqueue Vue app's main CSS
 		if ( ! empty( $css_files ) ) {
-			$css_url = CSMSL_URL . 'dist/css/' . basename( $css_files[0] );
+			$css_url = CSMSL_URL . 'assets/dist/css/' . basename( $css_files[0] );
 			wp_enqueue_style( 'csmsl-css', $css_url, array(), filemtime( $css_files[0] ) );
 		}
 
@@ -130,7 +130,7 @@ class Admin {
 			'root'         => esc_url_raw( rest_url() ),
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
 			'baseUrl'      => esc_url_raw( CSMSL_URL ),
-			'assetsUrl'    => esc_url_raw( CSMSL_URL . 'dist/free/' ),
+			'assetsUrl'    => esc_url_raw( CSMSL_URL . 'assets/dist/free/' ),
 			'isLoggedIn'   => is_user_logged_in(),
 			'currentUser'  => is_user_logged_in() ? wp_get_current_user()->ID : 0,
 			'userRoles'    => is_user_logged_in() ? wp_get_current_user()->roles : array(),
