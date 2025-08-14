@@ -5,7 +5,7 @@
 *yarn-error.log
 
 # Documentation
-aipos-documentation/
+smart-pos-documentation/
 
 # VS Code SFTP configs (contains credentials)
 .vscode/sftp*.json

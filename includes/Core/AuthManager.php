@@ -156,7 +156,7 @@ class AuthManager {
 
 		if ( in_array( 'csmsl_pos_cashier', $roles ) ) {
 			if ( ! wp_doing_ajax() ) {
-				wp_safe_redirect( home_url( '/aipos' ) );
+				wp_safe_redirect( home_url( '/smart-pos' ) );
 				exit;
 			}
 			return;
@@ -189,7 +189,7 @@ class AuthManager {
 		if ( $this->is_pos_manager( $user ) ) {
 			return admin_url();
 		} elseif ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
-			return home_url( '/aipos' );
+			return home_url( '/smart-pos' );
 		}
 
 		return $redirect;
@@ -217,7 +217,7 @@ class AuthManager {
 
 	private function set_login_error( $message ) {
 		set_transient( 'csmsl_login_error', $message, 30 );
-		wp_redirect( home_url( '/aipos/login' ) );
+		wp_redirect( home_url( '/smart-pos/login' ) );
 		exit;
 	}
 
@@ -226,7 +226,7 @@ class AuthManager {
 
 		// Always redirect POS users to the POS system, regardless of role
 		if ( $this->verify_pos_access( $user ) ) {
-			wp_safe_redirect( home_url( '/aipos' ) );
+			wp_safe_redirect( home_url( '/smart-pos' ) );
 			exit;
 		} elseif ( $this->is_pos_manager( $user ) ) {
 			wp_safe_redirect( admin_url() );

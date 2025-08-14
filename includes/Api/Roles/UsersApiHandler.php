@@ -950,7 +950,7 @@ class UsersApiHandler
         return new WP_REST_Response($this->format_success_response(
             'User logged out successfully.',
             [
-                    'redirect_url' => home_url('/aipos/auth/login'),
+                    'redirect_url' => home_url('/smart-pos/auth/login'),
                 'logged_out' => true
             ],
             200

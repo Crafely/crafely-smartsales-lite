@@ -81,9 +81,9 @@ class Config
                     'csmsl_pos_shop_manager'
                 ],
                 'urls' => [
-                    'base' => '/aipos',
-                    'login' => '/aipos/auth/login',
-                    'logout' => '/aipos/auth/logout'
+                    'base' => '/smart-pos',
+                    'login' => '/smart-pos/auth/login',
+                    'logout' => '/smart-pos/auth/logout'
                 ],
                 'session_timeout' => 3600, // 1 hour
                 'auto_logout' => true

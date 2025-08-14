@@ -15,7 +15,7 @@ Transform your WooCommerce store into a complete Point of Sale system with AI-po
 = 🚀 Key Features =
 
 **💻 Modern POS System**
-* Intuitive touch-friendly POS interface accessible at `/aipos`
+* Intuitive touch-friendly POS interface accessible at `/smart-pos`
 * Real-time inventory synchronization across all channels
 * Support for multiple payment methods (cash, card, bank transfer, PayPal, UPI, cryptocurrency)
 * Professional receipt generation and printing
@@ -107,7 +107,7 @@ Crafely SmartSales Lite provides a comprehensive REST API for developers:
 2. Run the Setup Wizard to configure your business
 3. Create your first outlet and counter
 4. Assign user roles and permissions
-5. Access POS system at `/aipos` URL
+5. Access POS system at `/smart-pos` URL
 
 == Frequently Asked Questions ==
 
@@ -121,7 +121,7 @@ Crafely SmartSales Lite provides a comprehensive REST API for developers:
 
 = How do I access the POS system? =
 
-Navigate to `/aipos` in your browser. You'll need appropriate user roles (aipos_cashier, aipos_outlet_manager, or aipos_shop_manager) to access the POS interface.
+Navigate to `/smart-pos` in your browser. You'll need appropriate user roles (csmsl_pos_cashier, csmsl_pos_outlet_manager, or csmsl_pos_shop_manager) to access the POS interface.
 
 = Can I use this with my existing WooCommerce products? =
 

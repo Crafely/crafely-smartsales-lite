@@ -38,7 +38,7 @@ ai-smart-sales/
 ├── 📁 templates/                # Frontend templates
 ├── 📁 assets/                   # CSS, JS, images
 ├── 📁 vendor/                   # Composer dependencies
-└── 📁 aipos-documentation/      # Project documentation
+└── 📁 smart-pos-documentation/      # Project documentation
 ```
 
 ---
@@ -97,17 +97,17 @@ add_action('plugins_loaded', 'csmsl_init', 15);
 
 The plugin creates three custom user roles:
 
-1. **`aipos_shop_manager`**
+1. **`csmsl_pos_shop_manager`**
    - Full access to all POS features
    - Can manage multiple outlets
    - Admin dashboard access
 
-2. **`aipos_outlet_manager`**
+2. **`csmsl_pos_outlet_manager`**
    - Manages specific outlet
    - Can assign cashiers to counters
    - Limited admin access
 
-3. **`aipos_cashier`**
+3. **`csmsl_pos_cashier`**
    - Frontend POS access only
    - Assigned to specific counter
    - No admin access
@@ -129,9 +129,9 @@ User Login → Role Check → Outlet/Counter Assignment Check → Redirect to Ap
 
 ### **POS URL Structure**
 
-- `/aipos` - Main POS interface (requires cashier role)
-- `/aipos/login` - POS login page
-- `/aipos/auth/login` - Alternative login URL
+- `/smart-pos` - Main POS interface (requires cashier role)
+- `/smart-pos/login` - POS login page
+- `/smart-pos/auth/login` - Alternative login URL
 
 ### **POS System Flow**
 
@@ -148,14 +148,14 @@ URL Request → Early URL Handler → Authentication Check → Template Loading 
 - Enqueues frontend assets
 
 **2. Templates**
-- `templates/aipos-login.php` - POS login interface
-- `templates/aipos-template.php` - Main POS application
+- `templates/smart-pos-login.php` - POS login interface
+- `templates/smart-pos-template.php` - Main POS application
 
 **3. URL Handling**
 ```php
 // Early URL interception
 function csmsl_early_url_handler() {
-    // Detects /aipos URLs and prepares routing
+    // Detects /smart-pos URLs and prepares routing
 }
 
 // Direct access handler
@@ -251,8 +251,8 @@ Frontend POS → OrdersApiHandler → WooCommerce Order Creation → Inventory U
 
 ### **POS Interface**
 
-**Location**: Frontend `/aipos` URL
-**Entry Point**: `includes/Core/POS.php` → `templates/aipos-template.php`
+**Location**: Frontend `/smart-pos` URL
+**Entry Point**: `includes/Core/POS.php` → `templates/smart-pos-template.php`
 **Technology**: Vue.js SPA with modern UI
 
 **Key Features**:
@@ -392,7 +392,7 @@ Config::set('pos.session_timeout', 3600);
 
 ### **3. Login Issues**
 **Check**: Role assignments, outlet/counter assignments
-**Files**: `AuthManager.php`, `aipos-login.php`
+**Files**: `AuthManager.php`, `smart-pos-login.php`
 
 ### **4. Frontend Not Loading**
 **Check**: Asset enqueuing, script dependencies, build files

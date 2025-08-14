@@ -49,7 +49,7 @@ class POS {
 	}
 
 	/**
-	 * Ultra high-priority handler for /aipos endpoints to bypass WordPress routing
+	 * Ultra high-priority handler for /smart-pos endpoints to bypass WordPress routing
 	 * This runs at parse_request which is even earlier than template_redirect
 	 */
 	public function handle_csmsl_pos_endpoint( $wp ) {
@@ -59,20 +59,20 @@ class POS {
 		// Normalize the path
 		$path = rtrim( $path, '/' );
 
-		// Only process /aipos paths
-		if ( $path !== '/aipos' && strpos( $path, '/aipos/' ) !== 0 ) {
+		// Only process /smart-pos paths
+		if ( $path !== '/smart-pos' && strpos( $path, '/smart-pos/' ) !== 0 ) {
 			return;
 		}
 
 		// Handle login endpoints
-		if ( $path === '/aipos/login' || $path === '/aipos/auth/login' ) {
+		if ( $path === '/smart-pos/login' || $path === '/smart-pos/auth/login' ) {
 			// If already logged in with POS access, go to main POS
 			if ( is_user_logged_in() ) {
 				$user = wp_get_current_user();
 
-				// Simple role check for aipos_cashier
+				// Simple role check for csmsl_pos_cashier
 				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
-					wp_redirect( home_url( '/aipos' ) );
+					wp_redirect( home_url( '/smart-pos' ) );
 					exit;
 				} else {
 					// No cashier role, redirect to admin
@@ -87,18 +87,18 @@ class POS {
 		}
 
 		// Handle main POS endpoint
-		if ( $path === '/aipos' ) {
+		if ( $path === '/smart-pos' ) {
 			// Check if logged in
 			if ( ! is_user_logged_in() ) {
-				wp_redirect( home_url( '/aipos/auth/login' ) );
+				wp_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
 			$user = wp_get_current_user();
 
-			// Simple role check for aipos_cashier
+			// Simple role check for csmsl_pos_cashier
 			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
-				wp_redirect( home_url( '/aipos/auth/login' ) );
+				wp_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
@@ -127,7 +127,7 @@ class POS {
 		set_query_var( 'login_error', $error_message );
 
 		// Include the template directly
-		$template = realpath( CSMSL_DIR . 'templates/aipos-login.php' );
+		$template = realpath( CSMSL_DIR . 'templates/smart-pos-login.php' );
 
 		// Validate template path for security
 		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
@@ -147,7 +147,7 @@ class POS {
 	 */
 	private function render_pos_template() {
 		// Include the template directly
-		$template = realpath( CSMSL_DIR . 'templates/aipos-template.php' );
+		$template = realpath( CSMSL_DIR . 'templates/smart-pos-template.php' );
 
 				// Validate template path for security
 		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
@@ -170,13 +170,13 @@ class POS {
 
 	public function add_pos_rewrite_rules() {
 		// Main POS login page route
-		add_rewrite_rule( '^aipos/login/?$', 'index.php?pos_login_page=1', 'top' );
+		add_rewrite_rule( '^smart-pos/login/?$', 'index.php?pos_login_page=1', 'top' );
 
 		// Handle SPA routes for auth flow
-		add_rewrite_rule( '^aipos/auth/login/?$', 'index.php?pos_login_page=1', 'top' );
+		add_rewrite_rule( '^smart-pos/auth/login/?$', 'index.php?pos_login_page=1', 'top' );
 
-		// Main POS route - this should catch all other aipos routes for SPA
-		add_rewrite_rule( '^aipos(/.*)?/?$', 'index.php?pos_page=1', 'top' );
+		// Main POS route - this should catch all other smart-pos routes for SPA
+		add_rewrite_rule( '^smart-pos(/.*)?/?$', 'index.php?pos_page=1', 'top' );
 
 		add_filter(
 			'query_vars',
@@ -206,7 +206,7 @@ class POS {
 
 		// Simple role check - if user has cashier role, redirect to POS
 		if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
-			return home_url( '/aipos' );
+			return home_url( '/smart-pos' );
 		}
 		return $redirect_to;
 	}
@@ -222,7 +222,7 @@ class POS {
 				$user = wp_get_current_user();
 				// Simple role check
 				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
-					wp_redirect( home_url( '/aipos' ) );
+					wp_redirect( home_url( '/smart-pos' ) );
 					exit;
 				}
 				// Otherwise, redirect to admin
@@ -231,7 +231,7 @@ class POS {
 			}
 
 			// Load login template
-			$login_template = realpath( CSMSL_DIR . 'templates/aipos-login.php' );
+			$login_template = realpath( CSMSL_DIR . 'templates/smart-pos-login.php' );
 			if ( $login_template && strpos( $login_template, $template_dir ) === 0 ) {
 				set_query_var( 'login_error', get_transient( 'csmsl_login_error' ) );
 				delete_transient( 'csmsl_login_error' );
@@ -241,7 +241,7 @@ class POS {
 		// Handle main POS page and all POS routes
 		elseif ( get_query_var( 'pos_page' ) ) {
 
-			// Handle the root /aipos URL - redirect to login if not authenticated
+			// Handle the root /smart-pos URL - redirect to login if not authenticated
 			if ( ! is_user_logged_in() ) {
 
 				// Store the current URL as the redirect destination after login
@@ -250,7 +250,7 @@ class POS {
 				set_transient( 'csmsl_pos_redirect_after_login', $current_url, HOUR_IN_SECONDS );
 
 				// Redirect to login
-				wp_safe_redirect( home_url( '/aipos/auth/login' ) );
+				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
@@ -258,13 +258,13 @@ class POS {
 			$user = wp_get_current_user();
 			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 
-				wp_safe_redirect( home_url( '/aipos/auth/login' ) );
+				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
 			// User is authenticated, load the main POS template
 
-			$template_path = realpath( CSMSL_DIR . 'templates/aipos-template.php' );
+			$template_path = realpath( CSMSL_DIR . 'templates/smart-pos-template.php' );
 			if ( $template_path && strpos( $template_path, $template_dir ) === 0 ) {
 				return $template_path;
 			}
@@ -319,8 +319,8 @@ class POS {
 		// Check if we're on the login page using multiple detection methods
 		$is_login_page = get_query_var( 'pos_login_page' ) ||
 			( isset( $_SERVER['REQUEST_URI'] ) &&
-				( strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/aipos/login' ) !== false ||
-					strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/aipos/auth/login' ) !== false ) );
+				( strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/smart-pos/login' ) !== false ||
+					strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/smart-pos/auth/login' ) !== false ) );
 
 		if ( ! $is_login_page ) {
 			return;
@@ -436,7 +436,7 @@ class POS {
 			array(
 				'id'     => 'csmsl_pos',
 				'title'  => 'View POS',
-				'href'   => home_url( '/aipos' ),
+				'href'   => home_url( '/smart-pos' ),
 				'meta'   => array( 'target' => '_blank' ),
 				'parent' => 'top-secondary',
 			)
@@ -445,7 +445,7 @@ class POS {
 
 	/**
 	 * Check and flush rewrite rules if necessary
-	 * This helps ensure the /aipos URL works properly
+	 * This helps ensure the /smart-pos URL works properly
 	 */
 	public function maybe_flush_rewrite_rules() {
 		$flush_rules = get_option( 'csmsl_flush_rewrite_rules', false );
@@ -465,16 +465,16 @@ class POS {
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 		// Check if this is a POS-related URL
-		if ( strpos( $request_uri, '/aipos' ) === 0 ) {
+		if ( strpos( $request_uri, '/smart-pos' ) === 0 ) {
 
 			// Handle different POS URL patterns
-			if ( strpos( $request_uri, '/aipos/login' ) === 0 || strpos( $request_uri, '/aipos/auth/login' ) === 0 ) {
+			if ( strpos( $request_uri, '/smart-pos/login' ) === 0 || strpos( $request_uri, '/smart-pos/auth/login' ) === 0 ) {
 				// If it's a login URL
 				if ( is_user_logged_in() ) {
 					$user = wp_get_current_user();
 					if ( in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 						// User has cashier role, redirect to POS
-						wp_redirect( home_url( '/aipos' ) );
+						wp_redirect( home_url( '/smart-pos' ) );
 						exit;
 					} else {
 						// User is logged in but has no cashier role, redirect to admin
@@ -485,11 +485,11 @@ class POS {
 
 				// Otherwise, let the template loading handle showing the login page
 				return;
-			} elseif ( strpos( $request_uri, '/aipos' ) === 0 ) {
+			} elseif ( strpos( $request_uri, '/smart-pos' ) === 0 ) {
 				// Main POS URL
 				if ( ! is_user_logged_in() ) {
 					// User is not logged in, redirect to login
-					wp_redirect( home_url( '/aipos/auth/login' ) );
+					wp_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 
@@ -497,7 +497,7 @@ class POS {
 				$user = wp_get_current_user();
 				if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles ) ) {
 					// User doesn't have cashier role, redirect to login
-					wp_redirect( home_url( '/aipos/auth/login' ) );
+					wp_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 

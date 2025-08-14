@@ -129,13 +129,13 @@ function csmsl_early_url_handler() {
 	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 	// Only process POS URLs
-	if ( strpos( $request_uri, '/aipos' ) === false ) {
+	if ( strpos( $request_uri, '/smart-pos' ) === false ) {
 		return;
 	}
 
-	// Make sure we capture all aipos URL variants (with or without trailing slash)
-	$is_aipos_login = ( strpos( $request_uri, '/aipos/login' ) === 0 || strpos( $request_uri, '/aipos/auth/login' ) === 0 );
-	$is_aipos_root  = ( $request_uri === '/aipos' || $request_uri === '/aipos/' );
+	// Make sure we capture all smart-pos URL variants (with or without trailing slash)
+	$is_smart_pos_login = ( strpos( $request_uri, '/smart-pos/login' ) === 0 || strpos( $request_uri, '/smart-pos/auth/login' ) === 0 );
+	$is_smart_pos_root  = ( $request_uri === '/smart-pos' || $request_uri === '/smart-pos/' );
 
 	// Let WordPress handle the rest of the loading process
 	// This ensures the URL is properly parsed and template_include will work
@@ -144,23 +144,23 @@ function csmsl_early_url_handler() {
 // Run this very early in WordPress initialization
 add_action( 'plugins_loaded', 'csmsl_early_url_handler', 1 );
 
-// Add direct access check to handle direct aipos URLs BEFORE WordPress routing
+// Add direct access check to handle direct smart-pos URLs BEFORE WordPress routing
 if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 	function CSMSL_direct_access_handler() {
-		// Only check non-admin requests with aipos in the URL
+		// Only check non-admin requests with smart-pos in the URL
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
-		if ( is_admin() || $request_uri === '' || strpos( $request_uri, '/aipos' ) === false ) {
+		if ( is_admin() || $request_uri === '' || strpos( $request_uri, '/smart-pos' ) === false ) {
 			return;
 		}
 
-		// Process /aipos URLs
+		// Process /smart-pos URLs
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 		// Make sure the plugin has initialized
-		if ( defined( 'CSMSL_DIR' ) && file_exists( CSMSL_DIR . 'templates/aipos-login.php' ) ) {
+		if ( defined( 'CSMSL_DIR' ) && file_exists( CSMSL_DIR . 'templates/smart-pos-login.php' ) ) {
 			// Check if it's a login URL
-			if ( strpos( $request_uri, '/aipos/login' ) === 0 || strpos( $request_uri, '/aipos/auth/login' ) === 0 ) {
+			if ( strpos( $request_uri, '/smart-pos/login' ) === 0 || strpos( $request_uri, '/smart-pos/auth/login' ) === 0 ) {
 				// If already logged in, check permissions
 				if ( is_user_logged_in() ) {
 					$user      = wp_get_current_user();
@@ -170,17 +170,17 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 					$has_pos_access = ! empty( array_intersect( $pos_roles, (array) $user->roles ) );
 
 					if ( $has_pos_access ) {
-						wp_redirect( home_url( '/aipos' ) );
+						wp_redirect( home_url( '/smart-pos' ) );
 						exit;
 					}
 				}
 				// Don't redirect - let the regular flow show login page
 				return;
-			} elseif ( $request_uri === '/aipos' || $request_uri === '/aipos/' ) {
+			} elseif ( $request_uri === '/smart-pos' || $request_uri === '/smart-pos/' ) {
 				// For main POS URL, check if logged in
 				if ( ! is_user_logged_in() ) {
 					// Not logged in, redirect to login
-					wp_redirect( home_url( '/aipos/auth/login' ) );
+					wp_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 
@@ -191,7 +191,7 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 
 				if ( ! $has_pos_access ) {
 					// No access, redirect to login
-					wp_redirect( home_url( '/aipos/auth/login' ) );
+					wp_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 
