@@ -8,7 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Admin {
 
-
 	public function __construct() {
 		if ( ! defined( 'CSMSL_DIR' ) || ! defined( 'CSMSL_URL' ) ) {
 			wp_die( esc_html__( 'CSMSL_DIR or CSMSL_URL is not defined.', 'crafely-smartsales-lite' ) );
@@ -52,7 +51,6 @@ class Admin {
 		}
 	}
 
-
 	private function csmsl_enqueue_vue_assets() {
 		$js_files  = glob( CSMSL_DIR . 'assets/dist/js/main.*.js' );
 		$css_files = glob( CSMSL_DIR . 'assets/dist/css/main.*.css' );
@@ -87,7 +85,6 @@ class Admin {
 			filemtime( CSMSL_DIR . 'assets/quill-editor/quill.snow.css' )
 		);
 	}
-
 
 	/**
 	 * Add the admin menu for the plugin.

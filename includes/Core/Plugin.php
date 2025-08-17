@@ -153,21 +153,21 @@ class Plugin
     {
         // Create default outlet if it doesn't exist
         $default_outlet = get_posts([
-            'post_type' => 'outlet',
+            'post_type'      => 'csmsl_outlet',
             'posts_per_page' => 1,
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-            'meta_query' => [
+            'meta_query'     => [
                 [
-                    'key' => 'is_default',
-                    'value' => true
-                ]
-            ]
+                    'key'   => 'is_default',
+                    'value' => true,
+                ],
+            ],
         ]);
 
         if (empty($default_outlet)) {
             $outlet_id = wp_insert_post([
-                'post_type' => 'outlet',
-                'post_title' => 'Main Outlet',
+                'post_type'   => 'csmsl_outlet',
+                'post_title'  => 'Main Outlet',
                 'post_status' => 'publish',
             ]);
 
@@ -180,8 +180,8 @@ class Plugin
 
             // Create default counter for the outlet
             $counter_id = wp_insert_post([
-                'post_type' => 'counter',
-                'post_title' => 'Main Counter',
+                'post_type'   => 'csmsl_counter',
+                'post_title'  => 'Main Counter',
                 'post_status' => 'publish',
             ]);
 

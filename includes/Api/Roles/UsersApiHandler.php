@@ -154,16 +154,16 @@ class UsersApiHandler
             if ($outlet) {
                 // Get counters for this outlet
                 $counters = get_posts([
-                    'post_type' => 'counter',
+                    'post_type'      => 'csmsl_counter',
                     'posts_per_page' => -1,
                     // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-                    'meta_query' => [
+                    'meta_query'     => [
                         [
-                            'key' => 'counter_outlet_id',
-                            'value' => $outlet_id,
-                            'compare' => '='
-                        ]
-                    ]
+                            'key'     => 'counter_outlet_id',
+                            'value'   => $outlet_id,
+                            'compare' => '=',
+                        ],
+                    ],
                 ]);
 
                 // For cashiers, only include their assigned counter in the outlet's counter list

@@ -1,25 +1,25 @@
 <?php
 /**
- * AI Smart Sales POS Template
+ * Crafely SmartSales Lite POS Login Template
  *
- * This template is used for the AI Smart Sales POS system.
+ * This template is used for the Crafely SmartSales Lite POS system.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
-// Set security headers
+// Set security headers.
 header( 'X-Content-Type-Options: nosniff' );
 header( 'X-Frame-Options: SAMEORIGIN' );
 header( 'X-XSS-Protection: 1; mode=block' );
 header( 'Referrer-Policy: strict-origin-when-cross-origin' );
 
-// Prevent WordPress from adding any automatic paragraphs or line breaks
+// Prevent WordPress from adding any automatic paragraphs or line breaks.
 remove_filter( 'the_content', 'wpautop' );
 remove_filter( 'the_excerpt', 'wpautop' );
 
-// Create a specific nonce for this template
+// Create a specific nonce for this template.
 $template_nonce = wp_create_nonce( 'csmsl_template_nonce' );
 $rest_nonce     = wp_create_nonce( 'wp_rest' );
 
@@ -35,15 +35,15 @@ $api_data = array(
 	'apiNamespace'  => 'csmsl/v1',
 );
 
-// Validate and sanitize CSS file path
+// Validate and sanitize CSS file path.
 $css_files = glob( CSMSL_DIR . 'dist/css/main.*.css' );
 $css_file  = ! empty( $css_files ) ? esc_url( CSMSL_URL . 'dist/css/' . basename( $css_files[0] ) ) : '';
 
-// Validate and sanitize JS file path
+// Validate and sanitize JS file path.
 $js_files = glob( CSMSL_DIR . 'dist/js/main.*.js' );
 $js_file  = ! empty( $js_files ) ? esc_url( CSMSL_URL . 'dist/js/' . basename( $js_files[0] ) ) : '';
 
-// Enqueue styles and scripts properly
+// Enqueue styles and scripts properly.
 if ( $css_file ) {
 	$css_version = ! empty( $css_files ) ? filemtime( $css_files[0] ) : null;
 	wp_enqueue_style( 'csmsl-main-style', $css_file, array(), $css_version );
@@ -52,21 +52,21 @@ if ( $css_file ) {
 if ( $js_file ) {
 	$js_version = ! empty( $js_files ) ? filemtime( $js_files[0] ) : null;
 	wp_register_script( 'csmsl-main-script', $js_file, array(), $js_version, true );
-	
-	// Add async attribute for better performance (WordPress 6.3+)
+
+	// Add async attribute for better performance (WordPress 6.3+).
 	wp_script_add_data( 'csmsl-main-script', 'async', true );
-	
-	// Properly localize the script with WordPress API settings using wp_json_encode
+
+	// Properly localize the script with WordPress API settings using wp_json_encode.
 	wp_localize_script(
 		'csmsl-main-script',
 		'wpApiSettings',
 		$api_data
 	);
-	
+
 	wp_enqueue_script( 'csmsl-main-script' );
 }
 
-// Add the module type via script_loader_tag filter
+// Add the module type via script_loader_tag filter.
 add_filter(
 	'script_loader_tag',
 	function ( $tag, $handle ) {
