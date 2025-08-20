@@ -1,8 +1,10 @@
 <?php
+// phpcs:ignoreFile
+
 /**
  * Exception classes for AI Smart Sales
  *
- * @package AI Smart Sales
+ * @package CrafelySmartSalesLite
  */
 
 namespace CSMSL\Includes\Exceptions;
@@ -17,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Base plugin exception
  */
 class PluginException extends Exception {
+
 
 	/**
 	 * Error code
@@ -126,6 +129,7 @@ class ApiException extends PluginException {
  */
 class ValidationException extends PluginException {
 
+
 	/**
 	 * Validation errors
 	 *
@@ -159,6 +163,7 @@ class ValidationException extends PluginException {
  */
 class DatabaseException extends PluginException {
 
+
 	/**
 	 * Constructor
 	 *
@@ -174,6 +179,7 @@ class DatabaseException extends PluginException {
  * Authentication Exception
  */
 class AuthenticationException extends PluginException {
+
 
 	/**
 	 * Constructor
@@ -191,6 +197,7 @@ class AuthenticationException extends PluginException {
  */
 class AuthorizationException extends PluginException {
 
+
 	/**
 	 * Constructor
 	 *
@@ -206,6 +213,7 @@ class AuthorizationException extends PluginException {
  * Configuration Exception
  */
 class ConfigurationException extends PluginException {
+
 
 	/**
 	 * Constructor

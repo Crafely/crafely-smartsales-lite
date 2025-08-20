@@ -159,7 +159,7 @@ function csmsl_early_url_handler() {
 }
 
 // Direct access handler
-function CSMSL_DIRect_access_handler() {
+function csmsl_direct_access_handler() {
     // Handles authentication and redirects
 }
 ```

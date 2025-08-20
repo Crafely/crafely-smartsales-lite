@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AssistancesDB {
 
+
 	public static function create_table() {
 		global $wpdb;
 

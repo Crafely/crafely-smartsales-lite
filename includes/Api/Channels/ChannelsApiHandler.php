@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ChannelsApiHandler {
 
+
 	private $taxonomy = 'csmsl_channel';
 
 	public function __construct() {
@@ -103,15 +104,15 @@ class ChannelsApiHandler {
 	 * Check permissions
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -139,13 +140,13 @@ class ChannelsApiHandler {
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -244,14 +245,14 @@ class ChannelsApiHandler {
 	 */
 	public function create_channel( WP_REST_Request $request ) {
 		$data   = $request->get_json_params();
-		$errors = array(); // Array to collect all validation errors
+		$errors = array();
 
-		// Validate required fields
+		// Validate required fields.
 		if ( empty( $data['name'] ) ) {
 			$errors['name'] = 'Channel name is required.';
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -304,9 +305,9 @@ class ChannelsApiHandler {
 	public function update_channel( WP_REST_Request $request ) {
 		$channel_id = $request['id'];
 		$data       = $request->get_json_params();
-		$errors     = array(); // Array to collect all validation errors
+		$errors     = array();
 
-		// Validate channel ID
+		// Validate channel ID.
 		if ( ! term_exists( $channel_id, $this->taxonomy ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -367,12 +368,12 @@ class ChannelsApiHandler {
 	 * Delete a channel
 	 */
 	public function delete_channel( WP_REST_Request $request ) {
-		$channel_id = intval( $request['id'] ); // Ensure ID is numeric
+		$channel_id = intval( $request['id'] );
 
-		// Fetch the term to ensure it exists and belongs to the correct taxonomy
+		// Fetch the term to ensure it exists and belongs to the correct taxonomy.
 		$term = get_term( $channel_id, $this->taxonomy );
 
-		// Check if the term exists and is valid
+		// Check if the term exists and is valid.
 		if ( ! $term || is_wp_error( $term ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -387,7 +388,7 @@ class ChannelsApiHandler {
 			);
 		}
 
-		// Attempt to delete the term
+		// Attempt to delete the term.
 		$deleted = wp_delete_term( $channel_id, $this->taxonomy );
 
 		if ( is_wp_error( $deleted ) ) {
@@ -404,7 +405,7 @@ class ChannelsApiHandler {
 			);
 		}
 
-		// Check if the deletion returned valid data
+		// Check if the deletion returned valid data.
 		if ( ! $deleted ) {
 			return new WP_REST_Response(
 				$this->format_error_response(

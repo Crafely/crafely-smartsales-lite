@@ -12,13 +12,15 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: crafely-smartsales-lite
  * Domain Path: /languages
+ *
+ * @package CrafelySmartSalesLite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Declare HPOS compatibility
+// Declare HPOS compatibility.
 add_action(
 	'before_woocommerce_init',
 	function () {
@@ -28,25 +30,25 @@ add_action(
 	}
 );
 
-// Define constants
-// get plugin version from the plugin header
+// Define constants.
+// get plugin version from the plugin header.
 $plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
 define( 'CSMSL_VERSION', $plugin_data['Version'] );
 define( 'CSMSL_NAME', 'Crafely SmartSales Lite' );
 define( 'CSMSL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CSMSL_URL', plugin_dir_url( __FILE__ ) );
 define( 'CSMSL_PLUGIN_FILE', __FILE__ );
-define( 'CSMSL_DEV_MODE', false ); // Set to false in production
+define( 'CSMSL_DEV_MODE', false );
 
-// Include essential files
+// Include essential files.
 require_once CSMSL_DIR . 'includes/functions.php';
 
-// Autoload dependencies
+// Autoload dependencies.
 if ( file_exists( CSMSL_DIR . 'vendor/autoload.php' ) ) {
 	require_once CSMSL_DIR . 'vendor/autoload.php';
 }
 
-// Include essential core files and API handlers (fallback for when autoloader is not available)
+// Include essential core files and API handlers (fallback for when autoloader is not available).
 $core_includes = array(
 	'includes/Core/Plugin.php',
 	'includes/Core/Admin.php',
@@ -106,7 +108,7 @@ function csmsl_init() {
 						esc_html(
 							sprintf(
 								// translators: %s is the error message returned during plugin initialization failure.
-								__( 'AI Smart Sales failed to initialize: %s', 'crafely-smartsales-lite' ),
+								__( 'Crafely Smartsales Lite failed to initialize: %s', 'crafely-smartsales-lite' ),
 								$e->getMessage()
 							)
 						)
@@ -129,27 +131,27 @@ function csmsl_early_url_handler() {
 	// Get request URI.
 	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
-	// Only process POS URLs
+	// Only process POS URLs.
 	if ( strpos( $request_uri, '/smart-pos' ) === false ) {
 		return;
 	}
 
 	// Make sure we capture all smart-pos URL variants (with or without trailing slash).
 	$is_smart_pos_login = ( strpos( $request_uri, '/smart-pos/login' ) === 0 || strpos( $request_uri, '/smart-pos/auth/login' ) === 0 );
-	$is_smart_pos_root  = ( $request_uri === '/smart-pos' || $request_uri === '/smart-pos/' );
+	$is_smart_pos_root  = ( '/smart-pos' === $request_uri || '/smart-pos/' === $request_uri );
 }
 
 // Run this very early in WordPress initialization.
 add_action( 'plugins_loaded', 'csmsl_early_url_handler', 1 );
 
 // Add direct access check to handle direct smart-pos URLs BEFORE WordPress routing.
-if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
+if ( ! function_exists( 'csmsl_direct_access_handler' ) ) {
 
-	function CSMSL_direct_access_handler() {
+	function csmsl_direct_access_handler() {
 		// Only check non-admin requests with smart-pos in the URL
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
-		if ( is_admin() || $request_uri === '' || strpos( $request_uri, '/smart-pos' ) === false ) {
+		if ( is_admin() || '' === $request_uri || false === strpos( $request_uri, '/smart-pos' ) ) {
 			return;
 		}
 
@@ -175,7 +177,7 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 				}
 				// Don't redirect - let the regular flow show login page.
 				return;
-			} elseif ( $request_uri === '/smart-pos' || $request_uri === '/smart-pos/' ) {
+			} elseif ( '/smart-pos' === $request_uri || '/smart-pos/' === $request_uri ) {
 				// For main POS URL, check if logged in.
 				if ( ! is_user_logged_in() ) {
 					// Not logged in, redirect to login.
@@ -202,11 +204,11 @@ if ( ! function_exists( 'CSMSL_direct_access_handler' ) ) {
 }
 
 // Run direct access handler before WordPress processes the request.
-add_action( 'init', 'CSMSL_direct_access_handler', 5 );
+add_action( 'init', 'csmsl_direct_access_handler', 5 );
 
 // Register activation and deactivation hooks without role removal.
-register_activation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'CSMSL\\Includes\\Core\\Activation', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'CSMSL\\Includes\\Core\\Activation', 'deactivate' ) );
 
 // Add activation hook to create default roles and capabilities.
 function csmsl_activate() {
@@ -243,7 +245,7 @@ function csmsl_fix_rewrite_rules() {
 
 add_action( 'init', 'csmsl_fix_rewrite_rules', 20 );
 
-// Remove deactivation hook or modify it to preserve roles
+// Remove deactivation hook or modify it to preserve roles.
 register_activation_hook( __FILE__, 'csmsl_activate' );
-// Do not remove roles on deactivation
-register_deactivation_hook( __FILE__, array( 'CSMSL\Includes\Core\Activation', 'deactivate' ) );
+// Do not remove roles on deactivation.
+register_deactivation_hook( __FILE__, array( 'CSMSL\\Includes\\Core\\Activation', 'deactivate' ) );

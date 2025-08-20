@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 class RolesManager {
 
+
 	// Define role capabilities as constants
 	private const OUTLET_MANAGER_CAPS = array(
 		'read'               => true,
@@ -118,7 +119,7 @@ class RolesManager {
 		update_option(
 			'csmsl_backed_up_roles',
 			array(
-				'timestamp' => current_time( 'timestamp' ),
+				'timestamp' => current_datetime()->getTimestamp(),
 				'roles'     => $users_with_custom_roles,
 			)
 		);

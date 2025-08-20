@@ -3,6 +3,7 @@
     "description": "AI-powered smart sales plugin for WooCommerce: automate inventory, orders, and insights with seamless integration and scalability.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
+    "version": "1.0.0",
     "autoload": {
         "psr-4": {
             "CSMSL\\Includes\\": "includes/",
@@ -28,24 +29,26 @@
         "php": ">=7.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/php-compatibility": "^9.3",
-        "wp-coding-standards/wpcs": "^3.0",
-        "phpcsstandards/phpcsutils": "^1.0",
-        "phpcsstandards/phpcsextra": "^1.0"
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpcsstandards/phpcsextra": "^1.4",
+        "phpcsstandards/phpcsutils": "^1.1",
+        "squizlabs/php_codesniffer": "^3.13.0",
+        "wp-coding-standards/wpcs": "^3.2"
     },
     "scripts": {
-        "test": "phpunit",
-        "lint": "vendor/bin/phpcs --standard=phpcs.xml --report=summary",
-        "lint:fix": "vendor/bin/phpcbf --standard=phpcs.xml",
-        "lint:full": "vendor/bin/phpcs --standard=phpcs.xml --report=full",
-        "phpcs": "vendor/bin/phpcs --standard=phpcs.xml --report=summary",
-        "phpcbf": "vendor/bin/phpcbf --standard=phpcs.xml"
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "lint": "phpcs --standard=phpcs.xml",
+        "fix": "phpcbf --standard=phpcs.xml",
+        "test": "phpunit"
     },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
     }
 }

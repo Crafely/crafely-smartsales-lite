@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AIAssistancesApiHandler {
 
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
@@ -67,15 +68,15 @@ class AIAssistancesApiHandler {
 	}
 
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -89,13 +90,12 @@ class AIAssistancesApiHandler {
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -108,7 +108,7 @@ class AIAssistancesApiHandler {
 	}
 
 	private function format_assistance_response( $assistance, $original_ai_config = null ) {
-		// Use the original ai_config if provided, otherwise decode from the database
+		// Use the original ai_config if provided, otherwise decode from the database.
 		$ai_config = $original_ai_config ?? json_decode( $assistance['ai_config'], true );
 
 		return array(
@@ -124,10 +124,10 @@ class AIAssistancesApiHandler {
 	public function get_assistances( $request ) {
 		global $wpdb;
 
-		// Escaping the table name (good)
+		// Escaping the table name (good).
 		$table_name = esc_sql( $wpdb->prefix . 'ai_smart_sales_assistances' );
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$results = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
 
 		if ( empty( $results ) ) {
@@ -156,13 +156,12 @@ class AIAssistancesApiHandler {
 	public function get_assistance( $request ) {
 		global $wpdb;
 
-		// Sanitize the table name
 		$table_name = esc_sql( $wpdb->prefix . 'ai_smart_sales_assistances' );
 
-		// Sanitize and cast the ID
+		// Sanitize and cast the ID.
 		$id = isset( $request['id'] ) ? absint( $request['id'] ) : 0;
 
-		// Manually build query string with table name, then prepare the rest
+		// Manually build query string with table name, then prepare the rest.
 		$sql = "SELECT * FROM {$table_name} WHERE id = %d";
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -201,9 +200,9 @@ class AIAssistancesApiHandler {
 		$table_name = $wpdb->prefix . 'ai_smart_sales_assistances';
 		$data       = $request->get_json_params();
 
-		// Check if the user is logged in
+		// Check if the user is logged in.
 		$user_id = get_current_user_id();
-		if ( $user_id === 0 ) {
+		if ( 0 === $user_id ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'User not logged in.',
@@ -217,7 +216,7 @@ class AIAssistancesApiHandler {
 			);
 		}
 
-		// Define required fields and their error messages
+		// Define required fields and their error messages.
 		$required_fields = array(
 			'thread_id' => 'thread_id is required.',
 			'title'     => 'title is required.',
@@ -226,14 +225,14 @@ class AIAssistancesApiHandler {
 
 		$errors = array();
 
-		// Check for missing required fields
+		// Check for missing required fields.
 		foreach ( $required_fields as $field => $error_message ) {
 			if ( ! isset( $data[ $field ] ) || empty( $data[ $field ] ) ) {
 				$errors[ $field ] = $error_message;
 			}
 		}
 
-		// If there are missing fields, return a comprehensive error response
+		// If there are missing fields, return a comprehensive error response.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -246,7 +245,7 @@ class AIAssistancesApiHandler {
 			);
 		}
 
-		// Insert the assistance
+		// Insert the assistance.
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$inserted = $wpdb->insert(
 			$table_name,
@@ -277,7 +276,7 @@ class AIAssistancesApiHandler {
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$assistance = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $assistance_id ), ARRAY_A );
 
-		// Pass the original ai_config to preserve the exact value
+		// Pass the original ai_config to preserve the exact value.
 		return new WP_REST_Response(
 			array(
 				'success' => true,
@@ -294,7 +293,7 @@ class AIAssistancesApiHandler {
 		$id         = $request['id'];
 		$data       = $request->get_json_params();
 
-		// Check if the assistance exists
+		// Check if the assistance exists.
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$existing_assistance = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id ), ARRAY_A );
 
@@ -312,7 +311,7 @@ class AIAssistancesApiHandler {
 			);
 		}
 
-		// Update the assistance
+		// Update the assistance.
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated = $wpdb->update(
 			$table_name,
@@ -326,7 +325,7 @@ class AIAssistancesApiHandler {
 			array( 'id' => $id )
 		);
 
-		if ( $updated === false ) {
+		if ( false === $updated ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Failed to update assistance.',
@@ -342,7 +341,7 @@ class AIAssistancesApiHandler {
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated_assistance = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id ), ARRAY_A );
 
-		// Pass the original ai_config to preserve the exact value
+		// Pass the original ai_config to preserve the exact value.
 		return new WP_REST_Response(
 			array(
 				'success' => true,
@@ -358,7 +357,7 @@ class AIAssistancesApiHandler {
 		$table_name = $wpdb->prefix . 'ai_smart_sales_assistances';
 		$id         = $request['id'];
 
-		// Check if the assistance exists
+		// Check if the assistance exists.
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$existing_assistance = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id ), ARRAY_A );
 
@@ -375,7 +374,7 @@ class AIAssistancesApiHandler {
 				404
 			);
 		}
-		// Delete the assistance
+		// Delete the assistance.
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$deleted = $wpdb->delete( $table_name, array( 'id' => $id ) );
 

@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SalesReportsApiHandler {
 
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}

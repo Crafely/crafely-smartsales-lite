@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 class CountersApiHandler {
 
+
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
@@ -96,13 +98,17 @@ class CountersApiHandler {
 
 	private function format_counter_response( $counter ) {
 		$current_user_id = get_post_meta( $counter->ID, 'current_assigned_user', true );
+		$outlet_id       = get_post_meta( $counter->ID, 'counter_outlet_id', true );
+		$status          = get_post_meta( $counter->ID, 'counter_status', true ) ? get_post_meta( $counter->ID, 'counter_status', true ) : 'active';
+		$description     = get_post_meta( $counter->ID, 'counter_description', true );
+		$position        = get_post_meta( $counter->ID, 'counter_position', true );
 		$response        = array(
 			'id'            => $counter->ID,
 			'name'          => $counter->post_title,
-			'outlet_id'     => get_post_meta( $counter->ID, 'counter_outlet_id', true ),
-			'status'        => get_post_meta( $counter->ID, 'counter_status', true ) ?: 'active',
-			'description'   => get_post_meta( $counter->ID, 'counter_description', true ),
-			'position'      => get_post_meta( $counter->ID, 'counter_position', true ),
+			'outlet_id'     => $outlet_id,
+			'status'        => $status,
+			'description'   => $description,
+			'position'      => $position,
 			'created_at'    => $counter->post_date,
 			'updated_at'    => $counter->post_modified,
 			'assigned_user' => $current_user_id ? array(
@@ -196,7 +202,7 @@ class CountersApiHandler {
 	public function get_counter( $request ) {
 		$counter = get_post( $request['counter_id'] );
 
-		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) != $request['outlet_id'] ) {
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $request['outlet_id'] ) {
 			return rest_ensure_response(
 				$this->format_error_response(
 					'Counter not found.',
@@ -280,7 +286,7 @@ class CountersApiHandler {
 		$outlet_id  = $request['outlet_id'];
 
 		$counter = get_post( $counter_id );
-		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) != $outlet_id ) {
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
 			return rest_ensure_response(
 				$this->format_error_response(
 					'Counter not found.',
@@ -344,7 +350,7 @@ class CountersApiHandler {
 		$outlet_id  = $request['outlet_id'];
 
 		$counter = get_post( $counter_id );
-		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) != $outlet_id ) {
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
 			return rest_ensure_response(
 				$this->format_error_response(
 					'Counter not found.',
@@ -389,7 +395,7 @@ class CountersApiHandler {
 		if ( user_can( $user, 'csmsl_pos_outlet_manager' ) ) {
 			$counter_outlet = get_post_meta( $counter_id, 'counter_outlet_id', true );
 			$user_outlet    = get_user_meta( $user_id, 'assigned_outlet_id', true );
-			return $counter_outlet == $user_outlet;
+			return $counter_outlet === $user_outlet;
 		}
 
 		return false;
@@ -437,7 +443,7 @@ class CountersApiHandler {
 		$user_roles = $user->roles;
 
 		// Check if user has cashier role (using the correct role slug)
-		if ( ! in_array( 'csmsl_pos_cashier', $user_roles ) ) {
+		if ( ! in_array( 'csmsl_pos_cashier', $user_roles, true ) ) {
 			return rest_ensure_response(
 				$this->format_error_response(
 					'Invalid user',
@@ -449,7 +455,7 @@ class CountersApiHandler {
 
 		// Validate counter belongs to outlet
 		$counter = get_post( $counter_id );
-		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) != $outlet_id ) {
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
 			$errors['counter'] = 'Counter not found in the specified outlet.';
 		}
 
@@ -458,13 +464,13 @@ class CountersApiHandler {
 		if ( ! $user_outlet_id ) {
 			// Auto-assign user to the outlet if not assigned
 			update_user_meta( $user_id, 'assigned_outlet_id', $outlet_id );
-		} elseif ( $user_outlet_id != $outlet_id ) {
+		} elseif ( $user_outlet_id !== $outlet_id ) {
 			$errors['user'] = 'User is already assigned to a different outlet.';
 		}
 
 		// Check if user is already assigned to another counter
 		$existing_counter = get_user_meta( $user_id, 'assigned_counter_id', true );
-		if ( $existing_counter && $existing_counter != $counter_id ) {
+		if ( $existing_counter && $existing_counter !== $counter_id ) {
 			$errors['assignment'] = 'User is already assigned to another counter.';
 		}
 
@@ -524,13 +530,13 @@ class CountersApiHandler {
 
 		// Verify the counter still exists and is active
 		$counter = get_post( $assigned_counter_id );
-		if ( ! $counter || $counter->post_type !== 'csmsl_counter' ) {
+		if ( ! $counter || 'csmsl_counter' !== $counter->post_type ) {
 			return false;
 		}
 
 		// Check if counter is active
 		$counter_status = get_post_meta( $assigned_counter_id, 'counter_status', true );
-		if ( $counter_status !== 'active' ) {
+		if ( 'active' !== $counter_status ) {
 			return false;
 		}
 

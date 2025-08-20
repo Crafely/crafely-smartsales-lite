@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Config {
 
-
 	/**
 	 * Plugin configuration
 	 *
@@ -26,15 +25,15 @@ class Config {
 	 * Get configuration value
 	 *
 	 * @param string $key
-	 * @param mixed  $default
+	 * @param mixed  $fallback
 	 * @return mixed
 	 */
-	public static function get( $key, $default = null ) {
-		if ( self::$config === null ) {
+	public static function get( $key, $fallback = null ) {
+		if ( null === self::$config ) {
 			self::load();
 		}
 
-		return self::get_nested_value( self::$config, $key, $default );
+		return self::get_nested_value( self::$config, $key, $fallback );
 	}
 
 	/**
@@ -44,7 +43,7 @@ class Config {
 	 * @param mixed  $value
 	 */
 	public static function set( $key, $value ) {
-		if ( self::$config === null ) {
+		if ( null === self::$config ) {
 			self::load();
 		}
 
@@ -68,8 +67,8 @@ class Config {
 			'api'      => array(
 				'namespace'  => 'ai-smart-sales/v1',
 				'version'    => 'v1',
-				'rate_limit' => 100, // requests per minute
-				'cache_ttl'  => 300,   // 5 minutes
+				'rate_limit' => 100, // requests per minute.
+				'cache_ttl'  => 300,   // 5 minutes.
 			),
 			'pos'      => array(
 				'roles'           => array(
@@ -82,13 +81,13 @@ class Config {
 					'login'  => '/smart-pos/auth/login',
 					'logout' => '/smart-pos/auth/logout',
 				),
-				'session_timeout' => 3600, // 1 hour
+				'session_timeout' => 3600, // 1 hour.
 				'auto_logout'     => true,
 			),
 			'security' => array(
 				'nonce_action'       => 'csmsl_nonce',
 				'allowed_file_types' => array( 'jpg', 'jpeg', 'png', 'gif', 'pdf' ),
-				'max_file_size'      => 5242880, // 5MB
+				'max_file_size'      => 5242880, // 5MB.
 				'enable_logging'     => defined( 'CSMSL_DEV_MODE' ) && CSMSL_DEV_MODE,
 			),
 			'database' => array(
@@ -118,29 +117,29 @@ class Config {
 			),
 		);
 
-		// Apply filters to allow customization
+		// Apply filters to allow customization.
 		self::$config = apply_filters( 'csmsl_config', self::$config );
 	}
 
 	/**
 	 * Get nested configuration value using dot notation
 	 *
-	 * @param array  $array
+	 * @param array  $args
 	 * @param string $key
-	 * @param mixed  $default
+	 * @param mixed  $fallback
 	 * @return mixed
 	 */
-	private static function get_nested_value( $array, $key, $default = null ) {
-		if ( strpos( $key, '.' ) === false ) {
-			return isset( $array[ $key ] ) ? $array[ $key ] : $default;
+	private static function get_nested_value( $args, $key, $fallback = null ) {
+		if ( false === strpos( $key, '.' ) ) {
+			return isset( $args[ $key ] ) ? $args[ $key ] : $fallback;
 		}
 
 		$keys  = explode( '.', $key );
-		$value = $array;
+		$value = $args;
 
 		foreach ( $keys as $k ) {
 			if ( ! is_array( $value ) || ! isset( $value[ $k ] ) ) {
-				return $default;
+				return $fallback;
 			}
 			$value = $value[ $k ];
 		}
@@ -151,18 +150,18 @@ class Config {
 	/**
 	 * Set nested configuration value using dot notation
 	 *
-	 * @param array  &$array
+	 * @param array  &$args
 	 * @param string $key
 	 * @param mixed  $value
 	 */
-	private static function set_nested_value( &$array, $key, $value ) {
+	private static function set_nested_value( &$args, $key, $value ) {
 		if ( strpos( $key, '.' ) === false ) {
-			$array[ $key ] = $value;
+			$args[ $key ] = $value;
 			return;
 		}
 
 		$keys    = explode( '.', $key );
-		$current = &$array;
+		$current = &$args;
 
 		foreach ( $keys as $k ) {
 			if ( ! isset( $current[ $k ] ) || ! is_array( $current[ $k ] ) ) {
@@ -180,7 +179,7 @@ class Config {
 	 * @return array
 	 */
 	public static function all() {
-		if ( self::$config === null ) {
+		if ( null === self::$config ) {
 			self::load();
 		}
 
