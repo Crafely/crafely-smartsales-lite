@@ -45,7 +45,11 @@
                 .min(8, 'Password must be at least 8 characters')
                 .optional(),
             role: z.enum(
-                ['aipos_cashier', 'aipos_outlet_manager', 'aipos_shop_manager'],
+                [
+                    'csmsl_pos_cashier',
+                    'csmsl_pos_outlet_manager',
+                    'csmsl_pos_shop_manager',
+                ],
                 {
                     required_error: 'Role is required',
                 }
@@ -60,7 +64,10 @@
         })
         .refine(
             (data) => {
-                if (data.role === 'aipos_outlet_manager' && !data.outlet_id) {
+                if (
+                    data.role === 'csmsl_pos_outlet_manager' &&
+                    !data.outlet_id
+                ) {
                     return false
                 }
                 return true
@@ -89,7 +96,7 @@
     })
 
     const showCounterId = computed(() => {
-        return form.values.role === 'aipos_cashier'
+        return form.values.role === 'csmsl_pos_cashier'
     })
 
     const handleSubmit = form.handleSubmit(async (payload, actions) => {
@@ -195,10 +202,10 @@
                             <SelectValue placeholder="Select role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="aipos_cashier">
+                            <SelectItem value="csmsl_pos_cashier">
                                 Cashier
                             </SelectItem>
-                            <SelectItem value="aipos_outlet_manager"
+                            <SelectItem value="csmsl_pos_outlet_manager"
                                 >Outlet manager</SelectItem
                             >
                         </SelectContent>
