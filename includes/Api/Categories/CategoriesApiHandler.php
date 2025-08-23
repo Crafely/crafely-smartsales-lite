@@ -8,9 +8,29 @@ use WP_Term;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+/**
+ * Class CategoriesApiHandler
+ *
+ * Handles REST API requests for product categories.
+ * Supports listing, retrieving, creating, updating, and deleting categories.
+ *
+ * Routes:
+ * - GET    /ai-smart-sales/v1/categories
+ * - GET    /ai-smart-sales/v1/categories/{id}
+ * - POST   /ai-smart-sales/v1/categories
+ * - PUT    /ai-smart-sales/v1/categories/{id}
+ * - DELETE /ai-smart-sales/v1/categories/{id}
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 class CategoriesApiHandler {
 
+	/**
+	 * Constructor.
+	 *
+	 * Hooks into 'rest_api_init' to register API routes.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
@@ -67,8 +87,16 @@ class CategoriesApiHandler {
 		);
 	}
 
+	/**
+	 * Check user permission for API requests.
+	 *
+	 * Read operations are allowed for authenticated POS roles.
+	 * Write operations (POST, PUT, DELETE) require 'administrator' or 'manage_woocommerce' capability.
+	 *
+	 * @param \WP_REST_Request $request
+	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in
+		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
@@ -76,12 +104,12 @@ class CategoriesApiHandler {
 		// Get current user
 		$user = wp_get_current_user();
 
-		// For write operations, require higher privileges
-		if ( in_array( $request->get_method(), array( 'POST', 'PUT', 'DELETE' ) ) ) {
+		// For write operations, require higher privileges.
+		if ( in_array( $request->get_method(), array( 'POST', 'PUT', 'DELETE' ), true ) ) {
 			return current_user_can( 'administrator' ) || current_user_can( 'manage_woocommerce' );
 		}
 
-		// For read operations, allow authenticated users with POS roles
+		// For read operations, allow authenticated users with POS roles.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -91,13 +119,13 @@ class CategoriesApiHandler {
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -123,10 +151,10 @@ class CategoriesApiHandler {
 	public function get_categories( $request ) {
 		$args = array(
 			'taxonomy'   => 'product_cat',
-			'hide_empty' => $request->get_param( 'hide_empty' ) ?: false,
-			'orderby'    => $request->get_param( 'orderby' ) ?: 'name',
-			'order'      => $request->get_param( 'order' ) ?: 'ASC',
-			'number'     => $request->get_param( 'limit' ) ?: 0,
+			'hide_empty' => $request->get_param( 'hide_empty' ) ? $request->get_param( 'hide_empty' ) : false,
+			'orderby'    => $request->get_param( 'orderby' ) ? $request->get_param( 'orderby' ) : 'name',
+			'order'      => $request->get_param( 'order' ) ? $request->get_param( 'order' ) : 'ASC',
+			'number'     => $request->get_param( 'limit' ) ? $request->get_param( 'limit' ) : 0,
 		);
 
 		$categories = get_terms( $args );
@@ -202,21 +230,21 @@ class CategoriesApiHandler {
 	public function create_category( $request ) {
 		$data = $request->get_json_params();
 
-		// Define required fields and their error messages
+		// Define required fields and their error messages.
 		$required_fields = array(
 			'name' => 'name is required.',
 		);
 
 		$errors = array();
 
-		// Check for missing required fields
+		// Check for missing required fields.
 		foreach ( $required_fields as $field => $error_message ) {
 			if ( ! isset( $data[ $field ] ) || empty( $data[ $field ] ) ) {
 				$errors[ $field ] = $error_message;
 			}
 		}
 
-		// If there are missing fields, return a comprehensive error response
+		// If there are missing fields, return a comprehensive error response.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				array(
@@ -229,7 +257,7 @@ class CategoriesApiHandler {
 			);
 		}
 
-		// Create the category
+		// Create the category.
 		$category = wp_insert_term(
 			$data['name'],
 			'product_cat',
@@ -286,7 +314,7 @@ class CategoriesApiHandler {
 			);
 		}
 
-		// Update the category
+		// Update the category.
 		$updated_category = wp_update_term(
 			$category_id,
 			'product_cat',

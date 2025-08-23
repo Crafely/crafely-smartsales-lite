@@ -9,14 +9,29 @@ use WC_Customer_Data_Store;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * Class CustomersApiHandler
+ *
+ * Handles REST API requests for customer management.
+ */
 class CustomersApiHandler {
 
+	/**
+	 * Constructor.
+	 * Registers REST API routes.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
+	/**
+	 * Registers REST API routes for customer management.
+	 * This includes routes for getting all customers, getting a single customer,
+	 * updating a customer, deleting a customer, and creating a new customer.
+	 */
 	public function register_routes() {
-		// Get all customers
+		// Get all customers.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/customers',
@@ -27,7 +42,7 @@ class CustomersApiHandler {
 			)
 		);
 
-		// Get a single customer
+		// Get a single customer.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/customers/(?P<id>\d+)',
@@ -38,7 +53,7 @@ class CustomersApiHandler {
 			)
 		);
 
-		// Update a customer
+		// Update a customer.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/customers/(?P<id>\d+)',
@@ -49,7 +64,7 @@ class CustomersApiHandler {
 			)
 		);
 
-		// Delete a customer
+		// Delete a customer.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/customers/(?P<id>\d+)',
@@ -60,7 +75,7 @@ class CustomersApiHandler {
 			)
 		);
 
-		// Create a new customer
+		// Create a new customer.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/customers',
@@ -71,17 +86,17 @@ class CustomersApiHandler {
 			)
 		);
 	}
-
+	/**
+	 * Checks if the current user has permission to access the API.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool True if the user has permission, false otherwise.
+	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
-
-		// Get current user
-		$user = wp_get_current_user();
-
-		// Check if user has any of our POS roles or is an administrator
+		$user          = wp_get_current_user();
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -92,7 +107,12 @@ class CustomersApiHandler {
 		return true;
 	}
 
-	// Format success response
+	/**
+	 * Formats a successful response.
+	 * @param string $message The success message.
+	 * @param array $data Optional. Additional data to include in the response.
+	 * @param int $statusCode Optional. HTTP status code for the response.
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
@@ -101,17 +121,17 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Format error response
+	// Format error response.
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -123,14 +143,14 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Get all customers using WooCommerce standard approach
+	// Get all customers using WooCommerce standard approach.
 	public function get_customers( $request ) {
-		// Get pagination parameters
+		// Get pagination parameters.
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 		$search       = $request->get_param( 'search' ) ? sanitize_text_field( $request->get_param( 'search' ) ) : '';
 
-		// Find all user IDs who have placed WooCommerce orders and collect guest customers
+		// Find all user IDs who have placed WooCommerce orders and collect guest customers.
 		$order_query = array(
 			'limit'  => -1,
 			'return' => 'ids',
@@ -151,11 +171,11 @@ class CustomersApiHandler {
 				if ( $order ) {
 					$customer_id = $order->get_customer_id();
 					if ( $customer_id ) {
-						if ( ! in_array( $customer_id, $customer_ids ) ) {
+						if ( ! in_array( $customer_id, $customer_ids, true ) ) {
 							$customer_ids[] = $customer_id;
 						}
 					} else {
-						// Guest order: use billing email as unique key
+						// Guest order: use billing email as unique key.
 						$email = $order->get_billing_email();
 						if ( $email ) {
 							$guest_id = 'guest_' . md5( $email );
@@ -223,7 +243,7 @@ class CustomersApiHandler {
 			}
 		}
 
-		// Also include users with 'customer' role (created via API or WooCommerce)
+		// Also include users with 'customer' role (created via API or WooCommerce).
 		$args = array(
 			'role'   => 'customer',
 			'fields' => 'ID',
@@ -234,14 +254,14 @@ class CustomersApiHandler {
 		}
 		$role_customers = get_users( $args );
 		foreach ( $role_customers as $id ) {
-			if ( ! in_array( $id, $customer_ids ) ) {
+			if ( ! in_array( $id, $customer_ids, true ) ) {
 				$customer_ids[] = $id;
 			}
 		}
 
-		// Remove duplicates and sort
+		// Remove duplicates and sort.
 		$customer_ids = array_unique( $customer_ids );
-		// Sort by registration date descending
+		// Sort by registration date descending.
 		usort(
 			$customer_ids,
 			function ( $a, $b ) {
@@ -251,12 +271,12 @@ class CustomersApiHandler {
 			}
 		);
 
-		// Pagination for registered users
+		// Pagination for registered users.
 		$total_customers = count( $customer_ids ) + count( $guest_customers );
 		$total_pages     = ceil( $total_customers / $per_page );
 		$offset          = ( $current_page - 1 ) * $per_page;
 
-		// Merge registered and guest customers for pagination
+		// Merge registered and guest customers for pagination.
 		$all_customers = array();
 		foreach ( $customer_ids as $customer_id ) {
 			$all_customers[] = $this->format_customer_data( $customer_id );
@@ -265,7 +285,7 @@ class CustomersApiHandler {
 			$all_customers[] = $guest;
 		}
 
-		// Paginate
+		// Paginate.
 		$paged_customers = array_slice( $all_customers, $offset, $per_page );
 
 		return new WP_REST_Response(
@@ -284,29 +304,29 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Format customer data using WooCommerce customer object
+	// Format customer data using WooCommerce customer object.
 	private function format_customer_data( $user_id ) {
-		// Get user data
+		// Get user data.
 		$user_data = get_userdata( $user_id );
 		if ( ! $user_data ) {
 			return null;
 		}
 
-		// Get WooCommerce customer object if available
+		// Get WooCommerce customer object if available.
 		$wc_customer = null;
 		if ( class_exists( 'WC_Customer' ) ) {
 			try {
 				$wc_customer = new \WC_Customer( $user_id );
 			} catch ( \Exception $e ) {
-				// Customer might not exist in WooCommerce, use WordPress user data only
+				// Customer might not exist in WooCommerce, use WordPress user data only.
 			}
 		}
 
-		// Get profile image
+		// Get profile image.
 		$profile_image_id  = get_user_meta( $user_id, 'profile_image', true );
 		$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : CSMSL_URL . 'assets/images/avatar.png';
 
-		// Get order data if WooCommerce is available
+		// Get order data if WooCommerce is available.
 		$order_data   = array();
 		$total_orders = 0;
 
@@ -332,10 +352,10 @@ class CustomersApiHandler {
 			}
 		}
 
-		// Use WooCommerce customer data if available, otherwise fall back to user meta
+		// Use WooCommerce customer data if available, otherwise fall back to user meta.
 		if ( $wc_customer ) {
-			$first_name = $wc_customer->get_first_name() ?: get_user_meta( $user_id, 'first_name', true );
-			$last_name  = $wc_customer->get_last_name() ?: get_user_meta( $user_id, 'last_name', true );
+			$first_name = $wc_customer->get_first_name() ? $wc_customer->get_first_name() : get_user_meta( $user_id, 'first_name', true );
+			$last_name  = $wc_customer->get_last_name() ? $wc_customer->get_last_name() : get_user_meta( $user_id, 'last_name', true );
 			$billing    = array(
 				'first_name' => $wc_customer->get_billing_first_name(),
 				'last_name'  => $wc_customer->get_billing_last_name(),
@@ -346,24 +366,24 @@ class CustomersApiHandler {
 				'state'      => $wc_customer->get_billing_state(),
 				'postcode'   => $wc_customer->get_billing_postcode(),
 				'country'    => $wc_customer->get_billing_country(),
-				'email'      => $wc_customer->get_billing_email() ?: $user_data->user_email,
+				'email'      => $wc_customer->get_billing_email() ? $wc_customer->get_billing_email() : $user_data->user_email,
 				'phone'      => $wc_customer->get_billing_phone(),
 			);
 			$shipping   = array(
-				'first_name' => $wc_customer->get_shipping_first_name() ?: $billing['first_name'],
-				'last_name'  => $wc_customer->get_shipping_last_name() ?: $billing['last_name'],
-				'company'    => $wc_customer->get_shipping_company() ?: $billing['company'],
-				'address_1'  => $wc_customer->get_shipping_address_1() ?: $billing['address_1'],
-				'address_2'  => $wc_customer->get_shipping_address_2() ?: $billing['address_2'],
-				'city'       => $wc_customer->get_shipping_city() ?: $billing['city'],
-				'state'      => $wc_customer->get_shipping_state() ?: $billing['state'],
-				'postcode'   => $wc_customer->get_shipping_postcode() ?: $billing['postcode'],
-				'country'    => $wc_customer->get_shipping_country() ?: $billing['country'],
+				'first_name' => $wc_customer->get_shipping_first_name() ? $wc_customer->get_shipping_first_name() : $billing['first_name'],
+				'last_name'  => $wc_customer->get_shipping_last_name() ? $wc_customer->get_shipping_last_name() : $billing['last_name'],
+				'company'    => $wc_customer->get_shipping_company() ? $wc_customer->get_shipping_company() : $billing['company'],
+				'address_1'  => $wc_customer->get_shipping_address_1() ? $wc_customer->get_shipping_address_1() : $billing['address_1'],
+				'address_2'  => $wc_customer->get_shipping_address_2() ? $wc_customer->get_shipping_address_2() : $billing['address_2'],
+				'city'       => $wc_customer->get_shipping_city() ? $wc_customer->get_shipping_city() : $billing['city'],
+				'state'      => $wc_customer->get_shipping_state() ? $wc_customer->get_shipping_state() : $billing['state'],
+				'postcode'   => $wc_customer->get_shipping_postcode() ? $wc_customer->get_shipping_postcode() : $billing['postcode'],
+				'country'    => $wc_customer->get_shipping_country() ? $wc_customer->get_shipping_country() : $billing['country'],
 			);
 		} else {
 			// Fallback to user meta
-			$first_name = get_user_meta( $user_id, 'first_name', true ) ?: get_user_meta( $user_id, 'billing_first_name', true );
-			$last_name  = get_user_meta( $user_id, 'last_name', true ) ?: get_user_meta( $user_id, 'billing_last_name', true );
+			$first_name = ! empty( get_user_meta( $user_id, 'first_name', true ) ) ? get_user_meta( $user_id, 'first_name', true ) : get_user_meta( $user_id, 'billing_first_name', true );
+			$last_name  = ! empty( get_user_meta( $user_id, 'last_name', true ) ) ? get_user_meta( $user_id, 'last_name', true ) : get_user_meta( $user_id, 'billing_last_name', true );
 			$billing    = array(
 				'first_name' => get_user_meta( $user_id, 'billing_first_name', true ),
 				'last_name'  => get_user_meta( $user_id, 'billing_last_name', true ),
@@ -374,19 +394,19 @@ class CustomersApiHandler {
 				'state'      => get_user_meta( $user_id, 'billing_state', true ),
 				'postcode'   => get_user_meta( $user_id, 'billing_postcode', true ),
 				'country'    => get_user_meta( $user_id, 'billing_country', true ),
-				'email'      => get_user_meta( $user_id, 'billing_email', true ) ?: $user_data->user_email,
+				'email'      => get_user_meta( $user_id, 'billing_email', true ) ? get_user_meta( $user_id, 'billing_email', true ) : $user_data->user_email,
 				'phone'      => get_user_meta( $user_id, 'billing_phone', true ),
 			);
 			$shipping   = array(
-				'first_name' => get_user_meta( $user_id, 'shipping_first_name', true ) ?: $billing['first_name'],
-				'last_name'  => get_user_meta( $user_id, 'shipping_last_name', true ) ?: $billing['last_name'],
-				'company'    => get_user_meta( $user_id, 'shipping_company', true ) ?: $billing['company'],
-				'address_1'  => get_user_meta( $user_id, 'shipping_address_1', true ) ?: $billing['address_1'],
-				'address_2'  => get_user_meta( $user_id, 'shipping_address_2', true ) ?: $billing['address_2'],
-				'city'       => get_user_meta( $user_id, 'shipping_city', true ) ?: $billing['city'],
-				'state'      => get_user_meta( $user_id, 'shipping_state', true ) ?: $billing['state'],
-				'postcode'   => get_user_meta( $user_id, 'shipping_postcode', true ) ?: $billing['postcode'],
-				'country'    => get_user_meta( $user_id, 'shipping_country', true ) ?: $billing['country'],
+				'first_name' => get_user_meta( $user_id, 'shipping_first_name', true ) ? get_user_meta( $user_id, 'shipping_first_name', true ) : $billing['first_name'],
+				'last_name'  => get_user_meta( $user_id, 'shipping_last_name', true ) ? get_user_meta( $user_id, 'shipping_last_name', true ) : $billing['last_name'],
+				'company'    => get_user_meta( $user_id, 'shipping_company', true ) ? get_user_meta( $user_id, 'shipping_company', true ) : $billing['company'],
+				'address_1'  => get_user_meta( $user_id, 'shipping_address_1', true ) ? get_user_meta( $user_id, 'shipping_address_1', true ) : $billing['address_1'],
+				'address_2'  => get_user_meta( $user_id, 'shipping_address_2', true ) ? get_user_meta( $user_id, 'shipping_address_2', true ) : $billing['address_2'],
+				'city'       => get_user_meta( $user_id, 'shipping_city', true ) ? get_user_meta( $user_id, 'shipping_city', true ) : $billing['city'],
+				'state'      => get_user_meta( $user_id, 'shipping_state', true ) ? get_user_meta( $user_id, 'shipping_state', true ) : $billing['state'],
+				'postcode'   => get_user_meta( $user_id, 'shipping_postcode', true ) ? get_user_meta( $user_id, 'shipping_postcode', true ) : $billing['postcode'],
+				'country'    => get_user_meta( $user_id, 'shipping_country', true ) ? get_user_meta( $user_id, 'shipping_country', true ) : $billing['country'],
 			);
 		}
 
@@ -407,11 +427,11 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Get a single customer
+	// Get a single customer.
 	public function get_customer( $request ) {
 		$user_id = $request['id'];
 
-		// Check if the user exists and is in our customer list (placed an order or has 'customer' role)
+		// Check if the user exists and is in our customer list (placed an order or has 'customer' role).
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return new WP_REST_Response(
@@ -425,13 +445,13 @@ class CustomersApiHandler {
 			);
 		}
 
-		// Check if user is in the customer list
+		// Check if user is in the customer list.
 		$is_customer = false;
-		// Check if user has 'customer' role
-		if ( in_array( 'customer', (array) $user->roles ) ) {
+		// Check if user has 'customer' role.
+		if ( in_array( 'customer', (array) $user->roles, true ) ) {
 			$is_customer = true;
 		} else {
-			// Check if user has placed an order
+			// Check if user has placed an order.
 			if ( class_exists( 'WC_Order_Query' ) ) {
 				$orders = wc_get_orders(
 					array(
@@ -466,12 +486,12 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Create a new customer
+	// Create a new customer.
 	public function create_customer( $request ) {
 		$data   = $request->get_json_params();
-		$errors = array(); // Array to collect all validation errors
+		$errors = array();
 
-		// Validate required fields
+		// Validate required fields.
 		$required_fields = array( 'username', 'first_name', 'last_name', 'phone' );
 		foreach ( $required_fields as $field ) {
 			if ( empty( $data[ $field ] ) ) {
@@ -479,17 +499,17 @@ class CustomersApiHandler {
 			}
 		}
 
-		// Check if username already exists
+		// Check if username already exists.
 		if ( isset( $data['username'] ) && username_exists( $data['username'] ) ) {
 			$errors['username'] = "A customer with the username '{$data['username']}' already exists.";
 		}
 
-		// Check if email already exists
+		// Check if email already exists.
 		if ( isset( $data['email'] ) && email_exists( $data['email'] ) ) {
 			$errors['email'] = "A customer with the email '{$data['email']}' already exists.";
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -502,7 +522,7 @@ class CustomersApiHandler {
 			);
 		}
 
-		// Create the customer
+		// Create the customer.
 		$user_id = wp_insert_user(
 			array(
 				'user_login' => sanitize_user( $data['username'] ),
@@ -526,17 +546,17 @@ class CustomersApiHandler {
 			);
 		}
 
-		// Update phone number
+		// Update phone number.
 		update_user_meta( $user_id, 'billing_phone', sanitize_text_field( $data['phone'] ) );
 
-		// Update billing details if provided
+		// Update billing details if provided.
 		if ( isset( $data['billing'] ) ) {
 			foreach ( $data['billing'] as $key => $value ) {
 				update_user_meta( $user_id, 'billing_' . $key, sanitize_text_field( $value ) );
 			}
 		}
 
-		// Update shipping details if provided
+		// Update shipping details if provided.
 		if ( isset( $data['shipping'] ) ) {
 			foreach ( $data['shipping'] as $key => $value ) {
 				update_user_meta( $user_id, 'shipping_' . $key, sanitize_text_field( $value ) );
@@ -553,13 +573,13 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Update a customer
+	// Update a customer.
 	public function update_customer( $request ) {
 		$data    = $request->get_json_params();
 		$user_id = $request['id'];
-		$errors  = array(); // Array to collect all validation errors
+		$errors  = array();
 
-		// Check if user exists and is a customer (placed order or has 'customer' role)
+		// Check if user exists and is a customer (placed order or has 'customer' role).
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return new WP_REST_Response(
@@ -573,10 +593,10 @@ class CustomersApiHandler {
 			);
 		}
 		$is_customer = false;
-		if ( in_array( 'customer', (array) $user->roles ) ) {
+		if ( in_array( 'customer', (array) $user->roles, true ) ) {
 			$is_customer = true;
 		} elseif ( class_exists( 'WC_Order_Query' ) ) {
-				$orders = wc_get_orders(
+			$orders = wc_get_orders(
 					array(
 						'customer_id' => $user_id,
 						'limit'       => 1,
@@ -598,17 +618,17 @@ class CustomersApiHandler {
 			);
 		}
 
-		// Prevent changing username
+		// Prevent changing username.
 		if ( isset( $data['username'] ) && $data['username'] !== $user->user_login ) {
 			$errors['username'] = 'Username cannot be changed.';
 		}
 
-		// Prevent changing email
+		// Prevent changing email.
 		if ( isset( $data['email'] ) && $data['email'] !== $user->user_email ) {
 			$errors['email'] = 'Email cannot be changed.';
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -621,7 +641,7 @@ class CustomersApiHandler {
 			);
 		}
 
-		// Update fields if provided using WooCommerce customer object if available
+		// Update fields if provided using WooCommerce customer object if available.
 		if ( class_exists( 'WC_Customer' ) ) {
 			try {
 				$wc_customer = new \WC_Customer( $user_id );
@@ -636,7 +656,7 @@ class CustomersApiHandler {
 					$wc_customer->set_billing_phone( sanitize_text_field( $data['phone'] ) );
 				}
 
-				// Update billing details if provided
+				// Update billing details if provided.
 				if ( isset( $data['billing'] ) ) {
 					foreach ( $data['billing'] as $key => $value ) {
 						$method = 'set_billing_' . $key;
@@ -646,7 +666,7 @@ class CustomersApiHandler {
 					}
 				}
 
-				// Update shipping details if provided
+				// Update shipping details if provided.
 				if ( isset( $data['shipping'] ) ) {
 					foreach ( $data['shipping'] as $key => $value ) {
 						$method = 'set_shipping_' . $key;
@@ -658,11 +678,11 @@ class CustomersApiHandler {
 
 				$wc_customer->save();
 			} catch ( \Exception $e ) {
-				// Fallback to user meta updates
+				// Fallback to user meta updates.
 				$this->update_customer_meta( $user_id, $data );
 			}
 		} else {
-			// Fallback to user meta updates
+			// Fallback to user meta updates.
 			$this->update_customer_meta( $user_id, $data );
 		}
 
@@ -676,7 +696,7 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Helper method to update customer meta directly
+	// Helper method to update customer meta directly.
 	private function update_customer_meta( $user_id, $data ) {
 		if ( isset( $data['first_name'] ) ) {
 			update_user_meta( $user_id, 'first_name', sanitize_text_field( $data['first_name'] ) );
@@ -688,14 +708,14 @@ class CustomersApiHandler {
 			update_user_meta( $user_id, 'billing_phone', sanitize_text_field( $data['phone'] ) );
 		}
 
-		// Update billing details if provided
+		// Update billing details if provided.
 		if ( isset( $data['billing'] ) ) {
 			foreach ( $data['billing'] as $key => $value ) {
 				update_user_meta( $user_id, 'billing_' . $key, sanitize_text_field( $value ) );
 			}
 		}
 
-		// Update shipping details if provided
+		// Update shipping details if provided.
 		if ( isset( $data['shipping'] ) ) {
 			foreach ( $data['shipping'] as $key => $value ) {
 				update_user_meta( $user_id, 'shipping_' . $key, sanitize_text_field( $value ) );
@@ -703,11 +723,11 @@ class CustomersApiHandler {
 		}
 	}
 
-	// Delete a customer
+	// Delete a customer.
 	public function delete_customer( $request ) {
 		$user_id = $request['id'];
 
-		// Check if user exists and is a customer (placed order or has 'customer' role)
+		// Check if user exists and is a customer (placed order or has 'customer' role).
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return new WP_REST_Response(
@@ -721,10 +741,10 @@ class CustomersApiHandler {
 			);
 		}
 		$is_customer = false;
-		if ( in_array( 'customer', (array) $user->roles ) ) {
+		if ( in_array( 'customer', (array) $user->roles, true ) ) {
 			$is_customer = true;
 		} elseif ( class_exists( 'WC_Order_Query' ) ) {
-				$orders = wc_get_orders(
+			$orders = wc_get_orders(
 					array(
 						'customer_id' => $user_id,
 						'limit'       => 1,

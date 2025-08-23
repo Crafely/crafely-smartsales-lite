@@ -4,11 +4,13 @@ namespace CSMSL\Includes\Api\App;
 
 use WP_REST_Request;
 use WP_REST_Response;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 class WizardApiHandler {
+
 
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -47,15 +49,15 @@ class WizardApiHandler {
 	}
 
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -112,7 +114,7 @@ class WizardApiHandler {
 				'created_at'       => current_time( 'mysql' ),
 			);
 
-			// Validate required fields
+			// Validate required fields.
 			$required_fields = array( 'business_type', 'inventory_range', 'company_name', 'industry_sector' );
 			$missing_fields  = array();
 
@@ -129,7 +131,7 @@ class WizardApiHandler {
 				);
 			}
 
-			// Validate business_type
+			// Validate business_type.
 			$valid_business_types = array(
 				'retail',
 				'wholesale',
@@ -152,16 +154,16 @@ class WizardApiHandler {
 				'real_estate',
 				'other',
 			);
-			if ( ! in_array( $wizard_data['business_type'], $valid_business_types ) ) {
+			if ( ! in_array( $wizard_data['business_type'], $valid_business_types, true ) ) {
 				return new WP_REST_Response(
 					$this->format_error_response( 'Invalid business type provided' ),
 					400
 				);
 			}
 
-			// Validate inventory_range
+			// Validate inventory_range.
 			$valid_inventory_ranges = array( 'small', 'medium', 'large', 'enterprise' );
-			if ( ! in_array( $wizard_data['inventory_range'], $valid_inventory_ranges ) ) {
+			if ( ! in_array( $wizard_data['inventory_range'], $valid_inventory_ranges, true ) ) {
 				return new WP_REST_Response(
 					$this->format_error_response( 'Invalid inventory range provided' ),
 					400
@@ -188,7 +190,6 @@ class WizardApiHandler {
 				),
 				200
 			);
-
 		} catch ( \Exception $e ) {
 			return new WP_REST_Response(
 				$this->format_error_response( 'An error occurred: ' . $e->getMessage() ),
@@ -296,7 +297,7 @@ class WizardApiHandler {
 					'real_estate',
 					'other',
 				);
-				if ( ! in_array( $updated_data['business_type'], $valid_business_types ) ) {
+				if ( ! in_array( $updated_data['business_type'], $valid_business_types, true ) ) {
 					return new WP_REST_Response(
 						$this->format_error_response( 'Invalid business type provided' ),
 						400
@@ -304,10 +305,10 @@ class WizardApiHandler {
 				}
 			}
 
-			// Validate inventory_range if provided
+			// Validate inventory_range if provided.
 			if ( isset( $params['inventory_range'] ) ) {
 				$valid_inventory_ranges = array( 'small', 'medium', 'large', 'enterprise' );
-				if ( ! in_array( $updated_data['inventory_range'], $valid_inventory_ranges ) ) {
+				if ( ! in_array( $updated_data['inventory_range'], $valid_inventory_ranges, true ) ) {
 					return new WP_REST_Response(
 						$this->format_error_response( 'Invalid inventory range provided' ),
 						400
@@ -315,12 +316,12 @@ class WizardApiHandler {
 				}
 			}
 
-			// Save updated data
+			// Save updated data.
 			if ( $entry_id ) {
 				$wizard_entries[ $entry_id ] = $updated_data;
 				update_option( 'csmsl_wizard_entries', $wizard_entries );
 
-				// If this is the latest entry, also update the current wizard data
+				// If this is the latest entry, also update the current wizard data.
 				$current_wizard_data = get_option( 'csmsl_wizard_data', array() );
 				if ( isset( $current_wizard_data['created_at'] ) &&
 					isset( $existing_data['created_at'] ) &&
@@ -342,7 +343,6 @@ class WizardApiHandler {
 				),
 				200
 			);
-
 		} catch ( \Exception $e ) {
 			return new WP_REST_Response(
 				$this->format_error_response( 'An error occurred: ' . $e->getMessage() ),

@@ -3,20 +3,21 @@ namespace CSMSL\Includes\Api\Media;
 
 use WP_REST_Response;
 
-// Exit if accessed directly
+// Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Define the API handler class
+// Define the API handler class.
 class MediaApiHandler {
 
-	// Constructor to register routes
+
+	// Constructor to register routes.
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
-	// Register REST API routes
+	// Register REST API routes.
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -59,17 +60,17 @@ class MediaApiHandler {
 		);
 	}
 
-	// Check permission
+	// Check permission.
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_spos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -80,7 +81,7 @@ class MediaApiHandler {
 		return true;
 	}
 
-	// Format success response
+	// Format success response.
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
@@ -89,17 +90,17 @@ class MediaApiHandler {
 		);
 	}
 
-	// Format error response
+	// Format error response.
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -111,7 +112,7 @@ class MediaApiHandler {
 		);
 	}
 
-	// Get all media
+	// Get all media.
 	public function get_media( $request ) {
 		$args  = array(
 			'post_type'      => 'attachment',
@@ -153,12 +154,12 @@ class MediaApiHandler {
 		);
 	}
 
-	// Get single media
+	// Get single media.
 	public function get_single_media( $request ) {
 		$id    = $request['id'];
 		$media = get_post( $id );
 
-		if ( ! $media || $media->post_type !== 'attachment' ) {
+		if ( ! $media || 'attachment' !== $media->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Media not found.',
@@ -186,7 +187,7 @@ class MediaApiHandler {
 		);
 	}
 
-	// Upload media
+	// Upload media.
 	public function upload_media( $request ) {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 
@@ -261,12 +262,12 @@ class MediaApiHandler {
 		);
 	}
 
-	// Delete media
+	// Delete media.
 	public function delete_media( $request ) {
 		$id         = $request['id'];
 		$attachment = get_post( $id );
 
-		if ( ! $attachment || $attachment->post_type !== 'attachment' ) {
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invalid media ID.',

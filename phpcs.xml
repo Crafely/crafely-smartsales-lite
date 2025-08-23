@@ -1,95 +1,96 @@
 <?xml version="1.0"?>
-<ruleset name="WordPress Crafely SmartSales Lite">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Crafely SmartSales" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd">
 
-	<rule ref="WordPress-Core">
-		<exclude name="Generic.Arrays.DisallowShortArraySyntax" />
-		<exclude name="Generic.Commenting.DocComment.MissingShort" />
-	</rule>
+    <description>Coding standards for Crafely SmartSales WordPress Plugin</description>
 
-	<rule ref="WordPress-Docs">
-		<exclude-pattern>tests/*</exclude-pattern>
-	</rule>
-	<rule ref="WordPress-Extra" />
+    <!-- Scan these files -->
+    <file>.</file>
 
-	<rule ref="WordPress.WP.I18n">
-		<properties>
-			<property name="text_domain" type="array">
-				<element value="crafely-smartsales-lite"/>
-				<element value="default"/>
-			</property>
-		</properties>
-	</rule>
+    <!-- Exclude Paths -->
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+    <exclude-pattern>/assets/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <exclude-pattern>*.min.css</exclude-pattern>
+    <exclude-pattern>/tests/*</exclude-pattern>
 
-	<!-- Enforce LF line endings -->
-	<rule ref="Generic.Files.LineEndings">
-		<properties>
-			<property name="eolChar" value="\n"/>
-		</properties>
-	</rule>
+    <!-- How to scan -->
+    <arg value="sp"/> <!-- Show sniff and progress -->
+    <arg name="colors"/>
+    <arg name="basepath" value="."/>
+    <arg name="extensions" value="php"/>
+    
+    <!-- Enable fixes for spacing, indentation, and other formatting -->
+    <rule ref="Generic.WhiteSpace.ScopeIndent">
+        <properties>
+            <property name="indent" value="1"/>
+            <property name="exact" value="true"/>
+            <property name="tabIndent" value="true"/>
+        </properties>
+    </rule>
 
-	<!-- Allow PSR-4 file/class names in includes/ -->
-	<rule ref="WordPress.Files.FileName">
-		<exclude-pattern>includes/*</exclude-pattern>
-	</rule>
-	<rule ref="Squiz.Classes.ClassFileName">
-		<exclude-pattern>includes/*</exclude-pattern>
-	</rule>
-	<rule ref="Squiz.Classes.ValidClassName">
-		<exclude-pattern>includes/*</exclude-pattern>
-	</rule>
-	<rule ref="PEAR.NamingConventions.ValidClassName">
-		<exclude-pattern>includes/*</exclude-pattern>
-	</rule>
+    <!-- Force tab-based indentation -->
+    <arg name="tab-width" value="4"/>
+    <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
+    
+    <!-- Configure spacing rules -->
+    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
+        <properties>
+            <property name="ignoreBlankLines" value="false"/>
+        </properties>
+    </rule>
 
-	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
-		<exclude-pattern>tests/*</exclude-pattern>
-		<exclude-pattern>src/*</exclude-pattern>
-	</rule>
+    <!-- Set tab width -->
+    <arg name="tab-width" value="4"/>
 
-	<rule ref="WordPress.WP.GlobalVariablesOverride.Prohibited">
-		<exclude-pattern>tests/*</exclude-pattern>
-	</rule>
-	<rule ref="WordPress.WP.AlternativeFunctions">
-		<exclude-pattern>bin/*</exclude-pattern>
-	</rule>
-	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
-		<exclude-pattern>src/*</exclude-pattern>
-	</rule>
+    <!-- Show progress of the run -->
+    <arg value="p"/>
 
-	<!-- Enforce PascalCase file names in src/ only. -->
-	<rule ref="Squiz.Classes.ClassFileName">
-		<include-pattern>src/*</include-pattern>
-	</rule>
+    <!-- Enable parallel processing -->
+    <arg name="parallel" value="8"/>
+    
+    <!-- Configure brace and parenthesis rules -->
+    <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
+    <rule ref="Squiz.Functions.MultiLineFunctionDeclaration"/>
 
-	<!-- Allow NotHyphenatedLowercase for TestCase class -->
-	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
-		<exclude-pattern>tests/php/TestCase.php</exclude-pattern>
-		<exclude-pattern>tests/php/DataProvider.php</exclude-pattern>
-	</rule>
+    <!-- Rules -->
+    <rule ref="WordPress-Core">
+        <!-- Allow modern PHP features -->
+        <exclude name="WordPress.Files.FileName"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName"/>
+        <!-- <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/> -->
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+        <exclude name="PEAR.Functions.FunctionCallSignature"/>
+        <!-- <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/> -->
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals"/>
+    </rule>
 
-	<!-- Limit max. consecutive blank lines to 1 instead of 2. -->
-	<rule ref="Squiz.WhiteSpace.FunctionSpacing">
-		<properties>
-			<property name="spacing" value="1"/>
-			<property name="spacingBeforeFirst" value="1"/>
-			<property name="spacingAfterLast" value="0"/>
-		</properties>
-	</rule>
+    <!-- PHP version compatibility -->
+    <config name="testVersion" value="7.4-"/>
 
-	<arg value="s"/>
-	<arg name="extensions" value="php"/>
-	<file>.</file>
+    <!-- WordPress Compatibility -->
+    <config name="minimum_wp_version" value="6.0"/>
+    
+    <!-- Add memory limit for PHPCS -->
+    <ini name="memory_limit" value="256M"/>
 
-	<!-- Strip the filepaths down to the relevant bit. -->
-	<arg name="basepath" value="./"/>
+    <!-- Plugin specific rules -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="crafely-smartsales-lite"/>
+            </property>
+        </properties>
+    </rule>
 
-	<!-- Check up to 20 files simultaneously. -->
-	<arg name="parallel" value="20"/>
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="csmsl"/>
+            </property>
+        </properties>
+    </rule>
 
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<exclude-pattern type="relative">assets/build/*</exclude-pattern>
-	<exclude-pattern type="relative">^logs/*</exclude-pattern>
-	<exclude-pattern>/assets/build/js/*.asset.php</exclude-pattern>
-
+    <!-- PSR-4 Compatible Namespaces -->
+    <rule ref="PSR1.Classes.ClassDeclaration"/>
 </ruleset>

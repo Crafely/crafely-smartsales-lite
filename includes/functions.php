@@ -1,9 +1,8 @@
 <?php
-
 /**
- * Global helper functions for AI Smart Sales
+ * Global helper functions for Crafely SmartSales Lite
  *
- * @package AI Smart Sales
+ * @package Crafely SmartSales Lite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,12 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! function_exists( 'csmsl_is_woocommerce_active' ) ) {
 
 	function csmsl_is_woocommerce_active() {
-		return in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
+		return in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true );
 	}
 }
 
 /**
- * Check if AI Smart Sales is active
+ * Check if Crafely SmartSales Lite is active.
  *
  * @return bool
  */
@@ -193,9 +192,8 @@ if ( ! function_exists( 'csmsl_ajax_response' ) ) {
 if ( ! function_exists( 'csmsl_get_template' ) ) {
 
 	function csmsl_get_template( $template_name, $args = array(), $template_path = '' ) {
-		if ( ! empty( $args ) && is_array( $args ) ) {
-			extract( $args );
-		}
+		$defaults = array();
+		$args     = wp_parse_args( $args, $defaults );
 
 		$located = csmsl_locate_template( $template_name, $template_path );
 
@@ -222,7 +220,7 @@ if ( ! function_exists( 'csmsl_locate_template' ) ) {
 			$template_path = 'crafely-smartsales-lite/';
 		}
 
-		// Look in theme first
+		// Look in theme first.
 		$template = locate_template(
 			array(
 				trailingslashit( $template_path ) . $template_name,
@@ -230,7 +228,7 @@ if ( ! function_exists( 'csmsl_locate_template' ) ) {
 			)
 		);
 
-		// Get default template
+		// Get default template.
 		if ( ! $template ) {
 			$template = csmsl_get_plugin_path( 'templates/' . $template_name );
 		}

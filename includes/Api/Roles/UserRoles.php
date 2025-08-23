@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 class UserRoles {
 
+
 	public function create_outlet_manager_role() {
 		if ( ! get_role( 'csmsl_pos_outlet_manager' ) ) {
 			// Log role creation attempt
@@ -56,7 +57,6 @@ class UserRoles {
 	public function create_cashier_role() {
 		// Cashiers only get basic POS access
 		if ( ! get_role( 'csmsl_pos_cashier' ) ) {
-
 			add_role(
 				'csmsl_pos_cashier',
 				'Pos Cashier',
@@ -73,7 +73,6 @@ class UserRoles {
 
 	public function create_shop_manager_role() {
 		if ( ! get_role( 'csmsl_pos_shop_manager' ) ) {
-
 			add_role(
 				'csmsl_pos_shop_manager',
 				'Pos Shop Manager',

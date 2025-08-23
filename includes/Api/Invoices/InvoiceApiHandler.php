@@ -8,6 +8,12 @@ use WP_Error;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * InvoiceApiHandler class
+ *
+ * Handles REST API requests for invoices.
+ */
 class InvoiceApiHandler {
 
 	/**
@@ -16,7 +22,7 @@ class InvoiceApiHandler {
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 
-		// Check if WooCommerce is active
+		// Check if WooCommerce is active.
 		if ( ! function_exists( 'wc_get_product' ) ) {
 			add_action(
 				'admin_notices',
@@ -72,7 +78,7 @@ class InvoiceApiHandler {
 			)
 		);
 
-		// Trash operations
+		// Trash operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/invoices/trash',
@@ -109,26 +115,26 @@ class InvoiceApiHandler {
 	 * Check if the request has valid permission
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in
+		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Define role-based permissions
+		// Define role-based permissions.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
-		// Check if user has appropriate role
+		// Check if user has appropriate role.
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
 			return false;
 		}
 
-		// For destructive operations, require higher privileges
+		// For destructive operations, require higher privileges.
 		if (
-			in_array( $request->get_method(), array( 'DELETE', 'PUT' ) ) &&
+			in_array( $request->get_method(), array( 'DELETE', 'PUT' ), true ) &&
 			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager' ), $user_roles )
 		) {
 			return false;
@@ -162,16 +168,16 @@ class InvoiceApiHandler {
 		$outlet     = $outlet_id ? get_post( $outlet_id ) : null;
 		$line_items = json_decode( get_post_meta( $invoice->ID, 'line_items', true ), true );
 
-		// --- Build customer object in the same format as CustomersApiHandler ---
+		// --- Build customer object in the same format as CustomersApiHandler ---.
 		$customer_id  = (int) get_post_meta( $invoice->ID, 'customer_id', true );
 		$customer     = get_userdata( $customer_id );
 		$customer_obj = null;
 		if ( $customer ) {
-			// Profile image
+			// Profile image.
 			$profile_image_id  = get_user_meta( $customer_id, 'profile_image', true );
 			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : ( defined( 'CSMSL_URL' ) ? CSMSL_URL . 'assets/images/avatar.png' : '' );
 
-			// WooCommerce customer object
+			// WooCommerce customer object.
 			$wc_customer = null;
 			if ( class_exists( 'WC_Customer' ) ) {
 				try {
@@ -206,8 +212,8 @@ class InvoiceApiHandler {
 
 			// Billing & shipping
 			if ( $wc_customer ) {
-				$first_name = $wc_customer->get_first_name() ?: get_user_meta( $customer_id, 'first_name', true );
-				$last_name  = $wc_customer->get_last_name() ?: get_user_meta( $customer_id, 'last_name', true );
+				$first_name = $wc_customer->get_first_name() ? $wc_customer->get_first_name() : get_user_meta( $customer_id, 'first_name', true );
+				$last_name  = $wc_customer->get_last_name() ? $wc_customer->get_last_name() : get_user_meta( $customer_id, 'last_name', true );
 				$billing    = array(
 					'first_name' => $wc_customer->get_billing_first_name(),
 					'last_name'  => $wc_customer->get_billing_last_name(),
@@ -218,23 +224,23 @@ class InvoiceApiHandler {
 					'state'      => $wc_customer->get_billing_state(),
 					'postcode'   => $wc_customer->get_billing_postcode(),
 					'country'    => $wc_customer->get_billing_country(),
-					'email'      => $wc_customer->get_billing_email() ?: $customer->user_email,
+					'email'      => $wc_customer->get_billing_email() ? $wc_customer->get_billing_email() : $customer->user_email,
 					'phone'      => $wc_customer->get_billing_phone(),
 				);
 				$shipping   = array(
-					'first_name' => $wc_customer->get_shipping_first_name() ?: $billing['first_name'],
-					'last_name'  => $wc_customer->get_shipping_last_name() ?: $billing['last_name'],
-					'company'    => $wc_customer->get_shipping_company() ?: $billing['company'],
-					'address_1'  => $wc_customer->get_shipping_address_1() ?: $billing['address_1'],
-					'address_2'  => $wc_customer->get_shipping_address_2() ?: $billing['address_2'],
-					'city'       => $wc_customer->get_shipping_city() ?: $billing['city'],
-					'state'      => $wc_customer->get_shipping_state() ?: $billing['state'],
-					'postcode'   => $wc_customer->get_shipping_postcode() ?: $billing['postcode'],
-					'country'    => $wc_customer->get_shipping_country() ?: $billing['country'],
+					'first_name' => $wc_customer->get_shipping_first_name() ? $wc_customer->get_shipping_first_name() : $billing['first_name'],
+					'last_name'  => $wc_customer->get_shipping_last_name() ? $wc_customer->get_shipping_last_name() : $billing['last_name'],
+					'company'    => $wc_customer->get_shipping_company() ? $wc_customer->get_shipping_company() : $billing['company'],
+					'address_1'  => $wc_customer->get_shipping_address_1() ? $wc_customer->get_shipping_address_1() : $billing['address_1'],
+					'address_2'  => $wc_customer->get_shipping_address_2() ? $wc_customer->get_shipping_address_2() : $billing['address_2'],
+					'city'       => $wc_customer->get_shipping_city() ? $wc_customer->get_shipping_city() : $billing['city'],
+					'state'      => $wc_customer->get_shipping_state() ? $wc_customer->get_shipping_state() : $billing['state'],
+					'postcode'   => $wc_customer->get_shipping_postcode() ? $wc_customer->get_shipping_postcode() : $billing['postcode'],
+					'country'    => $wc_customer->get_shipping_country() ? $wc_customer->get_shipping_country() : $billing['country'],
 				);
 			} else {
-				$first_name = get_user_meta( $customer_id, 'first_name', true ) ?: get_user_meta( $customer_id, 'billing_first_name', true );
-				$last_name  = get_user_meta( $customer_id, 'last_name', true ) ?: get_user_meta( $customer_id, 'billing_last_name', true );
+				$first_name = get_user_meta( $customer_id, 'first_name', true ) ? get_user_meta( $customer_id, 'first_name', true ) : get_user_meta( $customer_id, 'billing_first_name', true );
+				$last_name  = get_user_meta( $customer_id, 'last_name', true ) ? get_user_meta( $customer_id, 'last_name', true ) : get_user_meta( $customer_id, 'billing_last_name', true );
 				$billing    = array(
 					'first_name' => get_user_meta( $customer_id, 'billing_first_name', true ),
 					'last_name'  => get_user_meta( $customer_id, 'billing_last_name', true ),
@@ -245,19 +251,19 @@ class InvoiceApiHandler {
 					'state'      => get_user_meta( $customer_id, 'billing_state', true ),
 					'postcode'   => get_user_meta( $customer_id, 'billing_postcode', true ),
 					'country'    => get_user_meta( $customer_id, 'billing_country', true ),
-					'email'      => get_user_meta( $customer_id, 'billing_email', true ) ?: $customer->user_email,
+					'email'      => get_user_meta( $customer_id, 'billing_email', true ) ? get_user_meta( $customer_id, 'billing_email', true ) : $customer->user_email,
 					'phone'      => get_user_meta( $customer_id, 'billing_phone', true ),
 				);
 				$shipping   = array(
-					'first_name' => get_user_meta( $customer_id, 'shipping_first_name', true ) ?: $billing['first_name'],
-					'last_name'  => get_user_meta( $customer_id, 'shipping_last_name', true ) ?: $billing['last_name'],
-					'company'    => get_user_meta( $customer_id, 'shipping_company', true ) ?: $billing['company'],
-					'address_1'  => get_user_meta( $customer_id, 'shipping_address_1', true ) ?: $billing['address_1'],
-					'address_2'  => get_user_meta( $customer_id, 'shipping_address_2', true ) ?: $billing['address_2'],
-					'city'       => get_user_meta( $customer_id, 'shipping_city', true ) ?: $billing['city'],
-					'state'      => get_user_meta( $customer_id, 'shipping_state', true ) ?: $billing['state'],
-					'postcode'   => get_user_meta( $customer_id, 'shipping_postcode', true ) ?: $billing['postcode'],
-					'country'    => get_user_meta( $customer_id, 'shipping_country', true ) ?: $billing['country'],
+					'first_name' => get_user_meta( $customer_id, 'shipping_first_name', true ) ? get_user_meta( $customer_id, 'shipping_first_name', true ) : $billing['first_name'],
+					'last_name'  => get_user_meta( $customer_id, 'shipping_last_name', true ) ? get_user_meta( $customer_id, 'shipping_last_name', true ) : $billing['last_name'],
+					'company'    => get_user_meta( $customer_id, 'shipping_company', true ) ? get_user_meta( $customer_id, 'shipping_company', true ) : $billing['company'],
+					'address_1'  => get_user_meta( $customer_id, 'shipping_address_1', true ) ? get_user_meta( $customer_id, 'shipping_address_1', true ) : $billing['address_1'],
+					'address_2'  => get_user_meta( $customer_id, 'shipping_address_2', true ) ? get_user_meta( $customer_id, 'shipping_address_2', true ) : $billing['address_2'],
+					'city'       => get_user_meta( $customer_id, 'shipping_city', true ) ? get_user_meta( $customer_id, 'shipping_city', true ) : $billing['city'],
+					'state'      => get_user_meta( $customer_id, 'shipping_state', true ) ? get_user_meta( $customer_id, 'shipping_state', true ) : $billing['state'],
+					'postcode'   => get_user_meta( $customer_id, 'shipping_postcode', true ) ? get_user_meta( $customer_id, 'shipping_postcode', true ) : $billing['postcode'],
+					'country'    => get_user_meta( $customer_id, 'shipping_country', true ) ? get_user_meta( $customer_id, 'shipping_country', true ) : $billing['country'],
 				);
 			}
 			$customer_obj = array(
@@ -364,7 +370,7 @@ class InvoiceApiHandler {
 		$outlet_id = intval( $data['outlet_id'] ?? 0 );
 		if ( $outlet_id > 0 ) {
 			$outlet = get_post( $outlet_id );
-			if ( ! $outlet || $outlet->post_type !== 'csmsl_outlet' ) {
+			if ( ! $outlet || 'csmsl_outlet' !== $outlet->post_type ) {
 				$errors['outlet_id'] = "The outlet with the ID '{$outlet_id}' does not exist.";
 			}
 		}
@@ -386,7 +392,7 @@ class InvoiceApiHandler {
 					$errors[ "line_items.{$index}.product_id" ] = 'Product ID must be a valid, non-zero integer.';
 				} else {
 					$product = get_post( $product_id );
-					if ( ! $product || $product->post_type !== 'product' ) {
+					if ( ! $product || 'product' !== $product->post_type ) {
 						$errors[ "line_items.{$index}.product_id" ] = "The product with the ID '{$product_id}' does not exist.";
 					} else {
 						// Store original product data with proper number formatting
@@ -503,7 +509,7 @@ class InvoiceApiHandler {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 
-		$args = array(
+		$args        = array(
 			'post_type'      => 'csmsl_invoice',
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
@@ -511,16 +517,16 @@ class InvoiceApiHandler {
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 		);
-
-		if ( $customer_id = $request->get_param( 'customer_id' ) ) {
+		$customer_id = $request->get_param( 'customer_id' );
+		if ( ! empty( $customer_id ) ) {
 			$args['meta_query'][] = array(
 				'key'     => 'customer_id',
 				'value'   => intval( $customer_id ),
 				'compare' => '=',
 			);
 		}
-
-		if ( $outlet_id = $request->get_param( 'outlet_id' ) ) {
+		$outlet_id = $request->get_param( 'outlet_id' );
+		if ( ! empty( $outlet_id ) ) {
 			$args['meta_query'][] = array(
 				'key'     => 'outlet_id',
 				'value'   => intval( $outlet_id ),
@@ -554,7 +560,7 @@ class InvoiceApiHandler {
 		$invoice_id = $request->get_param( 'id' );
 		$invoice    = get_post( $invoice_id );
 
-		if ( ! $invoice || $invoice->post_type !== 'csmsl_invoice' ) {
+		if ( ! $invoice || 'csmsl_invoice' !== $invoice->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invoice not found.',
@@ -582,7 +588,7 @@ class InvoiceApiHandler {
 		$invoice_id = $request->get_param( 'id' );
 		$invoice    = get_post( $invoice_id );
 
-		if ( ! $invoice || $invoice->post_type !== 'csmsl_invoice' ) {
+		if ( ! $invoice || 'csmsl_invoice' !== $invoice->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invoice not found.',
@@ -614,7 +620,7 @@ class InvoiceApiHandler {
 			$outlet_id = intval( $data['outlet_id'] );
 			if ( $outlet_id > 0 ) {
 				$outlet = get_post( $outlet_id );
-				if ( ! $outlet || $outlet->post_type !== 'csmsl_outlet' ) {
+				if ( ! $outlet || 'csmsl_outlet' !== $outlet->post_type ) {
 					$errors['outlet_id'] = "The outlet with the ID '{$outlet_id}' does not exist.";
 				}
 			}
@@ -638,7 +644,7 @@ class InvoiceApiHandler {
 						$errors[ "line_items.{$index}.product_id" ] = 'Product ID must be a valid, non-zero integer.';
 					} else {
 						$product = get_post( $product_id );
-						if ( ! $product || $product->post_type !== 'product' ) {
+						if ( ! $product || 'product' !== $product->post_type ) {
 							$errors[ "line_items.{$index}.product_id" ] = "The product with the ID '{$product_id}' does not exist.";
 						} else {
 							// Store original product data with proper number formatting

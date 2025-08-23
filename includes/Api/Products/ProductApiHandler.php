@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ProductApiHandler extends BaseApiHandler {
 
+
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -138,16 +139,17 @@ class ProductApiHandler extends BaseApiHandler {
 		if ( empty( $image_url ) ) {
 			$image_url = $default_image_url;
 		}
+		$sale_price = intval( $product->get_sale_price() );
 
 		return array(
 			'id'                => $product->get_id(),
 			'name'              => $product->get_name(),
 			'price'             => intval( $product->get_price() ),
 			'regular_price'     => intval( $product->get_regular_price() ),
-			'sale_price'        => intval( $product->get_sale_price() ) ?: intval( $product->get_regular_price() ),
+			'sale_price'        => $sale_price ? $sale_price : intval( $product->get_regular_price() ),
 			// 'currency' => get_woocommerce_currency(),
 			'stock'             => $product->get_manage_stock() ? intval( $product->get_stock_quantity() ) : null,
-			'sku'               => $product->get_sku() ?: $default_sku,
+			'sku'               => $product->get_sku() ? $product->get_sku() : $default_sku,
 			'featured'          => $product->is_featured(),
 			'description'       => $product->get_description(),
 			'short_description' => $product->get_short_description(),
@@ -165,11 +167,11 @@ class ProductApiHandler extends BaseApiHandler {
 
 		$args = array(
 			'post_type'      => 'product',
-			'post_status'    => $request->get_param( 'status' ) ?: 'publish',
+			'post_status'    => $request->get_param( 'status' ) ? $request->get_param( 'status' ) : 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $current_page,
-			'orderby'        => $request->get_param( 'orderby' ) ?: 'date',
-			'order'          => $request->get_param( 'order' ) ?: 'DESC',
+			'orderby'        => $request->get_param( 'orderby' ) ? $request->get_param( 'orderby' ) : 'date',
+			'order'          => $request->get_param( 'order' ) ? $request->get_param( 'order' ) : 'DESC',
 		);
 
 		// Add search functionality
@@ -246,7 +248,7 @@ class ProductApiHandler extends BaseApiHandler {
 
 		// Validate orderby parameter
 		$valid_orderby_values = array( 'date', 'title', 'price', 'popularity' );
-		if ( ! in_array( $args['orderby'], $valid_orderby_values ) ) {
+		if ( ! in_array( $args['orderby'], $valid_orderby_values, true ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invalid orderby value.',
@@ -262,7 +264,7 @@ class ProductApiHandler extends BaseApiHandler {
 
 		// Validate order parameter
 		$valid_order_values = array( 'ASC', 'DESC' );
-		if ( ! in_array( strtoupper( $args['order'] ), $valid_order_values ) ) {
+		if ( ! in_array( strtoupper( $args['order'] ), $valid_order_values, true ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invalid order value.',
@@ -277,7 +279,8 @@ class ProductApiHandler extends BaseApiHandler {
 		}
 
 		// Validate category parameter
-		if ( $category = $request->get_param( 'category' ) ) {
+		$category = $request->get_param( 'category');
+		if ( ! empty( $category ) ) {
             // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 			$args['tax_query'] = array(
 				array(
@@ -415,7 +418,7 @@ class ProductApiHandler extends BaseApiHandler {
 
 		// Validate status
 		$valid_statuses = array( 'draft', 'pending', 'private', 'publish' );
-		if ( ! in_array( $data['status'], $valid_statuses ) ) {
+		if ( ! in_array( $data['status'], $valid_statuses, true ) ) {
 			$errors['status'] = "The status '{$data['status']}' is not supported.";
 		}
 

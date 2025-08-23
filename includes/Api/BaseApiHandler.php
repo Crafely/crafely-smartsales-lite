@@ -17,7 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 abstract class BaseApiHandler {
 
-
 	/**
 	 * API namespace
 	 *
@@ -46,7 +45,7 @@ abstract class BaseApiHandler {
 	 * @return bool|\WP_Error
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in
+		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'rest_forbidden',
@@ -55,10 +54,10 @@ abstract class BaseApiHandler {
 			);
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -85,7 +84,7 @@ abstract class BaseApiHandler {
 			$required = isset( $rule['required'] ) ? $rule['required'] : false;
 			$type     = isset( $rule['type'] ) ? $rule['type'] : 'string';
 
-			// Check required fields
+			// Check required fields.
 			if ( $required && ! isset( $params[ $field ] ) ) {
 				return new WP_Error(
 					'missing_parameter',
@@ -95,7 +94,7 @@ abstract class BaseApiHandler {
 				);
 			}
 
-			// Validate type if parameter exists
+			// Validate type if parameter exists.
 			if ( isset( $params[ $field ] ) ) {
 				$valid = $this->validate_field_type( $params[ $field ], $type );
 				if ( ! $valid ) {
@@ -126,7 +125,7 @@ abstract class BaseApiHandler {
 			case 'string':
 				return is_string( $value );
 			case 'boolean':
-				return is_bool( $value ) || in_array( $value, array( 'true', 'false', '1', '0' ) );
+				return is_bool( $value ) || in_array( $value, array( 'true', 'false', '1', '0' ), true );
 			case 'array':
 				return is_array( $value );
 			case 'email':
