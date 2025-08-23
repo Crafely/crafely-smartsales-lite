@@ -11,7 +11,12 @@ type UserPermissions = {
     manage_discounts: boolean
 }
 
-type Roles = 'aipos_shop_manager' | 'aipos_outlet_manager' | 'aipos_cashier' | 'customer' | 'administrator'
+type Roles =
+    | 'csmsl_pos_shop_manager'
+    | 'csmsl_pos_outlet_manager'
+    | 'csmsl_pos_cashier'
+    | 'customer'
+    | 'administrator'
 
 type UserStats = {
     total_sales: number
