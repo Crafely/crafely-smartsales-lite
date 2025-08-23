@@ -4,7 +4,17 @@
   "description": "A WordPress plugin for creating and managing smart sales in your WooCommerce store. This plugin allows you to easily create sales campaigns, promotions, and discounts to boost your store's performance.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "phpcs": "composer run phpcs",
+    "phpcbf": "composer run phpcbf",
+    "phpcs:check": "composer run phpcs:check",
+    "phpcs:full": "composer run phpcs:full",
+    "phpcs:strict": "composer run phpcs:strict",
+    "phpcs:textdomain": "composer run phpcs:textdomain",
+    "phpcs:security": "composer run phpcs:security",
+    "lint": "npm run phpcs:check",
+    "lint:strict": "npm run phpcs:strict",
+    "lint:textdomain": "npm run phpcs:textdomain"
   },
   "keywords": [],
   "author": "",

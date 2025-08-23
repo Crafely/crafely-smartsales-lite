@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AIAssistancesApiHandler {
 
-
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
@@ -77,7 +76,7 @@ class AIAssistancesApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {

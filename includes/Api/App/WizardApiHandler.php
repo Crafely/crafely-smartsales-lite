@@ -56,7 +56,7 @@ class WizardApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
@@ -169,13 +169,13 @@ class WizardApiHandler {
 			}
 
 			// Save to WordPress options with unique identifier
-			$wizard_entries              = get_option( 'crafsmli_wizard_entries', array() );
+			$wizard_entries              = get_option( 'csmsl_wizard_entries', array() );
 			$entry_id                    = uniqid( 'wizard_' );
 			$wizard_entries[ $entry_id ] = $wizard_data;
-			update_option( 'crafsmli_wizard_entries', $wizard_entries );
+			update_option( 'csmsl_wizard_entries', $wizard_entries );
 
 			// Also update the latest entry as the current wizard data
-			update_option( 'crafsmli_wizard_data', $wizard_data );
+			update_option( 'csmsl_wizard_data', $wizard_data );
 
 			return new WP_REST_Response(
 				$this->format_success_response(
@@ -201,7 +201,7 @@ class WizardApiHandler {
 		$entry_id = $request->get_param( 'entry_id' );
 
 		if ( $entry_id ) {
-			$wizard_entries = get_option( 'ai_wizard_entries', array() );
+			$wizard_entries = get_option( 'csmsl_wizard_entries', array() );
 			$wizard_data    = isset( $wizard_entries[ $entry_id ] ) ? $wizard_entries[ $entry_id ] : null;
 
 			if ( ! $wizard_data ) {
@@ -212,7 +212,7 @@ class WizardApiHandler {
 			}
 		} else {
 			$wizard_data = get_option(
-				'ai_wizard_data',
+				'csmsl_wizard_data',
 				array(
 					'business_type'    => 'retail',
 					'inventory_range'  => 'small',
@@ -242,7 +242,7 @@ class WizardApiHandler {
 
 			// Get existing wizard data
 			if ( $entry_id ) {
-				$wizard_entries = get_option( 'crafsmli_wizard_entries', array() );
+				$wizard_entries = get_option( 'csmsl_wizard_entries', array() );
 				if ( ! isset( $wizard_entries[ $entry_id ] ) ) {
 					return new WP_REST_Response(
 						$this->format_error_response( 'Entry not found' ),
@@ -251,7 +251,7 @@ class WizardApiHandler {
 				}
 				$existing_data = $wizard_entries[ $entry_id ];
 			} else {
-				$existing_data = get_option( 'crafsmli_wizard_data', array() );
+				$existing_data = get_option( 'csmsl_wizard_data', array() );
 			}
 
 			// Merge existing data with new data
@@ -318,17 +318,17 @@ class WizardApiHandler {
 			// Save updated data
 			if ( $entry_id ) {
 				$wizard_entries[ $entry_id ] = $updated_data;
-				update_option( 'crafsmli_wizard_entries', $wizard_entries );
+				update_option( 'csmsl_wizard_entries', $wizard_entries );
 
 				// If this is the latest entry, also update the current wizard data
-				$current_wizard_data = get_option( 'crafsmli_wizard_data', array() );
+				$current_wizard_data = get_option( 'csmsl_wizard_data', array() );
 				if ( isset( $current_wizard_data['created_at'] ) &&
 					isset( $existing_data['created_at'] ) &&
 					$current_wizard_data['created_at'] === $existing_data['created_at'] ) {
-					update_option( 'crafsmli_wizard_data', $updated_data );
+					update_option( 'csmsl_wizard_data', $updated_data );
 				}
 			} else {
-				update_option( 'crafsmli_wizard_data', $updated_data );
+				update_option( 'csmsl_wizard_data', $updated_data );
 			}
 
 			return new WP_REST_Response(

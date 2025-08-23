@@ -35,7 +35,7 @@ All JavaScript and CSS files in the `dist/` directory are compiled from source f
 
 ### 💻 Point of Sale (POS) System
 
-- **Modern POS Interface**: Access via `/aipos` URL with intuitive touch-friendly interface
+- **Modern POS Interface**: Access via `/smart-pos` URL with intuitive touch-friendly interface
 - **Counter Management**: Support for multiple POS terminals per outlet
 - **Real-time Inventory**: Live inventory updates across all channels
 - **Role-based Access**: Secure access for cashiers, outlet managers, and shop managers
@@ -75,9 +75,9 @@ All JavaScript and CSS files in the `dist/` directory are compiled from source f
 ### 👤 User & Role Management
 
 - **Custom User Roles**:
-  - `aipos_outlet_manager`: Outlet-level management with full access
-  - `aipos_cashier`: POS operation access with limited permissions
-  - `aipos_shop_manager`: Store-wide management capabilities
+  - `csmsl_pos_outlet_manager`: Outlet-level management with full access
+  - `csmsl_pos_cashier`: POS operation access with limited permissions
+  - `csmsl_pos_shop_manager`: Store-wide management capabilities
 - **Role-Based Permissions**: Granular access control system
 - **User Assignment**: Assign users to specific outlets and counters
 
@@ -173,7 +173,7 @@ All JavaScript and CSS files in the `dist/` directory are compiled from source f
 4. **Configure Counter**: Create a POS counter for your outlet
 5. **Assign Users**: Create users and assign appropriate roles
 6. **Configure Products**: Import or create your product catalog
-7. **Start Selling**: Access the POS system at `/aipos` URL
+7. **Start Selling**: Access the POS system at `/smart-pos` URL
 
 ### Quick Start Guide
 
@@ -188,21 +188,21 @@ After installation, the plugin will guide you through:
 
 ### Accessing the POS System
 
-1. **POS Interface**: Navigate to `/aipos` in your browser
+1. **POS Interface**: Navigate to `/smart-pos` in your browser
 2. **Login**: Use your WordPress credentials with appropriate POS roles
-3. **Authentication**: Only users with `aipos_cashier`, `aipos_outlet_manager`, or `aipos_shop_manager` roles can access
+3. **Authentication**: Only users with `csmsl_pos_cashier`, `csmsl_pos_outlet_manager`, or `csmsl_pos_shop_manager` roles can access
 
 ### Initial Setup
 
 1. **Business Configuration**: Set up your business profile and branding
 2. **Outlet Creation**: Create your physical store locations
 3. **Counter Setup**: Configure POS terminals for each outlet
-4. **User Management**: Create users and assign roles (`aipos_cashier`, `aipos_outlet_manager`, `aipos_shop_manager`)
+4. **User Management**: Create users and assign roles (`csmsl_pos_cashier`, `csmsl_pos_outlet_manager`, `csmsl_pos_shop_manager`)
 5. **Product Import**: Add your product catalog through WooCommerce
 
 ### Daily Operations
 
-- **POS Sales**: Use the modern POS interface for in-store sales at `/aipos`
+- **POS Sales**: Use the modern POS interface for in-store sales at `/smart-pos`
 - **Order Management**: Handle online orders and fulfillment through the admin dashboard
 - **Inventory Control**: Monitor and update stock levels in real-time
 - **Customer Service**: Manage customer profiles and purchase history
@@ -218,9 +218,9 @@ After installation, the plugin will guide you through:
 
 ### User Roles and Permissions
 
-- **aipos_shop_manager**: Full access to all features and multi-outlet management
-- **aipos_outlet_manager**: Manages specific outlets and can assign cashiers
-- **aipos_cashier**: Frontend POS access only, assigned to specific counters
+- **csmsl_pos_shop_manager**: Full access to all features and multi-outlet management
+- **csmsl_pos_outlet_manager**: Manages specific outlets and can assign cashiers
+- **csmsl_pos_cashier**: Frontend POS access only, assigned to specific counters
 
 ## 🔌 API Reference
 
@@ -380,8 +380,8 @@ crafely-smartsales-lite/
 │   │   └── PostTypes.php    # Outlet, Counter, Invoice CPTs
 │   └── DB/                  # Database handlers
 ├── templates/               # PHP templates
-│   ├── aipos-template.php   # Main POS interface
-│   └── aipos-login.php      # POS login
+│   ├── smart-pos-template.php   # Main POS interface
+│   └── smart-pos-login.php      # POS login
 ├── assets/                  # Frontend assets
 │   ├── js/                  # JavaScript files
 │   ├── css/                 # Stylesheets
@@ -421,7 +421,7 @@ crafely-smartsales-lite/
 - **Framework**: Vue.js 3 with Composition API
 - **Build Tool**: Modern JavaScript and CSS processing
 - **Styling**: Tailwind CSS with responsive design
-- **POS Interface**: Accessible via `/aipos` URL
+- **POS Interface**: Accessible via `/smart-pos` URL
 - **Admin Interface**: WordPress admin dashboard integration
 - **Authentication**: Role-based access control
 
@@ -437,9 +437,9 @@ The plugin utilizes WordPress custom post types and meta fields:
 
 #### Custom User Roles
 
-- **aipos_outlet_manager**: Full outlet management access
-- **aipos_cashier**: POS operation permissions only
-- **aipos_shop_manager**: Store-wide management capabilities
+- **csmsl_pos_outlet_manager**: Full outlet management access
+- **csmsl_pos_cashier**: POS operation permissions only
+- **csmsl_pos_shop_manager**: Store-wide management capabilities
 
 #### WooCommerce Integration
 
@@ -499,7 +499,7 @@ composer phpstan
 
 ### Additional Resources
 
-- **API Documentation**: Available in `/aipos-documentation/` directory
+- **API Documentation**: Available in `/smart-pos-documentation/` directory
 - **Developer Guide**: `DEVELOPER_GUIDE.md` with comprehensive project documentation
 - **User Guide**: Available in plugin admin dashboard
 - **Code Examples**: Sample implementations in documentation

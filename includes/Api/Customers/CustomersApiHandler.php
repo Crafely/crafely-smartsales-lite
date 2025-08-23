@@ -82,7 +82,7 @@ class CustomersApiHandler {
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
@@ -138,7 +138,7 @@ class CustomersApiHandler {
 		if ( ! empty( $search ) ) {
 			$order_query['search'] = '*' . $search . '*';
 		}
-		$customer_ids = array();
+		$customer_ids    = array();
 		$guest_customers = array();
 		if ( class_exists( 'WC_Order_Query' ) ) {
 			$orders = wc_get_orders( $order_query );
@@ -161,60 +161,60 @@ class CustomersApiHandler {
 							$guest_id = 'guest_' . md5( $email );
 							if ( ! isset( $guest_customers[ $guest_id ] ) ) {
 								$guest_customers[ $guest_id ] = array(
-									'id' => $guest_id,
-									'email' => $email,
-									'first_name' => $order->get_billing_first_name(),
-									'last_name' => $order->get_billing_last_name(),
-									'full_name' => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
-									'phone' => $order->get_billing_phone(),
-									'billing' => array(
+									'id'            => $guest_id,
+									'email'         => $email,
+									'first_name'    => $order->get_billing_first_name(),
+									'last_name'     => $order->get_billing_last_name(),
+									'full_name'     => trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ),
+									'phone'         => $order->get_billing_phone(),
+									'billing'       => array(
 										'first_name' => $order->get_billing_first_name(),
-										'last_name' => $order->get_billing_last_name(),
-										'company' => $order->get_billing_company(),
-										'address_1' => $order->get_billing_address_1(),
-										'address_2' => $order->get_billing_address_2(),
-										'city' => $order->get_billing_city(),
-										'state' => $order->get_billing_state(),
-										'postcode' => $order->get_billing_postcode(),
-										'country' => $order->get_billing_country(),
-										'email' => $email,
-										'phone' => $order->get_billing_phone(),
+										'last_name'  => $order->get_billing_last_name(),
+										'company'    => $order->get_billing_company(),
+										'address_1'  => $order->get_billing_address_1(),
+										'address_2'  => $order->get_billing_address_2(),
+										'city'       => $order->get_billing_city(),
+										'state'      => $order->get_billing_state(),
+										'postcode'   => $order->get_billing_postcode(),
+										'country'    => $order->get_billing_country(),
+										'email'      => $email,
+										'phone'      => $order->get_billing_phone(),
 									),
-									'shipping' => array(
+									'shipping'      => array(
 										'first_name' => $order->get_shipping_first_name(),
-										'last_name' => $order->get_shipping_last_name(),
-										'company' => $order->get_shipping_company(),
-										'address_1' => $order->get_shipping_address_1(),
-										'address_2' => $order->get_shipping_address_2(),
-										'city' => $order->get_shipping_city(),
-										'state' => $order->get_shipping_state(),
-										'postcode' => $order->get_shipping_postcode(),
-										'country' => $order->get_shipping_country(),
+										'last_name'  => $order->get_shipping_last_name(),
+										'company'    => $order->get_shipping_company(),
+										'address_1'  => $order->get_shipping_address_1(),
+										'address_2'  => $order->get_shipping_address_2(),
+										'city'       => $order->get_shipping_city(),
+										'state'      => $order->get_shipping_state(),
+										'postcode'   => $order->get_shipping_postcode(),
+										'country'    => $order->get_shipping_country(),
 									),
 									'profile_image' => CSMSL_URL . 'assets/images/avatar.png',
-									'total_orders' => 1,
-									'orders' => array(
+									'total_orders'  => 1,
+									'orders'        => array(
 										array(
 											'order_id' => $order->get_id(),
-											'total' => $order->get_total(),
-											'status' => $order->get_status(),
-											'date' => $order->get_date_created()->date( 'Y-m-d H:i:s' ),
+											'total'    => $order->get_total(),
+											'status'   => $order->get_status(),
+											'date'     => $order->get_date_created()->date( 'Y-m-d H:i:s' ),
 										),
 									),
-									'is_guest' => true,
+									'is_guest'      => true,
 								);
 							} else {
 								// Add order to guest's order list
 								$guest_customers[ $guest_id ]['orders'][] = array(
 									'order_id' => $order->get_id(),
-									'total' => $order->get_total(),
-									'status' => $order->get_status(),
-									'date' => $order->get_date_created()->date( 'Y-m-d H:i:s' ),
+									'total'    => $order->get_total(),
+									'status'   => $order->get_status(),
+									'date'     => $order->get_date_created()->date( 'Y-m-d H:i:s' ),
 								);
-								if (!isset($guest_customers[$guest_id]['total_orders']) || !is_int($guest_customers[$guest_id]['total_orders'])) {
-									$guest_customers[$guest_id]['total_orders'] = 1;
+								if ( ! isset( $guest_customers[ $guest_id ]['total_orders'] ) || ! is_int( $guest_customers[ $guest_id ]['total_orders'] ) ) {
+									$guest_customers[ $guest_id ]['total_orders'] = 1;
 								} else {
-									$guest_customers[$guest_id]['total_orders'] += 1;
+									$guest_customers[ $guest_id ]['total_orders'] += 1;
 								}
 							}
 						}
