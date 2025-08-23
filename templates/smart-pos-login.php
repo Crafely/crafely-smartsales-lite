@@ -3,6 +3,8 @@
  * Crafely SmartSales Lite POS Login Template
  *
  * This template is used for the Crafely SmartSales Lite POS system.
+ *
+ * @package CrafelySmartSalesLite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -11,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Process login form submission.
 $error_message = '';
+
 
 // Check if form was submitted.
 if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) && isset( $_POST['pos_login_nonce'] ) ) {

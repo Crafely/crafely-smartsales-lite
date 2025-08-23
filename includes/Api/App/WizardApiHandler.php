@@ -1,4 +1,11 @@
 <?php
+/**
+ * WizardApiHandler class
+ * Handles REST API requests for the wizard functionality in Crafely SmartSales Lite.
+ * This class provides endpoints for creating, retrieving, and updating wizard data.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\App;
 
@@ -8,14 +15,24 @@ use WP_REST_Response;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * WizardApiHandler
+ * Handles REST API requests for the wizard functionality in Crafely SmartSales Lite.
+ * This class provides endpoints for creating, retrieving, and updating wizard data.
+ */
 class WizardApiHandler {
 
-
+	/**
+	 * Constructor
+	 * Initializes the REST API routes for the wizard functionality.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
-
+	/**
+	 * Registers REST API routes for the wizard functionality.
+	 * This method defines the endpoints for creating, retrieving, and updating wizard data.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -47,8 +64,13 @@ class WizardApiHandler {
 			)
 		);
 	}
-
-	public function check_permission( $request ) {
+	/**
+	 * Checks if the current user has permission to access the wizard API endpoints.
+	 * This method verifies if the user is logged in and has the appropriate roles to access the wizard functionality.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_permission() {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -67,22 +89,46 @@ class WizardApiHandler {
 
 		return true;
 	}
-
+	/**
+	 * Formats a successful response for the REST API.
+	 * This method creates a standardized response structure for successful API calls.
+	 *
+	 * @param string $message The success message to include in the response.
+	 * @param array  $data Optional. Additional data to include in the response.
+	 * @param int    $statusCode Optional. HTTP status code for the response. Default is 200.
+	 * @return array The formatted response array.
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
-
+	/**
+	 * Formats an error response for the REST API.
+	 * This method creates a standardized response structure for error API calls.
+	 *
+	 * @param string $message The error message to include in the response.
+	 * @param int    $code Optional. HTTP status code for the response. Default is 400.
+	 * @return array The formatted error response array.
+	 */
 	private function format_error_response( $message, $code = 400 ) {
 		return array(
 			'success' => false,
 			'message' => $message,
+			'status'  => $code,
 		);
 	}
 
+	/**
+	 * Sanitizes a boolean value.
+	 * This method checks if the value is a boolean or can be interpreted as a boolean.
+	 *
+	 * @param mixed $value The value to sanitize.
+	 * @return bool The sanitized boolean value.
+	 */
 	private function sanitize_boolean( $value ) {
 		if ( is_bool( $value ) ) {
 			return $value;
@@ -95,7 +141,15 @@ class WizardApiHandler {
 
 		return (bool) $value;
 	}
-
+	/**
+	 * Handles the wizard request.
+	 * This method processes the incoming request, validates the data, and saves it to the Word
+	 * Press options table.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response object containing the result of the operation.
+	 * @throws \Exception If an error occurs during processing.
+	 */
 	public function handle_wizard_request( WP_REST_Request $request ) {
 		try {
 			$params = $request->get_json_params();
@@ -170,13 +224,13 @@ class WizardApiHandler {
 				);
 			}
 
-			// Save to WordPress options with unique identifier
+			// Save to WordPress options with unique identifier.
 			$wizard_entries              = get_option( 'csmsl_wizard_entries', array() );
 			$entry_id                    = uniqid( 'wizard_' );
 			$wizard_entries[ $entry_id ] = $wizard_data;
 			update_option( 'csmsl_wizard_entries', $wizard_entries );
 
-			// Also update the latest entry as the current wizard data
+			// Also update the latest entry as the current wizard data.
 			update_option( 'csmsl_wizard_data', $wizard_data );
 
 			return new WP_REST_Response(
@@ -197,7 +251,14 @@ class WizardApiHandler {
 			);
 		}
 	}
-
+	/**
+	 * Retrieves wizard data from the WordPress options table.
+	 * This method fetches the wizard data based on the provided entry ID or retrieves the latest
+	 * wizard data if no entry ID is provided.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response object containing the wizard data or an error message
+	 */
 	public function get_wizard_data( WP_REST_Request $request ) {
 		$entry_id = $request->get_param( 'entry_id' );
 
@@ -235,13 +296,21 @@ class WizardApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Updates wizard data in the WordPress options table.
+	 * This method updates the wizard data based on the provided entry ID or updates the latest
+	 * wizard data if no entry ID is provided.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response object containing the result of the update operation.
+	 * @throws \Exception If an error occurs during processing.
+	 */
 	public function update_wizard_data( WP_REST_Request $request ) {
 		try {
 			$params   = $request->get_json_params();
 			$entry_id = $request->get_param( 'entry_id' );
 
-			// Get existing wizard data
+			// Get existing wizard data.
 			if ( $entry_id ) {
 				$wizard_entries = get_option( 'csmsl_wizard_entries', array() );
 				if ( ! isset( $wizard_entries[ $entry_id ] ) ) {
@@ -255,7 +324,7 @@ class WizardApiHandler {
 				$existing_data = get_option( 'csmsl_wizard_data', array() );
 			}
 
-			// Merge existing data with new data
+			// Merge existing data with new data.
 			$updated_data = array_merge(
 				$existing_data,
 				array(
@@ -273,7 +342,7 @@ class WizardApiHandler {
 				)
 			);
 
-			// Validate business_type if provided
+			// Validate business_type if provided.
 			if ( isset( $params['business_type'] ) ) {
 				$valid_business_types = array(
 					'retail',

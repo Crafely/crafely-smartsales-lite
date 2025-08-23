@@ -1,19 +1,34 @@
 <?php
+/**
+ * Crafely SmartSales Lite Post Types
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\CPT;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+/**
+ * Class PostTypes
+ * Handles the registration of custom post types for Crafely SmartSales Lite.
+ */
 class PostTypes {
 
-
+	/**
+	 * Constructor.
+	 * Initializes the custom post types by hooking into the 'init' action.
+	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_types' ) );
 	}
 
+	/**
+	 * Registers custom post types for the Crafely SmartSales Lite plugin.
+	 */
 	public function register_post_types() {
-		// Register Outlet post type
+		// Register Outlet post type.
 		register_post_type(
 			'csmsl_outlet',
 			array(
@@ -37,7 +52,7 @@ class PostTypes {
 			)
 		);
 
-		// Register Counter post type
+		// Register Counter post type.
 		register_post_type(
 			'csmsl_counter',
 			array(
@@ -61,7 +76,7 @@ class PostTypes {
 			)
 		);
 
-		// Register Assignment History post type
+		// Register Assignment History post type.
 		register_post_type(
 			'smsl_assign_hist',
 			array(
@@ -76,7 +91,7 @@ class PostTypes {
 			)
 		);
 
-		// Register Invoice post type
+		// Register Invoice post type.
 		register_post_type(
 			'csmsl_invoice',
 			array(
@@ -87,7 +102,7 @@ class PostTypes {
 				'public'       => false,
 				'show_ui'      => true,
 				'show_in_menu' => 'pos',
-				'show_in_rest' => true,  // Important for REST API
+				'show_in_rest' => true,
 				'supports'     => array( 'title' ),
 				'capabilities' => array(
 					'edit_post'          => 'csmsl_manage_invoices',

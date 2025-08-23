@@ -1,4 +1,9 @@
 <?php
+/**
+ * Crafely Smart Sales Lite
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Categories;
 
@@ -8,6 +13,7 @@ use WP_Term;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 /**
  * Class CategoriesApiHandler
  *
@@ -23,7 +29,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @package CrafelySmartSalesLite
  */
-
 class CategoriesApiHandler {
 
 	/**
@@ -35,6 +40,10 @@ class CategoriesApiHandler {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
+	/**
+	 * Registers the REST API routes for product categories.
+	 * This method defines the endpoints for listing, retrieving, creating, updating, and deleting categories.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -93,15 +102,14 @@ class CategoriesApiHandler {
 	 * Read operations are allowed for authenticated POS roles.
 	 * Write operations (POST, PUT, DELETE) require 'administrator' or 'manage_woocommerce' capability.
 	 *
-	 * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return bool True if the user has permission, false otherwise.
 	 */
 	public function check_permission( $request ) {
 		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
-
-		// Get current user
 		$user = wp_get_current_user();
 
 		// For write operations, require higher privileges.
@@ -116,6 +124,15 @@ class CategoriesApiHandler {
 		return ! empty( array_intersect( $allowed_roles, $user_roles ) );
 	}
 
+	/**
+	 * Formats an error response for the API.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors  Optional. An associative array of error details.
+	 * @param int    $statusCode Optional. HTTP status code for the response.
+	 * @param string $path Optional. The API endpoint path.
+	 * @return array Formatted error response.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
@@ -134,9 +151,17 @@ class CategoriesApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
-
+	/**
+	 * Formats a category response for the API.
+	 * This method converts a WP_Term object into a structured array for API responses.
+	 *
+	 * @param WP_Term $category The category term object.
+	 * @return array Formatted category data.
+	 */
 	private function format_category_response( $category ) {
 		return array(
 			'id'          => $category->term_id,
@@ -148,6 +173,14 @@ class CategoriesApiHandler {
 		);
 	}
 
+	/**
+	 * Retrieves a list of product categories.
+	 * Supports filtering by hide_empty, orderby, order, and limit parameters.
+	 * Returns a formatted response with category data or an error message.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response Formatted response with category data or error message.
+	 */
 	public function get_categories( $request ) {
 		$args = array(
 			'taxonomy'   => 'product_cat',
@@ -198,7 +231,12 @@ class CategoriesApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Retrieves a single product category by ID.
+	 * Returns a formatted response with category data or an error message.
+	 *
+	 * @param array $data The request data containing the category ID.
+	 */
 	public function get_category( $data ) {
 		$category_id = $data['id'];
 		$category    = get_term( $category_id, 'product_cat' );
@@ -227,6 +265,13 @@ class CategoriesApiHandler {
 		);
 	}
 
+	/**
+	 * Creates a new product category.
+	 * Validates required fields and returns a formatted response with the created category data or an error message.
+	 *
+	 * @param \WP_REST_Request $request The REST request object containing category data.
+	 * @return \WP_REST_Response Formatted response with category data or error message.
+	 */
 	public function create_category( $request ) {
 		$data = $request->get_json_params();
 
@@ -293,7 +338,14 @@ class CategoriesApiHandler {
 			201
 		);
 	}
-
+	/**
+	 * Updates an existing product category.
+	 * Validates the category ID and updates the category with provided data.
+	 * Returns a formatted response with the updated category data or an error message.
+	 *
+	 * @param \WP_REST_Request $request The REST request object containing category ID and data.
+	 * @return \WP_REST_Response Formatted response with updated category data or error message.
+	 */
 	public function update_category( $request ) {
 		$category_id = $request->get_param( 'id' );
 		$data        = $request->get_json_params();
@@ -351,7 +403,14 @@ class CategoriesApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Deletes a product category by ID.
+	 * Validates the category ID and deletes the category if it exists.
+	 * Returns a formatted response indicating success or failure.
+	 *
+	 * @param \WP_REST_Request $request The REST request object containing the category ID.
+	 * @return \WP_REST_Response Formatted response indicating success or failure.
+	 */
 	public function delete_category( $request ) {
 		$category_id = $request->get_param( 'id' );
 		$category    = get_term( $category_id, 'product_cat' );

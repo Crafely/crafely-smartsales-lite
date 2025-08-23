@@ -1,10 +1,17 @@
 <?php
+/**
+ * POS Class
+ * Handles the main POS functionality and routing
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Core;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 /**
  * POS Class
  *
@@ -12,15 +19,30 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class POS {
 
+	/**
+	 * Handles user-related API requests.
+	 *
+	 * @var UsersApiHandler $usersApiHandler The users API handler instance.
+	 */
 	private $usersApiHandler;
+	/**
+	 * Handles outlet-related API requests.
+	 *
+	 * @var OutletsApiHandler $outletsApiHandler Handles outlet-related API requests.
+	 */
 	private $outletsApiHandler;
-	private $countersApiHandler;
-	private $authManager;
 
-	/*
-	* Constructor
-	* Initializes the POS class and sets up necessary hooks and actions
-	*/
+	/**
+	 * Handles counter-related API requests.
+	 *
+	 * @var CountersApiHandler $countersApiHandler Handles counter-related API requests.
+	 */
+	private $countersApiHandler;
+
+	/**
+	 * Constructor
+	 * Initializes the POS class and sets up the necessary hooks and actions.
+	 */
 	public function __construct() {
 		if ( ! defined( 'CSMSL_DIR' ) || ! defined( 'CSMSL_URL' ) ) {
 			wp_die( esc_html__( 'CSMSL_DIR or CSMSL_URL is not defined.', 'crafely-smartsales-lite' ) );
@@ -28,46 +50,41 @@ class POS {
 
 		// Add high-priority handlers for POS URLs.
 		add_action( 'parse_request', array( $this, 'handle_csmsl_pos_endpoint' ), 1 );
-
-		// Add this high priority redirect handling.
 		add_action( 'template_redirect', array( $this, 'intercept_pos_redirects' ), 1 );
 
 		add_action( 'init', array( $this, 'add_pos_rewrite_rules' ) );
 		add_action( 'template_include', array( $this, 'load_pos_template' ) );
+
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_front_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'login_page_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'dequeue_unnecessary_assets' ), 999 );
+
 		add_action( 'admin_bar_menu', array( $this, 'add_csmsl_pos_toolbar_menu' ), 100 );
 		add_action( 'init', array( $this, 'initialize_api_handlers' ), 5 );
-		// Remove the force_module_type filter.
-		// add_filter('script_loader_tag', [$this, 'force_module_type'], 10, 3);
 
-		// Add login redirect filter.
 		add_filter( 'login_redirect', array( $this, 'handle_login_redirect' ), 10, 3 );
-
-		// Check if rewrite rules need flushing.
 		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite_rules' ) );
 
-		// Force the rewrite rules to be flushed on next page load.
+		// Schedule rewrite flush.
 		update_option( 'csmsl_flush_rewrite_rules', true );
 	}
 
 	/**
-	 * Ultra high-priority handler for /smart-pos endpoints to bypass WordPress routing
-	 * This runs at parse_request which is even earlier than template_redirect
+	 * Handles /smart-pos endpoints
+	 * This method checks the request URI and serves the appropriate template based on the path.
 	 */
-	public function handle_csmsl_pos_endpoint( $wp ) {
+	public function handle_csmsl_pos_endpoint() {
 		$path = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$path = rtrim( $path, '/' );
+
 		if ( '/smart-pos' !== $path && 0 !== strpos( $path, '/smart-pos/' ) ) {
 			return;
 		}
+
+		// Login page.
 		if ( '/smart-pos/login' === $path || '/smart-pos/auth/login' === $path ) {
-			// If already logged in with POS access, go to main POS.
 			if ( is_user_logged_in() ) {
 				$user = wp_get_current_user();
-
-				// Simple role check for csmsl_pos_cashier.
 				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
 					wp_safe_redirect( home_url( '/smart-pos' ) );
 					exit;
@@ -77,146 +94,131 @@ class POS {
 				}
 			}
 
-			// Show login page.
 			$this->render_login_template();
 			exit;
 		}
 
-		// Handle main POS endpoint.
+		// Main POS page.
 		if ( '/smart-pos' === $path ) {
 			if ( ! is_user_logged_in() ) {
-				wp_redirect( home_url( '/smart-pos/auth/login' ) );
+				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
 			$user = wp_get_current_user();
-
-			// Simple role check for csmsl_pos_cashier.
 			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
-				wp_redirect( home_url( '/smart-pos/auth/login' ) );
+				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 				exit;
 			}
 
-			// Show POS template.
 			$this->render_pos_template();
 			exit;
 		}
 	}
 
 	/**
-	 * Render the login template directly
+	 * Render login template
 	 */
 	private function render_login_template() {
-		// Get login error if any.
 		$error_message = '';
-		$error         = get_transient( 'csmsl_login_error' );
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['login_error'] ) ) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$error_message = urldecode( sanitize_text_field( wp_unslash( $_GET['login_error'] ) ) );
-		} elseif ( ! empty( $error ) ) {
+		$error         = get_transient('csmsl_login_error');
+
+		if ( isset($_GET['login_error']) ) {
+			$error_message = urldecode(sanitize_text_field(wp_unslash($_GET['login_error'])));
+		} elseif ( ! empty($error) ) {
 			$error_message = $error;
-			delete_transient( 'csmsl_login_error' );
+			delete_transient('csmsl_login_error');
 		}
 
-		// Set up the query var so template can use it.
-		set_query_var( 'login_error', $error_message );
+		set_query_var('login_error', $error_message);
 
-		// Include the template directly.
-		$template = realpath( CSMSL_DIR . 'templates/smart-pos-login.php' );
-
-		// Validate template path for security.
-		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
-			// Set up WordPress.
-			if ( ! defined( 'WP_USE_THEMES' ) ) {
-				define( 'WP_USE_THEMES', false );
-			}
-
-			// Load the template.
-			require_once $template;
+		$template = realpath(CSMSL_DIR . 'templates/smart-pos-login.php');
+		if ( $template && strpos($template, realpath(CSMSL_DIR)) === 0 ) {
+			require $template;
 			exit;
 		}
 	}
 
 	/**
-	 * Render the POS template directly
+	 * Render POS template
 	 */
 	private function render_pos_template() {
-		// Include the template directly.
-		$template = realpath( CSMSL_DIR . 'templates/smart-pos-template.php' );
-
-		// Validate template path for security.
-		if ( $template && strpos( $template, realpath( CSMSL_DIR ) ) === 0 ) {
-			// Set up WordPress for this specific template only.
-			if ( ! defined( 'WP_USE_THEMES' ) ) {
-				define( 'WP_USE_THEMES', false );
-			}
-
-			// Load the template.
-			require_once $template;
+		$template = realpath(CSMSL_DIR . 'templates/smart-pos-template.php');
+		if ( $template && strpos($template, realpath(CSMSL_DIR)) === 0 ) {
+			require $template;
 			exit;
 		}
 	}
 
+	/**
+	 * Initializes API handlers for POS functionality
+	 * This method sets up the necessary API handlers for user roles and outlets.
+	 */
 	public function initialize_api_handlers() {
 		$this->usersApiHandler    = new \CSMSL\Includes\Api\Roles\UsersApiHandler();
 		$this->outletsApiHandler  = new \CSMSL\Includes\Api\Outlets\OutletsApiHandler();
 		$this->countersApiHandler = new \CSMSL\Includes\Api\Outlets\CountersApiHandler();
 	}
 
+	/**
+	 * Adds rewrite rules for POS endpoints
+	 * This method adds custom rewrite rules for the POS login and main pages.
+	 * It also registers query variables and modifies the main query to handle these endpoints.
+	 */
 	public function add_pos_rewrite_rules() {
-		// Main POS login page route.
 		add_rewrite_rule( '^smart-pos/login/?$', 'index.php?pos_login_page=1', 'top' );
-
-		// Handle SPA routes for auth flow.
 		add_rewrite_rule( '^smart-pos/auth/login/?$', 'index.php?pos_login_page=1', 'top' );
-
-		// Main POS route - this should catch all other smart-pos routes for SPA.
 		add_rewrite_rule( '^smart-pos(/.*)?/?$', 'index.php?pos_page=1', 'top' );
 
-		add_filter(
-			'query_vars',
-			function ( $query_vars ) {
-				$query_vars[] = 'pos_page';
-				$query_vars[] = 'pos_login_page';
-				return $query_vars;
-			}
-		);
+		add_filter('query_vars', function ( $query_vars ) {
+			$query_vars[] = 'pos_page';
+			$query_vars[] = 'pos_login_page';
+			return $query_vars;
+		});
 
-		add_action(
-			'pre_get_posts',
-			function ( $query ) {
-				if ( $query->get( 'pos_page' ) || $query->get( 'pos_login_page' ) ) {
-					$query->is_404      = false;
-					$query->is_page     = true;
-					$query->is_singular = true;
-				}
+		add_action('pre_get_posts', function ( $query ) {
+			if ( $query->get('pos_page') || $query->get('pos_login_page') ) {
+				$query->is_404      = false;
+				$query->is_page     = true;
+				$query->is_singular = true;
 			}
-		);
+		});
 	}
-
+	/**
+	 * Handles login redirects for POS users
+	 * This method checks if the user is a POS cashier and redirects them to the POS page.
+	 * If the user is not a POS cashier, it redirects them to the default login redirect URL.
+	 *
+	 * @param string  $redirect_to The URL to redirect to.
+	 * @param string  $requested_redirect_to The requested redirect URL.
+	 * @param WP_User $user The user object.
+	 * @return string The URL to redirect to.
+	 */
 	public function handle_login_redirect( $redirect_to, $requested_redirect_to, $user ) {
 		if ( ! $user || is_wp_error( $user ) ) {
 			return $redirect_to;
 		}
 
-		// Simple role check - if user has cashier role, redirect to POS.
 		if ( in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
 			return home_url( '/smart-pos' );
 		}
+
 		return $redirect_to;
 	}
-
+	/**
+	 * Loads the POS template based on the current query
+	 * This method checks if the current query is for the POS login or main page and returns the appropriate template file.
+	 * If the user is logged in and has the 'csmsl_pos_cashier' role, it loads the POS template.
+	 * If the user is not logged in or does not have the required role, it redirects them to the login page.
+	 *
+	 * @param string $template The current template being used.
+	 */
 	public function load_pos_template( $template ) {
-		// Add file path validation.
-		$template_dir = realpath( CSMSL_DIR . 'templates' );
+		$template_dir = realpath(CSMSL_DIR . 'templates');
 
-		// Handle login page.
-		if ( get_query_var( 'pos_login_page' ) ) {
-			// If user is already logged in and has POS access, redirect to main POS app.
+		if ( get_query_var('pos_login_page') ) {
 			if ( is_user_logged_in() ) {
 				$user = wp_get_current_user();
-				// Simple role check.
 				if ( in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
 					wp_safe_redirect( home_url( '/smart-pos' ) );
 					exit;
@@ -225,286 +227,218 @@ class POS {
 				exit;
 			}
 
-			// Load login template.
-			$login_template = realpath( CSMSL_DIR . 'templates/smart-pos-login.php' );
-			if ( $login_template && strpos( $login_template, $template_dir ) === 0 ) {
-				set_query_var( 'login_error', get_transient( 'csmsl_login_error' ) );
-				delete_transient( 'csmsl_login_error' );
+			$login_template = realpath(CSMSL_DIR . 'templates/smart-pos-login.php');
+			if ( $login_template && strpos($login_template, $template_dir) === 0 ) {
 				return $login_template;
 			}
-		} elseif ( get_query_var( 'pos_page' ) ) {
-			// Handle the root /smart-pos URL - redirect to login if not authenticated.
+		} elseif ( get_query_var('pos_page') ) {
 			if ( ! is_user_logged_in() ) {
-				// Store the current URL as the redirect destination after login.
 				global $wp;
-				$current_url = home_url( add_query_arg( array(), $wp->request ) );
-				set_transient( 'csmsl_pos_redirect_after_login', $current_url, HOUR_IN_SECONDS );
+				$current_url = home_url(add_query_arg(array(), $wp->request));
+				set_transient('csmsl_pos_redirect_after_login', $current_url, HOUR_IN_SECONDS);
 
-				// Redirect to login.
-				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
+				wp_safe_redirect(home_url('/smart-pos/auth/login'));
 				exit;
 			}
 
-			// Simple role check.
 			$user = wp_get_current_user();
 			if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
-				wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
+				wp_safe_redirect(home_url('/smart-pos/auth/login'));
 				exit;
 			}
 
-			// User is authenticated, load the main POS template.
-
-			$template_path = realpath( CSMSL_DIR . 'templates/smart-pos-template.php' );
-			if ( $template_path && 0 === strpos( $template_path, $template_dir ) ) {
+			$template_path = realpath(CSMSL_DIR . 'templates/smart-pos-template.php');
+			if ( $template_path && 0 === strpos($template_path, $template_dir) ) {
 				return $template_path;
 			}
 		}
 
 		return $template;
 	}
-
+	/**
+	 * Enqueues front-end assets for the POS system
+	 * This method checks if the current page is a POS page and enqueues the necessary styles and scripts.
+	 * It also localizes the POS scripts with necessary data such as API URLs and user information
+	 */
 	public function enqueue_front_assets() {
-		if ( ! get_query_var( 'pos_page' ) ) {
+		if ( ! get_query_var('pos_page') ) {
 			return;
 		}
 
-		// Simple role check.
 		$user = wp_get_current_user();
-		if ( ! is_user_logged_in() || ! in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
+		if ( ! is_user_logged_in() || ! in_array('csmsl_pos_cashier', (array) $user->roles, true) ) {
 			wp_die( esc_html__( 'Unauthorized access', 'crafely-smartsales-lite' ) );
 		}
 
-		// Remove all existing scripts and styles.
 		global $wp_scripts, $wp_styles;
 		$wp_scripts->queue = array();
 		$wp_styles->queue  = array();
 
-		// Remove all default WordPress actions that might interfere.
-		remove_all_actions( 'wp_head' );
-		remove_all_actions( 'wp_footer' );
+		remove_all_actions('wp_head');
+		remove_all_actions('wp_footer');
 
-		// Add security headers.
-		add_action(
-			'send_headers',
-			function () {
-				header( 'X-Content-Type-Options: nosniff' );
-				header( 'X-Frame-Options: SAMEORIGIN' );
-				header( 'X-XSS-Protection: 1; mode=block' );
-				header( 'Referrer-Policy: strict-origin-same-origin' );
-			}
-		);
+		add_action('send_headers', function () {
+			header('X-Content-Type-Options: nosniff');
+			header('X-Frame-Options: SAMEORIGIN');
+			header('X-XSS-Protection: 1; mode=block');
+			header('Referrer-Policy: strict-origin-same-origin');
+		});
 
-		// Add back only essential head actions with security checks.
-		add_action( 'wp_head', 'wp_enqueue_scripts', 1 );
-		add_action( 'wp_head', '_wp_render_title_tag', 1 );
-		add_action( 'wp_head', 'rest_output_link_wp_head' );
-
-		// When you enqueue your main app script, also localize it with authentication data.
-		if ( wp_script_is( 'csmsl-pos-app', 'registered' ) ) {
+		if ( wp_script_is('csmsl-pos-app', 'registered') ) {
 			$this->localize_pos_scripts();
 		}
 	}
-
+	/**
+	 * Enqueues styles and scripts for the POS login page
+	 * This method checks if the current page is the POS login page and enqueues the necessary styles and scripts.
+	 * It also handles the loading of Tailwind CSS, frontend CSS, and    login JavaScript files.
+	 */
 	public function login_page_assets() {
-		// Check if we're on the login page using multiple detection methods.
-		$is_login_page = get_query_var( 'pos_login_page' ) ||
-		( isset( $_SERVER['REQUEST_URI'] ) &&
-		( strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/smart-pos/login' ) !== false ||
-		strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/smart-pos/auth/login' ) !== false ) );
+		$is_login_page = get_query_var('pos_login_page') ||
+			( isset($_SERVER['REQUEST_URI']) &&
+				( strpos(esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])), '/smart-pos/login') !== false ||
+				strpos(esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])), '/smart-pos/auth/login') !== false )
+			);
 
 		if ( ! $is_login_page ) {
 			return;
 		}
 
-		// Ensure the file exists before using filemtime to prevent errors.
 		$tailwind_css_path = CSMSL_DIR . 'assets/css/tailwind-output.css';
 		$frontend_css_path = CSMSL_DIR . 'assets/css/frontend.css';
 
-		if ( file_exists( $tailwind_css_path ) ) {
-			$css_version = filemtime( $tailwind_css_path );
-			wp_enqueue_style(
-				'csmsl-login-tailwind',
-				CSMSL_URL . 'assets/css/tailwind-output.css',
-				array(),
-				$css_version
-			);
+		if ( file_exists($tailwind_css_path) ) {
+			wp_enqueue_style('csmsl-login-tailwind', CSMSL_URL . 'assets/css/tailwind-output.css', [], filemtime($tailwind_css_path));
 		} else {
-			// Fallback to a version number if file doesn't exist.
-			wp_enqueue_style(
-				'csmsl-login-tailwind',
-				CSMSL_URL . 'assets/css/tailwind-output.css',
-				array(),
-				'1.0.0'
-			);
+			wp_enqueue_style('csmsl-login-tailwind', CSMSL_URL . 'assets/css/tailwind-output.css', [], '1.0.0');
 		}
 
-		// Frontend CSS.
-		if ( file_exists( $frontend_css_path ) ) {
-			$css_version = filemtime( $frontend_css_path );
-			wp_enqueue_style(
-				'csmsl-login',
-				CSMSL_URL . 'assets/css/frontend.css',
-				array( 'csmsl-login-tailwind' ),
-				$css_version
-			);
+		if ( file_exists($frontend_css_path) ) {
+			wp_enqueue_style('csmsl-login', CSMSL_URL . 'assets/css/frontend.css', [ 'csmsl-login-tailwind' ], filemtime($frontend_css_path));
 		} else {
-			// Fallback to a version number if file doesn't exist.
-			wp_enqueue_style(
-				'csmsl-login',
-				CSMSL_URL . 'assets/css/frontend.css',
-				array( 'csmsl-login-tailwind' ),
-				'1.0.0'
-			);
+			wp_enqueue_style('csmsl-login', CSMSL_URL . 'assets/css/frontend.css', [ 'csmsl-login-tailwind' ], '1.0.0');
 		}
 
-		// Enqueue login JS.
 		$login_js_path = CSMSL_DIR . 'assets/js/login.js';
-		if ( file_exists( $login_js_path ) ) {
-			$js_version = filemtime( $login_js_path );
-			wp_enqueue_script(
-				'csmsl-login-js',
-				CSMSL_URL . 'assets/js/login.js',
-				array(),
-				$js_version,
-				true
-			);
+		if ( file_exists($login_js_path) ) {
+			wp_enqueue_script('csmsl-login-js', CSMSL_URL . 'assets/js/login.js', [], filemtime($login_js_path), true);
 		}
 
-		// Enqueue spinner CSS.
 		$spinner_css_path = CSMSL_DIR . 'assets/css/login-spinner.css';
-		if ( file_exists( $spinner_css_path ) ) {
-			$css_version = filemtime( $spinner_css_path );
-			wp_enqueue_style(
-				'csmsl-login-spinner',
-				CSMSL_URL . 'assets/css/login-spinner.css',
-				array(),
-				$css_version
-			);
+		if ( file_exists($spinner_css_path) ) {
+			wp_enqueue_style('csmsl-login-spinner', CSMSL_URL . 'assets/css/login-spinner.css', [], filemtime($spinner_css_path));
 		}
-	}
-
-	public function dequeue_unnecessary_assets() {
-		if ( ! get_query_var( 'pos_page' ) ) {
-			return;
-		}
-
-		// Remove all scripts.
-		add_action(
-			'wp_print_scripts',
-			function () {
-				global $wp_scripts;
-				$wp_scripts->queue = array();
-			},
-			100
-		);
-
-		// Remove all styles.
-		add_action(
-			'wp_print_styles',
-			function () {
-				global $wp_styles;
-				$wp_styles->queue = array();
-			},
-			100
-		);
-
-		// Disable emojis and embeds.
-		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
-		remove_action( 'wp_print_styles', 'print_emoji_styles' );
-		remove_action( 'wp_head', 'wp_oembed_add_discovery_links' );
-		remove_action( 'wp_head', 'wp_oembed_add_host_js' );
-	}
-
-	public function add_csmsl_pos_toolbar_menu( $wp_admin_bar ) {
-		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$wp_admin_bar->add_node(
-			array(
-				'id'     => 'csmsl_pos',
-				'title'  => 'View POS',
-				'href'   => home_url( '/smart-pos' ),
-				'meta'   => array( 'target' => '_blank' ),
-				'parent' => 'top-secondary',
-			)
-		);
 	}
 
 	/**
-	 * Check and flush rewrite rules if necessary
-	 * This helps ensure the /smart-pos URL works properly
+	 * Dequeue unnecessary assets
+	 * This method removes all scripts and styles from the queue if the current page is a POS page.
+	 * This is useful to prevent loading unnecessary assets on POS pages, improving performance.
+	 */
+	public function dequeue_unnecessary_assets() {
+		if ( ! get_query_var('pos_page') ) {
+			return;
+		}
+
+		add_action('wp_print_scripts', function () {
+			global $wp_scripts;
+			$wp_scripts->queue = [];
+		}, 100);
+
+		add_action('wp_print_styles', function () {
+			global $wp_styles;
+			$wp_styles->queue = [];
+		}, 100);
+
+		remove_action('wp_head', 'print_emoji_detection_script', 7);
+		remove_action('wp_print_styles', 'print_emoji_styles');
+		remove_action('wp_head', 'wp_oembed_add_discovery_links');
+		remove_action('wp_head', 'wp_oembed_add_host_js');
+	}
+	/**
+	 * Adds a toolbar menu for POS in the admin bar
+	 * This method adds a menu item to the WordPress admin bar for accessing the POS page.
+	 * It checks if the user is logged in and has the 'manage_options' capability before adding the menu item.
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar The WordPress admin bar object.
+	 */
+	public function add_csmsl_pos_toolbar_menu( $wp_admin_bar ) {
+		if ( ! is_user_logged_in() || ! current_user_can('manage_options') ) {
+			return;
+		}
+
+		$wp_admin_bar->add_node([
+			'id'     => 'csmsl_pos',
+			'title'  => 'View POS',
+			'href'   => home_url('/smart-pos'),
+			'meta'   => [ 'target' => '_blank' ],
+			'parent' => 'top-secondary',
+		]);
+	}
+	/**
+	 * Maybe flush rewrite rules
+	 * This method checks if the rewrite rules need to be flushed and flushes them if necessary
+	 * It uses a transient to determine if the rules need to be flushed, which is set during plugin activation.
+	 * This helps to avoid unnecessary flushes on every page load, improving performance
 	 */
 	public function maybe_flush_rewrite_rules() {
-		$flush_rules = get_option( 'csmsl_flush_rewrite_rules', false );
-
+		$flush_rules = get_option('csmsl_flush_rewrite_rules', false);
 		if ( $flush_rules ) {
 			flush_rewrite_rules();
-			update_option( 'csmsl_flush_rewrite_rules', false );
+			update_option('csmsl_flush_rewrite_rules', false);
 		}
 	}
-
 	/**
-	 * Intercept any redirections for POS URLs to ensure they work correctly
-	 * This runs at priority 1 during template_redirect to catch issues early
+	 * Intercepts POS redirects
+	 * This method checks the request URI for POS-related paths and redirects users accordingly.
 	 */
 	public function intercept_pos_redirects() {
-		// Get the current request URI.
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '';
 
-		// Check if this is a POS-related URL.
-		if ( strpos( $request_uri, '/smart-pos' ) === 0 ) {
-			// Handle different POS URL patterns.
-			if ( strpos( $request_uri, '/smart-pos/login' ) === 0 || strpos( $request_uri, '/smart-pos/auth/login' ) === 0 ) {
-				// If it's a login URL.
-				if ( is_user_logged_in() ) {
-					$user = wp_get_current_user();
-					if ( in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
-						// User has cashier role, redirect to POS.
-						wp_safe_redirect( home_url( '/smart-pos' ) );
-						exit;
-					} else {
-						// User is logged in but has no cashier role, redirect to admin.
-						wp_safe_redirect( admin_url() );
-						exit;
-					}
-				}
+		if ( strpos($request_uri, '/smart-pos') !== 0 ) {
+			return;
+		}
 
-				// Otherwise, let the template loading handle showing the login page.
-				return;
-			} elseif ( strpos( $request_uri, '/smart-pos' ) === 0 ) {
-				// Main POS URL.
-				if ( ! is_user_logged_in() ) {
-					// User is not logged in, redirect to login.
-					wp_redirect( home_url( '/smart-pos/auth/login' ) );
-					exit;
-				}
-
-				// Check for cashier role.
+		if ( strpos($request_uri, '/smart-pos/login') === 0 || strpos($request_uri, '/smart-pos/auth/login') === 0 ) {
+			if ( is_user_logged_in() ) {
 				$user = wp_get_current_user();
-				if ( ! in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
-					// User doesn't have cashier role, redirect to login.
-					wp_redirect( home_url( '/smart-pos/auth/login' ) );
+				if ( in_array('csmsl_pos_cashier', (array) $user->roles, true) ) {
+					wp_safe_redirect(home_url('/smart-pos'));
+					exit;
+				} else {
+					wp_safe_redirect(admin_url());
 					exit;
 				}
+			}
+			return;
+		}
 
-				// Otherwise, let the template loading handle showing the POS app.
-				return;
+		if ( strpos($request_uri, '/smart-pos') === 0 ) {
+			if ( ! is_user_logged_in() ) {
+				wp_safe_redirect(home_url('/smart-pos/auth/login'));
+				exit;
+			}
+
+			$user = wp_get_current_user();
+			if ( ! in_array('csmsl_pos_cashier', (array) $user->roles, true) ) {
+				wp_safe_redirect(home_url('/smart-pos/auth/login'));
+				exit;
 			}
 		}
 	}
 
-	// Add this function to localize scripts with auth data.
+	/**
+	 * Localizes POS scripts with necessary data
+	 * This method localizes the POS scripts with necessary data such as API URLs, nonce,
+	 * current user ID, and AJAX URL. This data is used by the POS application to
+	 * interact with the WordPress REST API and perform AJAX requests.
+	 */
 	public function localize_pos_scripts() {
-		wp_localize_script(
-			'csmsl-pos-app',
-			'csmslPosData',
-			array(
-				'root'            => esc_url_raw( rest_url() ),
-				'nonce'           => wp_create_nonce( 'wp_rest' ),
-				'current_user_id' => get_current_user_id(),
-				'ajaxurl'         => admin_url( 'admin-ajax.php' ),
-			)
-		);
+		wp_localize_script('csmsl-pos-app', 'csmslPosData', [
+			'root'            => esc_url_raw(rest_url()),
+			'nonce'           => wp_create_nonce('wp_rest'),
+			'current_user_id' => get_current_user_id(),
+			'ajaxurl'         => admin_url('admin-ajax.php'),
+		]);
 	}
 }

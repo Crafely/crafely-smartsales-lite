@@ -1,4 +1,9 @@
 <?php
+/**
+ * Crafely Smart Sales Lite
+ *
+ * @package Crafely_Smart_Sales_Lite
+ */
 
 namespace CSMSL\Includes\Api\App;
 
@@ -50,13 +55,18 @@ class AppApiHandler {
 		);
 	}
 
-	public function check_permission( $request ) {
+	/**
+	 * Checks if the current user has permission to access the app data.
+	 *
+	 * @return bool True if user has permission, false otherwise.
+	 */
+	public function check_permission() {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator.
@@ -73,11 +83,9 @@ class AppApiHandler {
 	/**
 	 * Checks if the current user has admin permissions.
 	 *
-	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool|\WP_Error True if user has permission, WP_Error otherwise.
 	 */
-
-	public function check_admin_permission( $request ) {
+	public function check_admin_permission() {
 		// Check if user is logged in and is an administrator.
 		if ( ! is_user_logged_in() ) {
 			return new \WP_Error(
@@ -102,10 +110,9 @@ class AppApiHandler {
 	/**
 	 * Retrieves app data including store details, inventory size, and wizard data.
 	 *
-	 * @param WP_REST_Request $request The REST request object.
 	 * @return WP_REST_Response The response containing app data.
 	 */
-	public function get_app_data( WP_REST_Request $request ) {
+	public function get_app_data() {
 		// Sample WooCommerce store details (already present).
 		$store_address   = get_option( 'woocommerce_store_address', '123 Default St' );
 		$store_address_2 = get_option( 'woocommerce_store_address_2', '' );
@@ -182,6 +189,12 @@ class AppApiHandler {
 		);
 	}
 
+	/**
+	 * Updates app data including store settings, admin email, and wizard data.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error The response containing updated fields or errors.
+	 */
 	public function update_app_data( WP_REST_Request $request ) {
 		$params         = $request->get_params();
 		$updated_fields = array();
@@ -286,6 +299,12 @@ class AppApiHandler {
 		);
 	}
 
+	/**
+	 * Validates if the provided currency code is valid.
+	 *
+	 * @param string $currency The currency code to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
 	private function is_valid_currency( $currency ) {
 		// Extended currency validation - you can expand this list.
 		$valid_currencies = array(
@@ -427,6 +446,12 @@ class AppApiHandler {
 		return in_array( strtoupper( $currency ), $valid_currencies, true );
 	}
 
+	/**
+	 * Validates if the provided country code is valid.
+	 *
+	 * @param string $country The country code to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
 	private function is_valid_country( $country ) {
 		// Extended country validation - WordPress/WooCommerce country codes.
 		$valid_countries = array(
@@ -567,15 +592,27 @@ class AppApiHandler {
 		);
 		return in_array( strtoupper( $country ), $valid_countries, true );
 	}
-
+	/**
+	 * Formats a successful response for the API.
+	 *
+	 * @param string $message The success message.
+	 * @param array  $data Additional data to include in the response.
+	 * @param int    $statusCode HTTP status code for the response.
+	 * @return array The formatted response.
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
-
+	/**
+	 * Get the schema for the update app data endpoint.
+	 *
+	 * @return array The schema for the update app data endpoint.
+	 */
 	private function get_update_args_schema() {
 		return array(
 			'store_address'    => array(

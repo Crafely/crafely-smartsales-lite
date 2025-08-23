@@ -1,14 +1,26 @@
 <?php
+/**
+ * Crafely SmartSales Lite Admin Class
+ *
+ * This class handles the admin functionalities of the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Core;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * Admin class for Crafely SmartSales Lite
+ */
 class Admin {
 
-
+	/**
+	 * Constructor for the Admin class.
+	 * Initializes the admin functionalities, including adding the admin menu,
+	 */
 	public function __construct() {
 		if ( ! defined( 'CSMSL_DIR' ) || ! defined( 'CSMSL_URL' ) ) {
 			wp_die( esc_html__( 'CSMSL_DIR or CSMSL_URL is not defined.', 'crafely-smartsales-lite' ) );
@@ -21,11 +33,13 @@ class Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'csmsl_enqueue_admin_assets' ) );
 
 		// Add script loader tag filter for module type.
-		add_filter( 'script_loader_tag', array( $this, 'csmsl_add_module_type_to_script' ), 10, 3 );
+		add_filter( 'script_loader_tag', array( $this, 'csmsl_add_module_type_to_script' ), 10, 2 );
 	}
 
 	/**
 	 * Enqueue admin scripts and styles.
+	 *
+	 * @param string $hook The current admin page hook.
 	 */
 	public function csmsl_enqueue_admin_assets( $hook ) {
 		// Keep existing styles for app page.
@@ -50,7 +64,9 @@ class Admin {
 			$this->csmsl_enqueue_vue_assets();
 		}
 	}
-
+	/**
+	 * Add module type to script tag for Vue app.
+	 */
 	private function csmsl_enqueue_vue_assets() {
 		$js_files  = glob( CSMSL_DIR . 'assets/dist/js/main.*.js' );
 		$css_files = glob( CSMSL_DIR . 'assets/dist/css/main.*.css' );
@@ -144,8 +160,11 @@ class Admin {
 
 	/**
 	 * Add module type to specific scripts using WordPress-compliant method
+	 *
+	 * @param string $tag The script tag.
+	 * @param string $handle The script handle.
 	 */
-	public function csmsl_add_module_type_to_script( $tag, $handle, $src ) {
+	public function csmsl_add_module_type_to_script( $tag, $handle ) {
 		// Only modify our specific script.
 		if ( 'csmsl-main-js' === $handle ) {
 			// Replace the script tag to include type="module".

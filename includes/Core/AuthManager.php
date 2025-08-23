@@ -1,17 +1,25 @@
 <?php
+/**
+ * Crafely SmartSales Lite AuthManager
+ *
+ * This class handles authentication and authorization for the Crafely SmartSales Lite POS system.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Core;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 /**
  * Class AuthManager
  *
  * Handles authentication and authorization for the POS system.
  */
-
 class AuthManager {
+
 	/**
 	 * POS-specific roles.
 	 *
@@ -79,7 +87,7 @@ class AuthManager {
 	/**
 	 * Verify that the user has the necessary outlet and counter assignments
 	 *
-	 * @param \WP_User $user
+	 *  @param \WP_User $user The user object.
 	 * @return bool
 	 */
 	public function verify_outlet_counter_assignment( $user ) {
@@ -116,7 +124,7 @@ class AuthManager {
 	/**
 	 * Get appropriate error message when assignments are missing
 	 *
-	 * @param \WP_User $user
+	 * @param \WP_User $user The user object.
 	 * @return string
 	 */
 	private function get_missing_assignment_message( $user ) {
@@ -141,7 +149,7 @@ class AuthManager {
 	/**
 	 * Verify if the user has access to POS based on their roles.
 	 *
-	 * @param \WP_User $user
+	 *  @param \WP_User $user The user object.
 	 * @return bool
 	 */
 	public function verify_pos_access( $user ) {
@@ -156,7 +164,7 @@ class AuthManager {
 	/**
 	 * Check if the user should be redirected to the POS system.
 	 *
-	 * @param \WP_User $user
+	 *  @param \WP_User $user The user object.
 	 * @return bool
 	 */
 	public function should_redirect_to_pos( $user ) {
@@ -203,11 +211,16 @@ class AuthManager {
 			return;
 		}
 	}
+
 	/**
 	 * Allow POS admin access for shop and outlet managers.
 	 *
-	 * @param bool $prevent_access
-	 * @return bool
+	 * Determines whether access to the POS admin should be prevented,
+	 * allowing POS managers to bypass restrictions.
+	 *
+	 * @param bool $prevent_access Whether access should be prevented by default.
+	 *
+	 * @return bool False if the current user is a POS manager (access allowed), otherwise the original $prevent_access value.
 	 */
 	public function allow_pos_admin_access( $prevent_access ) {
 		if ( ! is_user_logged_in() ) {
@@ -221,7 +234,13 @@ class AuthManager {
 
 		return $prevent_access;
 	}
-
+	/**
+	 * Handle login redirect for POS users.
+	 *
+	 * @param string   $redirect The URL to redirect to.
+	 * @param \WP_User $user The user object.
+	 * @return string The URL to redirect to.
+	 */
 	public function handle_login_redirect( $redirect, $user ) {
 		if ( ! $user || ! isset( $user->roles ) ) {
 			return $redirect;
@@ -235,7 +254,14 @@ class AuthManager {
 
 		return $redirect;
 	}
-
+	/**
+	 * Handle login redirect .
+	 *
+	 * @param string   $redirect_to The URL to redirect to.
+	 * @param string   $requested_redirect_to The requested redirect URL.
+	 * @param \WP_User $user The user object.
+	 * @return string The URL to redirect to.
+	 */
 	public function handle_wp_login_redirect( $redirect_to, $requested_redirect_to, $user ) {
 		if ( ! $user || is_wp_error( $user ) ) {
 			return $redirect_to;
@@ -252,20 +278,32 @@ class AuthManager {
 	/**
 	 * Check if the user is a POS manager (either shop or outlet).
 	 *
-	 * @param \WP_User $user
+	 * @param \WP_User $user The logged-in user object.
 	 */
 	private function is_pos_manager( $user ) {
 		$roles = (array) $user->roles;
 		return in_array( 'csmsl_pos_shop_manager', $roles, true ) ||
 		in_array( 'csmsl_pos_outlet_manager', $roles, true );
 	}
-
+	/**
+	 * Set a transient for login error messages and redirect to the login page.
+	 *
+	 * @param string $message The error message to set.
+	 */
 	private function set_login_error( $message ) {
 		set_transient( 'csmsl_login_error', $message, 30 );
-		wp_redirect( home_url( '/smart-pos/login' ) );
+		wp_safe_redirect( home_url( '/smart-pos/login' ) );
 		exit;
 	}
-
+	/**
+	 * Handle successful login by updating user meta and redirecting.
+	 *
+	 * Updates the user's last login timestamp and redirects them based on their POS access or role.
+	 *
+	 * @param \WP_User $user The logged-in user object.
+	 *
+	 * @return void
+	 */
 	private function handle_successful_login( $user ) {
 		update_user_meta( $user->ID, 'last_login', current_time( 'mysql' ) );
 
@@ -282,6 +320,11 @@ class AuthManager {
 		}
 	}
 
+	/**
+	 * Handle failed login attempts by logging out the user and setting an error message.
+	 *
+	 * @param string $message The error message to display.
+	 */
 	private function handle_failed_login( $message ) {
 		wp_logout();
 		$this->set_login_error( $message );

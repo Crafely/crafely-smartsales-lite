@@ -1,17 +1,35 @@
 <?php
+/**
+ * OutletsApiHandler class.
+ *
+ * Handles REST API requests related to outlets.
+ *
+ * @package Crafely_SmartSales_Lite
+ */
 
 namespace CSMSL\Includes\Api\Outlets;
 
 if ( ! defined('ABSPATH') ) {
 	exit;
 }
+
+/**
+ * Class OutletsApiHandler
+ *
+ * This class handles the REST API endpoints for managing outlets in the Crafely SmartSales Lite plugin.
+ */
 class OutletsApiHandler {
 
-
+	/**
+	 * Constructor.
+	 * Initializes the REST API routes.
+	 */
 	public function __construct() {
 		add_action('rest_api_init', [ $this, 'register_routes' ]);
 	}
-
+	/**
+	 * Registers the REST API routes for outlets.
+	 */
 	public function register_routes() {
 		register_rest_route('ai-smart-sales/v1', '/outlets', [
 			'methods'             => 'GET',
@@ -49,21 +67,25 @@ class OutletsApiHandler {
 			'permission_callback' => [ $this, 'check_permission' ],
 		]);
 
-		// Add new route for assigning user to outlet
+		// Add new route for assigning user to outlet.
 		register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/assign-user', [
 			'methods'             => 'POST',
 			'callback'            => [ $this, 'assign_outlet_to_user' ],
 			'permission_callback' => [ $this, 'check_permission' ],
 		]);
 	}
-
-	public function check_permission( $request ) {
+	/**
+	 * Checks if the current user has permission to access the API.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_permission() {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
 		// Check if user has any of our POS roles or is an administrator.
@@ -77,12 +99,17 @@ class OutletsApiHandler {
 		return true;
 	}
 
+	/**
+	 * Formats the outlet response for API output.
+	 *
+	 * @param object $outlet The outlet post object.
+	 */
 	private function format_outlet_response( $outlet ) {
 		// Get all counters for this outlet.
 		$counters = get_posts([
 			'post_type'      => 'csmsl_counter',
 			'posts_per_page' => -1,
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
 			'meta_query'     => [
 				[
 					'key'     => 'counter_outlet_id',
@@ -125,7 +152,14 @@ class OutletsApiHandler {
 			'counters'        => $formatted_counters,
 		];
 	}
-
+	/**
+	 * Formats the error response for API output.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors  Optional. Additional error details. Defaults to an empty array.
+	 * @param int    $statusCode Optional. HTTP status code. Defaults to 400.
+	 * @param string $path Optional. The API endpoint path.
+	 */
 	private function format_error_response( $message, $errors = [], $statusCode = 400, $path = '' ) {
 		$error = [];
 
@@ -144,9 +178,16 @@ class OutletsApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		];
 	}
-
+	/**
+	 * Retrieves all outlets.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response containing the list of outlets.
+	 */
 	public function get_outlets( $request ) {
 		$outlets = get_posts([
 			'post_type'      => 'csmsl_outlet',
@@ -174,7 +215,12 @@ class OutletsApiHandler {
 
 		return rest_ensure_response($response);
 	}
-
+	/**
+	 * Retrieves a specific outlet by ID.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response containing the outlet data.
+	 */
 	public function get_outlet( $request ) {
 		$outlet = get_post($request['outlet_id']);
 
@@ -198,6 +244,12 @@ class OutletsApiHandler {
 		return rest_ensure_response($response);
 	}
 
+	/**
+	 * Creates a new outlet.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response containing the created outlet data or error.
+	 */
 	public function create_outlet( $request ) {
 		$data = $request->get_json_params();
 
@@ -212,22 +264,22 @@ class OutletsApiHandler {
 
 		$errors = [];
 
-		// Validate outlet name
+		// Validate outlet name.
 		if ( ! isset($data['name']) || trim($data['name']) === '' ) {
 			$errors['name'] = 'Outlet name cannot be empty or contain only whitespace.';
 		}
 
-		// Validate email
+		// Validate email.
 		if ( isset($data['email']) && ! empty($data['email']) && ! is_email($data['email']) ) {
 			$errors['email'] = 'Please provide a valid email address.';
 		}
 
-		// Validate phone
+		// Validate phone.
 		if ( isset($data['phone']) && ! empty($data['phone']) && ! preg_match('/^[0-9+\-\s()]*$/', $data['phone']) ) {
 			$errors['phone'] = 'Please provide a valid phone number.';
 		}
 
-		// If there are validation errors, return them
+		// If there are validation errors, return them.
 		if ( ! empty($errors) ) {
 			return rest_ensure_response($this->format_error_response(
 				'Invalid input provided.',
@@ -237,7 +289,7 @@ class OutletsApiHandler {
 			));
 		}
 
-		// Create the outlet
+		// Create the outlet.
 		$outlet_id = wp_insert_post([
 			'post_type'   => 'csmsl_outlet',
 			'post_title'  => $data['name'],
@@ -253,7 +305,7 @@ class OutletsApiHandler {
 			));
 		}
 
-		// Create default counter
+		// Create default counter.
 		$counter_id = wp_insert_post([
 			'post_type'   => 'csmsl_counter',
 			'post_title'  => 'Main Counter',
@@ -264,7 +316,7 @@ class OutletsApiHandler {
 		update_post_meta($counter_id, 'counter_status', 'active');
 		update_post_meta($counter_id, 'is_default', true);
 
-		// Update outlet meta data
+		// Update outlet meta data.
 		$meta_fields = [
 			'outlet_address'         => 'address',
 			'outlet_phone'           => 'phone',
@@ -288,24 +340,30 @@ class OutletsApiHandler {
 
 		return rest_ensure_response($response);
 	}
-
+	/**
+	 * Updates an existing outlet.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response containing the updated outlet data or error.
+	 * @throws \WP_Error If the user does not have permission to update outlets or if the outlet does not exist.
+	 */
 	public function update_outlet( $request ) {
 		$data      = $request->get_json_params();
 		$outlet_id = $request['outlet_id'];
 
 		$errors = [];
 
-		// Validate outlet name
+		// Validate outlet name.
 		if ( isset($data['name']) && trim($data['name']) === '' ) {
 			$errors['name'] = 'Outlet name cannot be empty or contain only whitespace.';
 		}
 
-		// Validate email
+		// Validate email.
 		if ( isset($data['email']) && ! empty($data['email']) && ! is_email($data['email']) ) {
 			$errors['email'] = 'Please provide a valid email address.';
 		}
 
-		// Validate phone
+		// Validate phone.
 		if ( isset($data['phone']) && ! empty($data['phone']) && ! preg_match('/^[0-9+\-\s()]*$/', $data['phone']) ) {
 			$errors['phone'] = 'Please provide a valid phone number.';
 		}
@@ -319,7 +377,7 @@ class OutletsApiHandler {
 			));
 		}
 
-		// Update the post
+		// Update the post.
 		if ( isset($data['name']) ) {
 			wp_update_post([
 				'ID'         => $outlet_id,
@@ -327,7 +385,7 @@ class OutletsApiHandler {
 			]);
 		}
 
-		// Update outlet meta data
+		// Update outlet meta data.
 		$meta_fields = [
 			'outlet_address'         => 'address',
 			'outlet_phone'           => 'phone',
@@ -351,11 +409,16 @@ class OutletsApiHandler {
 
 		return rest_ensure_response($response);
 	}
-
+	/**
+	 * Deletes an outlet.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response indicating success or failure.
+	 */
 	public function delete_outlet( $request ) {
 		$outlet_id = $request['outlet_id'];
 
-		// Check if this is the default outlet
+		// Check if this is the default outlet.
 		$is_default = get_post_meta($outlet_id, 'is_default', true);
 
 		if ( $is_default ) {
@@ -390,7 +453,12 @@ class OutletsApiHandler {
 
 		return rest_ensure_response($response);
 	}
-
+	/**
+	 * Assigns an outlet to a user.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response indicating success or failure.
+	 */
 	public function assign_outlet_to_user( $request ) {
 		$outlet_id = $request['outlet_id'];
 		$data      = $request->get_json_params();
@@ -398,14 +466,14 @@ class OutletsApiHandler {
 
 		$errors = [];
 
-		// Validate user ID
+		// Validate user ID.
 		if ( empty($user_id) ) {
 			$errors['user_id'] = 'User ID is required.';
 		} elseif ( ! get_user_by('id', $user_id) ) {
 			$errors['user_id'] = 'Invalid user ID.';
 		}
 
-		// Validate outlet
+		// Validate outlet.
 		$outlet = get_post($outlet_id);
 		if ( ! $outlet ) {
 			$errors['outlet'] = 'Outlet not found.';
@@ -420,10 +488,10 @@ class OutletsApiHandler {
 			));
 		}
 
-		// Update user's outlet assignment
+		// Update user's outlet assignment.
 		update_user_meta($user_id, 'assigned_outlet_id', $outlet_id);
 
-		// Store the assignment history
+		// Store the assignment history.
 		$assignment_history = [
 			'user_id'     => $user_id,
 			'outlet_id'   => $outlet_id,
@@ -443,12 +511,24 @@ class OutletsApiHandler {
 			],
 		]);
 	}
-
+	/**
+	 *  Checks if a user has an assigned outlet.
+	 *
+	 * @param int $user_id The user ID to check.
+	 * @return bool True if the user has an assigned outlet, false otherwise.
+	 * @throws \WP_Error If the user does not exist.
+	 */
 	public function user_has_assigned_outlet( $user_id ) {
 		$assigned_outlet_id = get_user_meta($user_id, 'assigned_outlet_id', true);
 		return ! empty($assigned_outlet_id);
 	}
-
+	/**
+	 * Checks if a user can manage a specific outlet.
+	 *
+	 * @param int $user_id The user ID to check.
+	 * @param int $outlet_id The outlet ID to check.
+	 * @return bool True if the user can manage the outlet, false otherwise.
+	 */
 	private function can_manage_outlet( $user_id, $outlet_id ) {
 		if ( user_can($user_id, 'administrator') ) {
 			return true;

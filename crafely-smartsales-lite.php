@@ -81,7 +81,10 @@ foreach ( $core_includes as $file ) {
 	}
 }
 
-// Initialize the plugin.
+/**
+ * Initialize the Crafely SmartSales Lite plugin.
+ * This function sets up the plugin, registers necessary hooks, and initializes the main plugin class.
+ */
 function csmsl_init() {
 	if ( ! csmsl_is_woocommerce_active() ) {
 		add_action(
@@ -121,7 +124,10 @@ function csmsl_init() {
 
 add_action( 'plugins_loaded', 'csmsl_init', 15 );
 
-// Very early interception of POS URLs - run before everything else.
+/**
+ * Handle early URL processing for smart POS.
+ * This function checks if the request is for the smart POS and processes it accordingly.
+ */
 function csmsl_early_url_handler() {
 	// Only run on frontend requests.
 	if ( is_admin() && ! wp_doing_ajax() ) {
@@ -147,8 +153,14 @@ add_action( 'plugins_loaded', 'csmsl_early_url_handler', 1 );
 // Add direct access check to handle direct smart-pos URLs BEFORE WordPress routing.
 if ( ! function_exists( 'csmsl_direct_access_handler' ) ) {
 
+	/**
+	 * Direct access handler for smart POS URLs.
+	 * This function checks if the request is for a smart POS URL and handles login redirects accordingly
+	 * if the user is not logged in or does not have the required roles.
+	 * This is used to prevent direct access to smart POS pages without proper authentication.
+	 */
 	function csmsl_direct_access_handler() {
-		// Only check non-admin requests with smart-pos in the URL
+		// Only check non-admin requests with smart-pos in the URL.
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
 		if ( is_admin() || '' === $request_uri || false === strpos( $request_uri, '/smart-pos' ) ) {
@@ -171,7 +183,7 @@ if ( ! function_exists( 'csmsl_direct_access_handler' ) ) {
 					$has_pos_access = ! empty( array_intersect( $pos_roles, (array) $user->roles ) );
 
 					if ( $has_pos_access ) {
-						wp_redirect( home_url( '/smart-pos' ) );
+						wp_safe_redirect( home_url( '/smart-pos' ) );
 						exit;
 					}
 				}
@@ -181,7 +193,7 @@ if ( ! function_exists( 'csmsl_direct_access_handler' ) ) {
 				// For main POS URL, check if logged in.
 				if ( ! is_user_logged_in() ) {
 					// Not logged in, redirect to login.
-					wp_redirect( home_url( '/smart-pos/auth/login' ) );
+					wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 
@@ -192,7 +204,7 @@ if ( ! function_exists( 'csmsl_direct_access_handler' ) ) {
 
 				if ( ! $has_pos_access ) {
 					// No access, redirect to login.
-					wp_redirect( home_url( '/smart-pos/auth/login' ) );
+					wp_safe_redirect( home_url( '/smart-pos/auth/login' ) );
 					exit;
 				}
 
@@ -209,8 +221,10 @@ add_action( 'init', 'csmsl_direct_access_handler', 5 );
 // Register activation and deactivation hooks without role removal.
 register_activation_hook( __FILE__, array( 'CSMSL\\Includes\\Core\\Activation', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'CSMSL\\Includes\\Core\\Activation', 'deactivate' ) );
-
-// Add activation hook to create default roles and capabilities.
+/**
+ * Activate the plugin.
+ * This function initializes roles, post types, and default settings.
+ */
 function csmsl_activate() {
 	// Initialize RolesManager to create roles.
 	$roles_manager = new CSMSL\Includes\Api\Roles\RolesManager();
@@ -234,7 +248,10 @@ function csmsl_activate() {
 	update_option( 'csmsl_flush_rewrite_rules', true );
 }
 
-// Fix for rewrite rules not working properly.
+/**
+ * Fix rewrite rules if needed.
+ * This function checks if the rewrite rules need to be flushed and does so if necessary.
+ */
 function csmsl_fix_rewrite_rules() {
 	if ( get_option( 'csmsl_permalinks_flushed' ) !== CSMSL_VERSION ) {
 		// Set flag to flush rewrite rules.

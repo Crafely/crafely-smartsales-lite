@@ -1,4 +1,11 @@
 <?php
+/**
+ * Crafely SmartSales Lite AI Assistances API Handler
+ *
+ * This file handles the REST API endpoints for managing AI assistances.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\AI;
 
@@ -8,13 +15,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class AIAssistancesApiHandler
+ * This class registers the REST API routes for AI assistances and handles requests.
+ */
 class AIAssistancesApiHandler {
 
-
+	/**
+	 * Constructor for the AIAssistancesApiHandler class.
+	 * It initializes the REST API routes.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
-
+	/**
+	 * Registers the REST API routes for AI assistances.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -66,8 +82,12 @@ class AIAssistancesApiHandler {
 			)
 		);
 	}
-
-	public function check_permission( $request ) {
+		/**
+		 * Checks if the current user has permission to access the API.
+		 *
+		 * @return bool True if the user has permission, false otherwise.
+		 */
+	public function check_permission() {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -86,7 +106,15 @@ class AIAssistancesApiHandler {
 
 		return true;
 	}
-
+	/**
+	 * Formats an error response for the API.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional. Additional error details.
+	 * @param int    $statusCode Optional. HTTP status code for the error response.
+	 * @param string $path Optional. The path of the API endpoint.
+	 * @return array The formatted error response.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
@@ -104,9 +132,17 @@ class AIAssistancesApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
-
+	/**
+	 * Formats the assistance response for the API.
+	 *
+	 * @param array      $assistance The assistance data from the database.
+	 * @param array|null $original_ai_config Optional. The original AI configuration data.
+	 * @return array The formatted assistance response
+	 */
 	private function format_assistance_response( $assistance, $original_ai_config = null ) {
 		// Use the original ai_config if provided, otherwise decode from the database.
 		$ai_config = $original_ai_config ?? json_decode( $assistance['ai_config'], true );
@@ -120,8 +156,12 @@ class AIAssistancesApiHandler {
 			'ai_config' => $ai_config,
 		);
 	}
-
-	public function get_assistances( $request ) {
+	/**
+	 * Retrieves all assistances from the database.
+	 *
+	 * @return WP_REST_Response The response containing the assistances.
+	 */
+	public function get_assistances() {
 		global $wpdb;
 
 		// Escaping the table name (good).
@@ -152,7 +192,12 @@ class AIAssistancesApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Retrieves a single assistance by ID.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response containing the assistance data.
+	 */
 	public function get_assistance( $request ) {
 		global $wpdb;
 
@@ -194,7 +239,12 @@ class AIAssistancesApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Creates a new assistance.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response containing the created assistance data.
+	 */
 	public function create_assistance( $request ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'ai_smart_sales_assistances';
@@ -286,7 +336,12 @@ class AIAssistancesApiHandler {
 			201
 		);
 	}
-
+	/**
+	 * Updates an existing assistance.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response The response containing the updated assistance data.
+	 */
 	public function update_assistance( $request ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'ai_smart_sales_assistances';
@@ -351,7 +406,13 @@ class AIAssistancesApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Deletes an assistance by ID.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 *
+	 * @return WP_REST_Response The response indicating success or failure.
+	 */
 	public function delete_assistance( $request ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'ai_smart_sales_assistances';

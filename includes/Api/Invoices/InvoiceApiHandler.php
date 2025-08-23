@@ -1,4 +1,11 @@
 <?php
+/**
+ * InvoiceApiHandler Class
+ *
+ * This class handles REST API requests for invoices in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Invoices;
 
@@ -38,7 +45,7 @@ class InvoiceApiHandler {
 	 * Register the routes for the objects of the controller.
 	 */
 	public function register_routes() {
-		// Basic CRUD operations
+		// Basic CRUD operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/invoices',
@@ -89,7 +96,7 @@ class InvoiceApiHandler {
 			)
 		);
 
-		// Bulk operations
+		// Bulk operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/invoices/restore',
@@ -113,6 +120,10 @@ class InvoiceApiHandler {
 
 	/**
 	 * Check if the request has valid permission
+	 * This method checks if the user is logged in and has the appropriate role to perform the requested action.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool Returns true if the user has permission, false otherwise.
 	 */
 	public function check_permission( $request ) {
 		// Check if user is logged in.
@@ -145,24 +156,50 @@ class InvoiceApiHandler {
 
 	/**
 	 * Response formatting methods
+	 * This method formats the success response for API requests.
+	 *
+	 * @param string $message The success message to return.
+	 * @param array  $data Optional. Additional data to include in the response.
+	 * @param int    $statusCode Optional. HTTP status code for the response, default is 200.
 	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
 
+	/**
+	 * Format error response
+	 * This method formats the error response for API requests.
+	 *
+	 * @param string $message The error message to return.
+	 * @param array  $errors Optional. Additional error details.
+	 * @param int    $statusCode Optional. HTTP status code for the response, default is 400.
+	 * @param string $path Optional. The path of the request that caused the error.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		return array(
 			'success' => false,
 			'message' => $message,
 			'data'    => null,
 			'error'   => $errors,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
-
+	/**
+	 * Formats a single invoice for API response.
+	 *
+	 * Retrieves invoice metadata, customer details, line items,
+	 * billing and shipping information, outlet details, and calculates totals.
+	 *
+	 * @param WP_Post $invoice The invoice post object to format.
+	 *
+	 * @return array Formatted invoice data ready for API response.
+	 */
 	private function format_invoice_response( $invoice ) {
 		$outlet_id  = get_post_meta( $invoice->ID, 'outlet_id', true );
 		$outlet     = $outlet_id ? get_post( $outlet_id ) : null;
@@ -180,13 +217,11 @@ class InvoiceApiHandler {
 			// WooCommerce customer object.
 			$wc_customer = null;
 			if ( class_exists( 'WC_Customer' ) ) {
-				try {
-					$wc_customer = new \WC_Customer( $customer_id );
-				} catch ( \Exception $e ) {
-				}
+				$wc_customer = new \WC_Customer( $customer_id );
+
 			}
 
-			// Orders
+			// Orders.
 			$order_data   = array();
 			$total_orders = 0;
 			if ( class_exists( 'WooCommerce' ) && function_exists( 'wc_get_orders' ) ) {
@@ -210,7 +245,7 @@ class InvoiceApiHandler {
 				}
 			}
 
-			// Billing & shipping
+			// Billing & shipping.
 			if ( $wc_customer ) {
 				$first_name = $wc_customer->get_first_name() ? $wc_customer->get_first_name() : get_user_meta( $customer_id, 'first_name', true );
 				$last_name  = $wc_customer->get_last_name() ? $wc_customer->get_last_name() : get_user_meta( $customer_id, 'last_name', true );
@@ -282,9 +317,9 @@ class InvoiceApiHandler {
 				'is_guest'      => false,
 			);
 		}
-		// --- End customer object ---
+		// --- End customer object ---.
 
-		// Process line items to include both original and custom data
+		// Process line items to include both original and custom data.
 		$processed_line_items = array_map(
 			function ( $item ) {
 				$product   = get_post( $item['product_id'] );
@@ -296,7 +331,7 @@ class InvoiceApiHandler {
 					'original_description' => $item['original_description'],
 				);
 
-				// Include custom fields if they exist
+				// Include custom fields if they exist.
 				if ( isset( $item['custom_name'] ) ) {
 					$line_item['custom_name'] = $item['custom_name'];
 				}
@@ -307,7 +342,7 @@ class InvoiceApiHandler {
 					$line_item['custom_description'] = $item['custom_description'];
 				}
 
-				// Calculate totals
+				// Calculate totals.
 				$price                   = isset( $item['custom_price'] ) ? (float) $item['custom_price'] : (float) $item['original_price'];
 				$line_item['line_total'] = number_format( $price * $item['quantity'], 2, '.', '' );
 
@@ -316,7 +351,7 @@ class InvoiceApiHandler {
 			is_array( $line_items ) ? $line_items : array()
 		);
 
-		// Calculate subtotal with proper formatting
+		// Calculate subtotal with proper formatting.
 		$subtotal = array_sum(
 			array_map(
 				function ( $item ) {
@@ -350,12 +385,17 @@ class InvoiceApiHandler {
 
 	/**
 	 * Create an invoice
+	 * This method validates the request data, creates a new invoice post, and returns the created invoice data.
+	 * It checks for required fields, validates product and customer IDs, and formats the line items.
+	 *
+	 * @param WP_REST_Request $request The request object containing the invoice data.
+	 * @return WP_REST_Response|WP_Error Returns a response with the created invoice data
 	 */
 	public function create_invoice( $request ) {
 		$data   = $request->get_json_params();
 		$errors = array();
 
-		// Validate customer_id
+		// Validate customer_id.
 		$customer_id = intval( $data['customer_id'] ?? 0 );
 		if ( ! $customer_id || $customer_id <= 0 ) {
 			$errors['customer_id'] = 'Customer ID must be a valid, non-zero integer.';
@@ -366,7 +406,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate outlet_id (optional)
+		// Validate outlet_id (optional).
 		$outlet_id = intval( $data['outlet_id'] ?? 0 );
 		if ( $outlet_id > 0 ) {
 			$outlet = get_post( $outlet_id );
@@ -375,7 +415,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate line_items
+		// Validate line_items.
 		if ( empty( $data['line_items'] ) || ! is_array( $data['line_items'] ) ) {
 			$errors['line_items'] = 'At least one line item is required.';
 		} else {
@@ -395,12 +435,12 @@ class InvoiceApiHandler {
 					if ( ! $product || 'product' !== $product->post_type ) {
 						$errors[ "line_items.{$index}.product_id" ] = "The product with the ID '{$product_id}' does not exist.";
 					} else {
-						// Store original product data with proper number formatting
+						// Store original product data with proper number formatting.
 						$data['line_items'][ $index ]['original_name']        = $product->post_title;
 						$data['line_items'][ $index ]['original_price']       = number_format( (float) get_post_meta( $product_id, '_price', true ), 2, '.', '' );
 						$data['line_items'][ $index ]['original_description'] = $product->post_content;
 
-						// Validate custom fields if provided
+						// Validate custom fields if provided.
 						if ( isset( $item['custom_price'] ) ) {
 							if ( ! is_numeric( $item['custom_price'] ) || $item['custom_price'] < 0 ) {
 								$errors[ "line_items.{$index}.custom_price" ] = 'Custom price must be a non-negative number.';
@@ -430,7 +470,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate dates if provided
+		// Validate dates if provided.
 		if ( ! empty( $data['issue_date'] ) && ! strtotime( $data['issue_date'] ) ) {
 			$errors['issue_date'] = 'Invalid issue date format. Use YYYY-MM-DD format.';
 		}
@@ -438,7 +478,7 @@ class InvoiceApiHandler {
 			$errors['due_date'] = 'Invalid due date format. Use YYYY-MM-DD format.';
 		}
 
-		// Validate VAT if provided
+		// Validate VAT if provided.
 		if ( isset( $data['vat'] ) && ! is_null( $data['vat'] ) ) {
 			$vat = floatval( $data['vat'] );
 			if ( $vat < 0 ) {
@@ -458,7 +498,7 @@ class InvoiceApiHandler {
 			);
 		}
 
-		// Create invoice post
+		// Create invoice post.
 		$invoice_data = array(
 			'post_type'   => 'csmsl_invoice',
 			'post_status' => 'publish',
@@ -478,7 +518,7 @@ class InvoiceApiHandler {
 			);
 		}
 
-		// Add invoice meta data
+		// Add invoice meta data.
 		update_post_meta( $invoice_id, 'customer_id', $customer_id );
 		if ( $outlet_id > 0 ) {
 			update_post_meta( $invoice_id, 'outlet_id', $outlet_id );
@@ -489,7 +529,7 @@ class InvoiceApiHandler {
 		update_post_meta( $invoice_id, 'issue_date', $data['issue_date'] ?? gmdate( 'Y-m-d' ) );
 		update_post_meta( $invoice_id, 'due_date', $data['due_date'] ?? '' );
 
-		// Get the created invoice
+		// Get the created invoice.
 		$invoice = get_post( $invoice_id );
 
 		return new WP_REST_Response(
@@ -504,6 +544,9 @@ class InvoiceApiHandler {
 
 	/**
 	 * Get all invoices
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_invoices( $request ) {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
@@ -555,6 +598,9 @@ class InvoiceApiHandler {
 
 	/**
 	 * Get single invoice
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_invoice( $request ) {
 		$invoice_id = $request->get_param( 'id' );
@@ -583,6 +629,12 @@ class InvoiceApiHandler {
 
 	/**
 	 * Update invoice
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 * @throws \Exception If the invoice does not exist or validation fails.
+	 * @throws \Exception If the user does not have permission to update the invoice.
+	 * @throws \Exception If there are validation errors in the request data.
 	 */
 	public function update_invoice( $request ) {
 		$invoice_id = $request->get_param( 'id' );
@@ -602,7 +654,7 @@ class InvoiceApiHandler {
 		$data   = $request->get_json_params();
 		$errors = array();
 
-		// Validate customer_id if provided
+		// Validate customer_id if provided.
 		if ( isset( $data['customer_id'] ) ) {
 			$customer_id = intval( $data['customer_id'] );
 			if ( ! $customer_id || $customer_id <= 0 ) {
@@ -615,7 +667,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate outlet_id if provided (optional)
+		// Validate outlet_id if provided (optional).
 		if ( isset( $data['outlet_id'] ) ) {
 			$outlet_id = intval( $data['outlet_id'] );
 			if ( $outlet_id > 0 ) {
@@ -626,7 +678,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate line_items if provided
+		// Validate line_items if provided.
 		if ( isset( $data['line_items'] ) ) {
 			if ( ! is_array( $data['line_items'] ) ) {
 				$errors['line_items'] = 'Line items must be an array.';
@@ -647,12 +699,12 @@ class InvoiceApiHandler {
 						if ( ! $product || 'product' !== $product->post_type ) {
 							$errors[ "line_items.{$index}.product_id" ] = "The product with the ID '{$product_id}' does not exist.";
 						} else {
-							// Store original product data with proper number formatting
+							// Store original product data with proper number formatting.
 							$data['line_items'][ $index ]['original_name']        = $product->post_title;
 							$data['line_items'][ $index ]['original_price']       = number_format( (float) get_post_meta( $product_id, '_price', true ), 2, '.', '' );
 							$data['line_items'][ $index ]['original_description'] = $product->post_content;
 
-							// Validate custom fields if provided
+							// Validate custom fields if provided.
 							if ( isset( $item['custom_price'] ) ) {
 								if ( ! is_numeric( $item['custom_price'] ) || $item['custom_price'] < 0 ) {
 									$errors[ "line_items.{$index}.custom_price" ] = 'Custom price must be a non-negative number.';
@@ -683,7 +735,7 @@ class InvoiceApiHandler {
 			}
 		}
 
-		// Validate dates if provided
+		// Validate dates if provided.
 		if ( isset( $data['issue_date'] ) && ! strtotime( $data['issue_date'] ) ) {
 			$errors['issue_date'] = 'Invalid issue date format. Use YYYY-MM-DD format.';
 		}
@@ -691,7 +743,7 @@ class InvoiceApiHandler {
 			$errors['due_date'] = 'Invalid due date format. Use YYYY-MM-DD format.';
 		}
 
-		// Validate VAT if provided
+		// Validate VAT if provided.
 		if ( isset( $data['vat'] ) && ! is_null( $data['vat'] ) ) {
 			$vat = floatval( $data['vat'] );
 			if ( $vat < 0 ) {
@@ -711,7 +763,7 @@ class InvoiceApiHandler {
 			);
 		}
 
-		// Update invoice meta
+		// Update invoice meta.
 		if ( isset( $data['customer_id'] ) ) {
 			update_post_meta( $invoice_id, 'customer_id', intval( $data['customer_id'] ) );
 		}
@@ -749,6 +801,11 @@ class InvoiceApiHandler {
 
 	/**
 	 * Delete invoice (move to trash)
+	 * This method moves an invoice to the trash.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the ID of the invoice to delete.
+	 * @return WP_REST_Response The response indicating the result of the delete operation.
+	 * @throws WP_Error If the invoice cannot be deleted.
 	 */
 	public function delete_invoice( $request ) {
 		$invoice_id = $request->get_param( 'id' );
@@ -776,7 +833,11 @@ class InvoiceApiHandler {
 	}
 
 	/**
-	 * Get trash invoices
+	 * Get trash
+	 * This method retrieves all invoices that are in the trash.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The response containing the list of trashed invoices.
 	 */
 	public function get_trash_invoices( $request ) {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
@@ -809,9 +870,13 @@ class InvoiceApiHandler {
 			200
 		);
 	}
-
 	/**
-	 * Bulk restore invoices from trash
+	 * Bulk restore invoices (untrash)
+	 * This method allows bulk restoration of invoices from the trash.
+	 * It accepts an array of invoice IDs and attempts to restore each one.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the IDs of invoices to restore.
+	 * @return WP_REST_Response The response containing the results of the bulk restore operation.
 	 */
 	public function bulk_restore_invoices( $request ) {
 		$data = $request->get_json_params();
@@ -854,6 +919,10 @@ class InvoiceApiHandler {
 
 	/**
 	 * Bulk delete invoices (move to trash)
+	 * This method allows bulk deletion of invoices by moving them to the trash.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the IDs of invoices to delete.
+	 * @return WP_REST_Response The response containing the results of the bulk delete operation.
 	 */
 	public function bulk_delete_invoices( $request ) {
 		$data = $request->get_json_params();

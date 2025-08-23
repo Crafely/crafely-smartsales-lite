@@ -1,22 +1,35 @@
 <?php
+/**
+ * Crafely SmartSales Lite User Roles
+ *
+ * This class handles the creation of user roles for the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Roles;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+/**
+ * UserRoles Class
+ * This class is responsible for creating and managing user roles specific to the Crafely SmartSales Lite plugin.
+ */
 class UserRoles {
-
-
+	/**
+	 * Constructor
+	 * Initializes the user roles.
+	 */
 	public function create_outlet_manager_role() {
 		if ( ! get_role( 'csmsl_pos_outlet_manager' ) ) {
-			// Log role creation attempt
+			// Log role creation attempt.
 
 			add_role(
 				'csmsl_pos_outlet_manager',
 				'Pos Outlet Manager',
 				array(
-					// WordPress Admin Capabilities
+					// WordPress Admin Capabilities.
 					'read'                 => true,
 					'edit_posts'           => true,
 					'delete_posts'         => true,
@@ -33,7 +46,7 @@ class UserRoles {
 					'manage_links'         => true,
 					'list_users'           => true,
 
-					// POS Specific Capabilities
+					// POS Specific Capabilities.
 					'manage_products'      => true,
 					'manage_orders'        => true,
 					'manage_customers'     => true,
@@ -42,7 +55,7 @@ class UserRoles {
 					'manage_outlets'       => true,
 					'access_admin'         => true,
 
-					// User levels
+					// User levels.
 					'level_0'              => true,
 					'level_1'              => true,
 					'level_2'              => true,
@@ -53,9 +66,12 @@ class UserRoles {
 			);
 		}
 	}
-
+	/**
+	 * Create the Cashier role.
+	 * This role is for users who can perform basic POS operations.
+	 */
 	public function create_cashier_role() {
-		// Cashiers only get basic POS access
+		// Cashiers only get basic POS access.
 		if ( ! get_role( 'csmsl_pos_cashier' ) ) {
 			add_role(
 				'csmsl_pos_cashier',
@@ -70,14 +86,17 @@ class UserRoles {
 			);
 		}
 	}
-
+	/**
+	 * Create the Shop Manager role.
+	 * This role is for users who manage the shop and have broader capabilities.
+	 */
 	public function create_shop_manager_role() {
 		if ( ! get_role( 'csmsl_pos_shop_manager' ) ) {
 			add_role(
 				'csmsl_pos_shop_manager',
 				'Pos Shop Manager',
 				array(
-					// WordPress Admin Capabilities
+					// WordPress Admin Capabilities.
 					'read'                   => true,
 					'edit_posts'             => true,
 					'delete_posts'           => true,
@@ -107,7 +126,7 @@ class UserRoles {
 					'manage_options'         => true,
 					'administrator'          => true,
 
-					// POS Specific Capabilities
+					// POS Specific Capabilities.
 					'manage_products'        => true,
 					'manage_orders'          => true,
 					'manage_customers'       => true,
@@ -116,7 +135,7 @@ class UserRoles {
 					'manage_outlets'         => true,
 					'access_admin'           => true,
 
-					// User levels from 0 to 10
+					// User levels from 0 to 10.
 					'level_0'                => true,
 					'level_1'                => true,
 					'level_2'                => true,

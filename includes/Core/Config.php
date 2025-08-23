@@ -1,9 +1,8 @@
 <?php
-
 /**
- * Configuration manager for AI Smart Sales
+ * Configuration manager for Crafely SmartSales Lite plugin.
  *
- * @package AI Smart Sales
+ * @package CrafelySmartSalesLite
  */
 
 namespace CSMSL\Includes\Core;
@@ -12,6 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class Config
+ *
+ * Manages plugin configuration settings.
+ */
 class Config {
 
 	/**
@@ -23,10 +27,12 @@ class Config {
 
 	/**
 	 * Get configuration value
+	 * Retrieves a configuration value by key. If the key is not found, the fallback value is returned.
 	 *
-	 * @param string $key
-	 * @param mixed  $fallback
-	 * @return mixed
+	 * @param string $key  The configuration key to retrieve (supports dot notation for nested values).
+	 * @param mixed  $fallback The default value to return if the key is not found.
+	 *
+	 * @return mixed The configuration value or the fallback if not set.
 	 */
 	public static function get( $key, $fallback = null ) {
 		if ( null === self::$config ) {
@@ -39,8 +45,8 @@ class Config {
 	/**
 	 * Set configuration value
 	 *
-	 * @param string $key
-	 * @param mixed  $value
+	 * @param string $key   The configuration key to set (supports dot notation for nested values).
+	 * @param mixed  $value The value to store for the given key.
 	 */
 	public static function set( $key, $value ) {
 		if ( null === self::$config ) {
@@ -122,12 +128,16 @@ class Config {
 	}
 
 	/**
-	 * Get nested configuration value using dot notation
+	 * Get nested configuration value using dot notation.
 	 *
-	 * @param array  $args
-	 * @param string $key
-	 * @param mixed  $fallback
-	 * @return mixed
+	 * Traverses an array using "dot notation" to access nested values.
+	 * Returns the fallback value if the key does not exist.
+	 *
+	 * @param array  $args     The configuration array to search in.
+	 * @param string $key      The configuration key, supports dot notation for nested values.
+	 * @param mixed  $fallback The value to return if the key is not found.
+	 *
+	 * @return mixed The configuration value or the fallback if the key is missing.
 	 */
 	private static function get_nested_value( $args, $key, $fallback = null ) {
 		if ( false === strpos( $key, '.' ) ) {
@@ -148,11 +158,16 @@ class Config {
 	}
 
 	/**
-	 * Set nested configuration value using dot notation
+	 * Set nested configuration value using dot notation.
 	 *
-	 * @param array  &$args
-	 * @param string $key
-	 * @param mixed  $value
+	 * Updates an array using "dot notation" to set nested values.
+	 * If the key does not use dot notation, the value is set directly.
+	 *
+	 * @param array  $args  The configuration array to modify (passed by reference).
+	 * @param string $key   The configuration key, supports dot notation for nested values.
+	 * @param mixed  $value The value to assign to the given key.
+	 *
+	 * @return void
 	 */
 	private static function set_nested_value( &$args, $key, $value ) {
 		if ( strpos( $key, '.' ) === false ) {
@@ -187,10 +202,13 @@ class Config {
 	}
 
 	/**
-	 * Check if configuration key exists
+	 * Check if a configuration key exists.
 	 *
-	 * @param string $key
-	 * @return bool
+	 * Determines whether the given configuration key has a value set.
+	 *
+	 * @param string $key The configuration key to check (supports dot notation for nested values).
+	 *
+	 * @return bool True if the configuration key exists and is not null, false otherwise.
 	 */
 	public static function has( $key ) {
 		return self::get( $key ) !== null;
@@ -224,10 +242,13 @@ class Config {
 	}
 
 	/**
-	 * Check if feature is enabled
+	 * Check if a feature is enabled.
 	 *
-	 * @param string $feature
-	 * @return bool
+	 * Looks up the configuration to determine whether the given feature flag is enabled.
+	 *
+	 * @param string $feature The feature key to check in the configuration.
+	 *
+	 * @return bool True if the feature is enabled, false otherwise.
 	 */
 	public static function is_feature_enabled( $feature ) {
 		return (bool) self::get( "features.{$feature}", false );

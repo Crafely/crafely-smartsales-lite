@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Crafely SmartSales" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd">
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    name="Crafely SmartSales"
+    xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd">
 
     <description>Coding standards for Crafely SmartSales WordPress Plugin</description>
 
@@ -14,13 +16,18 @@
     <exclude-pattern>*.min.css</exclude-pattern>
     <exclude-pattern>/tests/*</exclude-pattern>
 
-    <!-- How to scan -->
-    <arg value="sp"/> <!-- Show sniff and progress -->
+    <!-- Scan options -->
+    <arg value="sp"/> <!-- Show sniff + progress -->
     <arg name="colors"/>
     <arg name="basepath" value="."/>
     <arg name="extensions" value="php"/>
-    
-    <!-- Enable fixes for spacing, indentation, and other formatting -->
+    <arg name="tab-width" value="4"/>
+    <arg name="parallel" value="8"/>
+
+    <!-- ========================== -->
+    <!-- AUTOFIXABLE RULES -->
+    <!-- Formatting, indentation, braces, docblocks -->
+    <!-- ========================== -->
     <rule ref="Generic.WhiteSpace.ScopeIndent">
         <properties>
             <property name="indent" value="1"/>
@@ -29,49 +36,59 @@
         </properties>
     </rule>
 
-    <!-- Force tab-based indentation -->
-    <arg name="tab-width" value="4"/>
     <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
-    
-    <!-- Configure spacing rules -->
     <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
         <properties>
             <property name="ignoreBlankLines" value="false"/>
         </properties>
     </rule>
 
-    <!-- Set tab width -->
-    <arg name="tab-width" value="4"/>
-
-    <!-- Show progress of the run -->
-    <arg value="p"/>
-
-    <!-- Enable parallel processing -->
-    <arg name="parallel" value="8"/>
-    
-    <!-- Configure brace and parenthesis rules -->
     <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
     <rule ref="Squiz.Functions.MultiLineFunctionDeclaration"/>
-
-    <!-- Rules -->
-    <rule ref="WordPress-Core">
-        <!-- Allow modern PHP features -->
-        <exclude name="WordPress.Files.FileName"/>
-        <exclude name="WordPress.NamingConventions.ValidVariableName"/>
-        <!-- <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/> -->
-        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
-        <exclude name="PEAR.Functions.FunctionCallSignature"/>
-        <!-- <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/> -->
-        <exclude name="WordPress.NamingConventions.PrefixAllGlobals"/>
+    <rule ref="Squiz.Commenting.FunctionComment"/>
+    <rule ref="Squiz.Commenting.InlineComment"/>
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter.Found">
+    <severity>0</severity>
+    </rule>
+    <rule ref="WordPress.WP.Capabilities.Unknown">
+    <severity>0</severity>
     </rule>
 
-    <!-- PHP version compatibility -->
-    <config name="testVersion" value="7.4-"/>
+    <!-- ========================== -->
+    <!-- MANUAL / SECURITY RULES -->
+    <!-- Nonce, escaping, sanitization, safe redirects, SQL -->
+    <!-- These cannot be autofixed -->
+    <!-- ========================== -->
+    <rule ref="WordPress.Security.NonceVerification"/>
+    <rule ref="WordPress.Security.NonceVerification.Missing"/>
+    <rule ref="WordPress.Security.EscapeOutput"/>
+    <rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+    <rule ref="WordPress.Security.SafeRedirect"/>
+    <rule ref="WordPress.DB.PreparedSQL"/>
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
 
-    <!-- WordPress Compatibility -->
+    <!-- WordPress Standards -->
+    <rule ref="WordPress-Core">
+        <exclude name="WordPress.Files.FileName"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName"/>
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+        <exclude name="PEAR.Functions.FunctionCallSignature"/>
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals"/>
+    </rule>
+    <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="Generic.Commenting.Todo"/>
+
+    <!-- PHP Compatibility -->
+    <config name="testVersion" value="8.0-"/>
+    <rule ref="PHPCompatibilityWP">
+        <include-pattern>*\.php</include-pattern>
+    </rule>
+
+    <!-- WordPress version -->
     <config name="minimum_wp_version" value="6.0"/>
-    
-    <!-- Add memory limit for PHPCS -->
+
+    <!-- Memory limit -->
     <ini name="memory_limit" value="256M"/>
 
     <!-- Plugin specific rules -->
@@ -82,7 +99,6 @@
             </property>
         </properties>
     </rule>
-
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
             <property name="prefixes" type="array">
@@ -91,6 +107,6 @@
         </properties>
     </rule>
 
-    <!-- PSR-4 Compatible Namespaces -->
+    <!-- PSR-4 namespaces -->
     <rule ref="PSR1.Classes.ClassDeclaration"/>
 </ruleset>

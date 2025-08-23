@@ -1,4 +1,11 @@
 <?php
+/**
+ * Crafely Smart Sales Lite Plugin
+ *
+ * This file handles the REST API requests related to users and their roles.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Roles;
 
@@ -36,7 +43,9 @@ class UsersApiHandler {
 	public function __construct() {
 		add_action('rest_api_init', [ $this, 'register_routes' ]);
 	}
-
+	/**
+	 * Registers the REST API routes for user management.
+	 */
 	public function register_routes() {
 		$routes = [
 			'/users'             => [
@@ -74,7 +83,12 @@ class UsersApiHandler {
 			}
 		}
 	}
-
+	/**
+	 * Handles the GET request to retrieve all users.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function check_permission( $request ) {
 		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
@@ -100,20 +114,34 @@ class UsersApiHandler {
 	 * Separate permission check specifically for logout endpoint
 	 * Allows any authenticated user to logout
 	 */
-	public function check_logout_permission( $request ) {
+	public function check_logout_permission() {
 		// Only check if user is logged in - any authenticated user can logout.
 		return is_user_logged_in();
 	}
-	// Format success response.
+	/**
+	 * Format success response
+	 *
+	 * @param string $message Success message.
+	 * @param array  $data    Additional data.
+	 * @param int    $statusCode HTTP status code.
+	 * @return array
+	 */
 	private function format_success_response( $message, $data = [], $statusCode = 200 ) {
 		return [
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		];
 	}
-
-	// Format error response.
+	/**
+	 * Format error response
+	 *
+	 * @param string $message Error message.
+	 * @param array  $errors  Additional error details.
+	 * @param int    $statusCode HTTP status code.
+	 * @param string $path Optional path for the error.
+	 */
 	private function format_error_response( $message, $errors = [], $statusCode = 400, $path = '' ) {
 		$error = [];
 
@@ -131,10 +159,16 @@ class UsersApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		];
 	}
-
-	// Format user response.
+	/**
+	 * Handles the GET request to retrieve all users.
+	 *
+	 * @param \WP_User $user The WordPress user object.
+	 * @return array.
+	 */
 	private function format_user_response( $user ) {
 		// Get user account status from meta, fallback to user_status field.
 		$status = get_user_meta($user->ID, 'user_account_status', true);
@@ -168,7 +202,7 @@ class UsersApiHandler {
 				$counters = get_posts([
 					'post_type'      => 'csmsl_counter',
 					'posts_per_page' => -1,
-                    // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+                    // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
 					'meta_query'     => [
 						[
 							'key'     => 'counter_outlet_id',
@@ -232,10 +266,10 @@ class UsersApiHandler {
 			if ( $counter_id ) {
 				$counter = get_post($counter_id);
 				if ( $counter ) {
-					// Get counter assignment history
+					// Get counter assignment history.
 					$assignment_history = get_post_meta($counter_id, 'counter_assignment_history', true) ? get_post_meta($counter_id, 'counter_assignment_history', true) : [];
 
-					// Get counter sales stats
+					// Get counter sales stats.
 					$counter_stats = $this->get_counter_stats($counter_id);
 
 					$response['counter'] = [
@@ -254,10 +288,10 @@ class UsersApiHandler {
 			}
 		}
 
-		// Get orders with more detailed information
+		// Get orders with more detailed information.
 		$response['orders'] = $this->get_user_orders($user->ID);
 
-		// Activity stats with proper query modifications
+		// Activity stats with proper query modifications.
 		$response['stats'] = [
 			'total_sales'    => $this->get_user_total_sales($user->ID),
 			'total_orders'   => $this->get_user_total_orders($user->ID),
@@ -268,8 +302,12 @@ class UsersApiHandler {
 
 		return $response;
 	}
-
-	// Add new method to get user's orders
+	/**
+	 * Get user orders with more details.
+	 *
+	 * @param int $user_id User ID.
+	 * @return array
+	 */
 	private function get_user_orders( $user_id ) {
 		global $wpdb;
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -300,8 +338,12 @@ class UsersApiHandler {
 			];
 		}, $orders ? $orders : []);
 	}
-
-	// Update get_user_last_order to include more details
+	/**
+	 * Loads the last order for a user with proper meta keys.
+	 *
+	 * @param int $user_id User ID.
+	 * @return array
+	 */
 	private function get_user_last_order( $user_id ) {
 		global $wpdb;
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -327,8 +369,18 @@ class UsersApiHandler {
 			'total' => floatval($last_order->total),
 		] : null;
 	}
-
-	// Update get_user_total_sales to ensure proper joining
+	/**
+	 * Get total sales amount for a specific user.
+	 *
+	 * Queries WooCommerce orders to calculate the sum of `_order_total` for
+	 * completed and processing orders authored by or created for the user.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param int $user_id The user ID.
+	 *
+	 * @return float The total sales amount for the user.
+	 */
 	private function get_user_total_sales( $user_id ) {
 		global $wpdb;
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -347,8 +399,12 @@ class UsersApiHandler {
 		));
 		return floatval($total) ? floatval($total) : 0;
 	}
-
-	// Helper method to get user permissions
+	/**
+	 * Role permissions for the user.
+	 *
+	 * @param \WP_User $user The WordPress user object.
+	 * @return array
+	 */
 	private function get_user_permissions( $user ) {
 		$permissions = [];
 
@@ -390,11 +446,20 @@ class UsersApiHandler {
 		return $permissions;
 	}
 
-	// Helper method to get user's total orders
+	/**
+	 * Total orders count for a specific user.
+	 * Queries WooCommerce orders to count the number of orders
+	 * authored by or created for the user
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @param int $user_id The user ID.
+	 * @return int The total number of orders for the user.
+	 * This method counts orders where the user is either the author or marked as
+	 */
 	private function get_user_total_orders( $user_id ) {
 		global $wpdb;
-		// Count orders where user is either the author or marked as created_by
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// Count orders where user is either the author or marked as created_by.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$count = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
@@ -407,8 +472,13 @@ class UsersApiHandler {
 		));
 		return intval($count) ? intval($count) : 0;
 	}
-
-	// Helper method to get user's session status
+	/**
+	 * Get the session status of a user.
+	 * Checks user meta for session tokens and last activity to determine if the user is active,
+	 * recently active, or inactive.
+	 *
+	 * @param int $user_id The user ID.
+	 */
 	private function get_user_session_status( $user_id ) {
 		$session_tokens = get_user_meta($user_id, 'session_tokens', true);
 		$last_activity  = get_user_meta($user_id, 'last_activity', true);
@@ -421,10 +491,21 @@ class UsersApiHandler {
 		return 'inactive';
 	}
 
-	// New helper methods for additional stats
+	/**
+	 * Get the last order date for a user.
+	 *
+	 * Queries WooCommerce orders to find the most recent order date authored by
+	 * or created for the user.
+	 *
+	 * @global wpdb $wpdb   WordPress database abstraction object.
+	 *
+	 * @param  int $user_id  The ID of the user to check orders for.
+	 *
+	 * @return string|null  The last order date (Y-m-d H:i:s) if found, or null if no order exists.
+	 */
 	private function get_user_last_order_date( $user_id ) {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$last_order_date = $wpdb->get_var($wpdb->prepare(
 			"SELECT p.post_date
             FROM {$wpdb->posts} p
@@ -439,10 +520,18 @@ class UsersApiHandler {
 		));
 		return $last_order_date ? $last_order_date : null;
 	}
-
+	/**
+	 * Get recent activity for a user.
+	 * Queries WooCommerce orders to find the last 5 completed or processing orders
+	 * authored by or created for the user.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @param int $user_id The user ID.
+	 * @return array
+	 */
 	private function get_user_recent_activity( $user_id ) {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$recent_orders = $wpdb->get_results($wpdb->prepare(
 			"SELECT p.ID as order_id, p.post_date, pm.meta_value as order_total
             FROM {$wpdb->posts} p
@@ -466,17 +555,25 @@ class UsersApiHandler {
 		}, $recent_orders);
 	}
 
-	// Add new helper method for counter stats
+	/**
+	 * Get counter statistics for a specific counter.
+	 *
+	 * Queries WooCommerce orders to calculate sales statistics for a given counter.
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 * @param int $counter_id The counter ID.
+	 * @return array
+	 */
 	private function get_counter_stats( $counter_id ) {
 		global $wpdb;
 
-		// Get today's date in MySQL format
-		// Get today's date and the first day of the current month in 'Y-m-d' format
+		// Get today's date in MySQL format.
+		// Get today's date and the first day of the current month in 'Y-m-d' format.
 		$today       = current_time('Y-m-d');
 		$month_start = gmdate('Y-m-01', strtotime($today));
 
-		// Get sales for today
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// Get sales for today.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$today_sales = $wpdb->get_var($wpdb->prepare(
 			"SELECT SUM(CAST(pm_total.meta_value AS DECIMAL(10,2)))
             FROM {$wpdb->posts} p
@@ -492,8 +589,8 @@ class UsersApiHandler {
 			$today
 		));
 
-		// Get sales for current month
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// Get sales for current month.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$month_sales = $wpdb->get_var($wpdb->prepare(
 			"SELECT SUM(CAST(pm_total.meta_value AS DECIMAL(10,2)))
             FROM {$wpdb->posts} p
@@ -509,8 +606,8 @@ class UsersApiHandler {
 			$month_start
 		));
 
-		// Get total orders count
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// Get total orders count.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
 		$total_orders = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
@@ -531,13 +628,18 @@ class UsersApiHandler {
 		];
 	}
 
-	// Get all users
-	public function get_users( $request ) {
+	/**
+	 * Get all users.
+	 * Retrieves all users with specific POS roles and formats the response.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_users() {
 		$users         = get_users();
 		$response_data = [];
 
 		foreach ( $users as $user ) {
-			// Show users with any of our custom POS roles
+			// Show users with any of our custom POS roles.
 			if ( array_intersect([ 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' ], $user->roles) ) {
 				$response_data[] = $this->format_user_response($user);
 			}
@@ -550,7 +652,13 @@ class UsersApiHandler {
 		), 200);
 	}
 
-	// Get a single user
+	/**
+	 * Get a specific user by ID.
+	 * Retrieves a user by their ID and formats the response.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function get_user( $request ) {
 		$user = get_user_by('id', $request['id']);
 
@@ -571,12 +679,17 @@ class UsersApiHandler {
 			200
 		), 200);
 	}
-
-	// Create a new user
+	/**
+	 * Create a new user.
+	 * Handles the creation of a new user with validation and role assignment.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function create_user( $request ) {
 		$parameters = $request->get_json_params();
 
-		// Only admin can create users
+		// Only admin can create users.
 		if ( ! current_user_can('administrator') ) {
 			return new WP_REST_Response($this->format_error_response(
 				'Permission denied',
@@ -585,7 +698,7 @@ class UsersApiHandler {
 			), 403);
 		}
 
-		// Validate role
+		// Validate role.
 		$valid_roles = [ 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' ];
 		if ( ! in_array($parameters['role'], $valid_roles, true ) ) {
 			return new WP_REST_Response($this->format_error_response(
@@ -595,7 +708,7 @@ class UsersApiHandler {
 			), 400);
 		}
 
-		// If creating outlet manager, outlet_id is required
+		// If creating outlet manager, outlet_id is required.
 		if ( 'csmsl_pos_outlet_manager' === $parameters['role'] && empty($parameters['outlet_id']) ) {
 			return new WP_REST_Response($this->format_error_response(
 				'Missing outlet',
@@ -606,7 +719,7 @@ class UsersApiHandler {
 
 		$errors = [];
 
-		// Validate required fields
+		// Validate required fields.
 		$required_fields = [ 'name', 'email', 'password', 'role' ];
 		foreach ( $required_fields as $field ) {
 			if ( empty($parameters[ $field ]) ) {
@@ -614,7 +727,7 @@ class UsersApiHandler {
 			}
 		}
 
-		// Check if the name or email already exists
+		// Check if the name or email already exists.
 		if ( isset($parameters['name']) && username_exists($parameters['name']) ) {
 			$errors['name'] = "A user with the username '{$parameters['name']}' already exists.";
 		}
@@ -622,7 +735,7 @@ class UsersApiHandler {
 			$errors['email'] = "A user with the email '{$parameters['email']}' already exists.";
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty($errors) ) {
 			return new WP_REST_Response($this->format_error_response(
 				'Validation failed.',
@@ -632,7 +745,7 @@ class UsersApiHandler {
 			), 400);
 		}
 
-		// Create the user
+		// Create the user.
 		$user_id = wp_create_user($parameters['name'], $parameters['password'], $parameters['email']);
 
 		if ( is_wp_error($user_id) ) {
@@ -646,19 +759,19 @@ class UsersApiHandler {
 			), 500);
 		}
 
-		// Update user data including display_name, first_name and last_name
+		// Update user data including display_name, first_name and last_name.
 		$user_data = [
 			'ID'           => $user_id,
 			'role'         => $parameters['role'],
 			'display_name' => isset($parameters['display_name']) ? $parameters['display_name'] : $parameters['name'],
 		];
 
-		// Add first_name if provided
+		// Add first_name if provided.
 		if ( isset($parameters['first_name']) ) {
 			$user_data['first_name'] = $parameters['first_name'];
 		}
 
-		// Add last_name if provided
+		// Add last_name if provided.
 		if ( isset($parameters['last_name']) ) {
 			$user_data['last_name'] = $parameters['last_name'];
 		}
@@ -669,21 +782,21 @@ class UsersApiHandler {
 			update_user_meta($user_id, 'assigned_outlet_id', $parameters['outlet_id']);
 		}
 
-		// Save counter assignment for cashiers
+		// Save counter assignment for cashiers.
 		if ( 'csmsl_pos_cashier' === $parameters['role'] && isset($parameters['counter_id']) ) {
 			update_user_meta($user_id, 'assigned_counter_id', $parameters['counter_id']);
 
-			// Also update counter's current user assignment
+			// Also update counter's current user assignment.
 			if ( $parameters['counter_id'] ) {
 				update_post_meta($parameters['counter_id'], 'current_assigned_user', $user_id);
 
-				// Add assignment history if not exists
+				// Add assignment history if not exists.
 				$assignment_history = get_post_meta($parameters['counter_id'], 'counter_assignment_history', true) ? get_post_meta($parameters['counter_id'], 'counter_assignment_history', true) : [];
 				if ( empty($assignment_history) || ! is_array($assignment_history) ) {
 					$assignment_history = [];
 				}
 
-				// Add new assignment record
+				// Add new assignment record.
 				$assignment_history[] = [
 					'user_id'     => $user_id,
 					'counter_id'  => $parameters['counter_id'],
@@ -703,7 +816,13 @@ class UsersApiHandler {
 		), 201);
 	}
 
-	// Update a user
+	/**
+	 * Update an existing user.
+	 * Handles the update of a user with validation and role assignment.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function update_user( $request ) {
 		$parameters = $request->get_json_params();
 		$user       = get_user_by('id', $request['id']);
@@ -720,12 +839,12 @@ class UsersApiHandler {
 			));
 		}
 
-		// Validate email if provided
+		// Validate email if provided.
 		if ( isset($parameters['email']) && email_exists($parameters['email']) && email_exists($parameters['email']) !== $user->ID ) {
 			$errors['email'] = "A user with the email '{$parameters['email']}' already exists.";
 		}
 
-		// Validate roles if provided
+		// Validate roles if provided.
 		if ( isset($parameters['roles']) && is_array($parameters['roles']) ) {
 			$valid_roles = [ 'administrator', 'editor', 'author', 'contributor', 'subscriber', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' ];
 			foreach ( $parameters['roles'] as $role ) {
@@ -738,12 +857,12 @@ class UsersApiHandler {
 			}
 		}
 
-		// Validate status if provided
+		// Validate status if provided.
 		if ( isset($parameters['status']) && ! in_array($parameters['status'], [ 'active', 'inactive' ], true) ) {
 			$errors['status'] = "Invalid status value. Allowed values are 'active' or 'inactive'.";
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty($errors) ) {
 			return rest_ensure_response($this->format_error_response(
 				'Validation failed.',
@@ -753,10 +872,10 @@ class UsersApiHandler {
 			));
 		}
 
-		// Update user data
+		// Update user data.
 		$update_data = array( 'ID' => $user->ID );
 
-		// Handle name and display_name updates
+		// Handle name and display_name updates.
 		if ( isset($parameters['name']) ) {
 			$update_data['display_name'] = $parameters['name'];
 		}
@@ -767,7 +886,7 @@ class UsersApiHandler {
 			$update_data['user_email'] = $parameters['email'];
 		}
 
-		// Handle first name and last name updates
+		// Handle first name and last name updates.
 		if ( isset($parameters['first_name']) ) {
 			$update_data['first_name'] = $parameters['first_name'];
 		}
@@ -775,54 +894,54 @@ class UsersApiHandler {
 			$update_data['last_name'] = $parameters['last_name'];
 		}
 
-		// Update the user with all changes at once
+		// Update the user with all changes at once.
 		wp_update_user($update_data);
 
-		// Handle role updates
+		// Handle role updates.
 		if ( isset($parameters['roles']) && is_array($parameters['roles']) ) {
-			$user->set_role(''); // Remove all roles
+			$user->set_role('');
 			foreach ( $parameters['roles'] as $role ) {
 				$user->add_role($role);
 			}
 		} elseif ( isset($parameters['role']) ) {
-			// Handle single role update
+			// Handle single role update.
 			$user->set_role($parameters['role']);
 		}
 
-		// Update outlet assignment
+		// Update outlet assignment.
 		if ( isset($parameters['outlet_id']) ) {
 			update_user_meta($user->ID, 'assigned_outlet_id', $parameters['outlet_id']);
 		}
 
-		// Update counter assignment for cashiers
+		// Update counter assignment for cashiers.
 		if ( in_array('csmsl_pos_cashier', $user->roles, true) && isset($parameters['counter_id']) ) {
-			// Get previous counter assignment if any
+			// Get previous counter assignment if any.
 			$previous_counter_id = get_user_meta($user->ID, 'assigned_counter_id', true);
 
-			// If different counter, update assignment
+			// If different counter, update assignment.
 			if ( $previous_counter_id !== $parameters['counter_id'] ) {
-				// Clear previous counter assignment if exists
+				// Clear previous counter assignment if exists.
 				if ( $previous_counter_id ) {
-					// Remove user from previous counter
+					// Remove user from previous counter.
 					$current_user = get_post_meta($previous_counter_id, 'current_assigned_user', true);
 					if ( $current_user === $user->ID ) {
 						delete_post_meta($previous_counter_id, 'current_assigned_user');
 					}
 				}
 
-				// Set new counter assignment
+				// Set new counter assignment.
 				update_user_meta($user->ID, 'assigned_counter_id', $parameters['counter_id']);
 
-				// Update counter's current user
+				// Update counter's current user.
 				update_post_meta($parameters['counter_id'], 'current_assigned_user', $user->ID);
 
-				// Add to assignment history
+				// Add to assignment history.
 				$assignment_history = get_post_meta($parameters['counter_id'], 'counter_assignment_history', true) ? get_post_meta($parameters['counter_id'], 'counter_assignment_history', true) : [];
 				if ( ! is_array($assignment_history) ) {
 					$assignment_history = [];
 				}
 
-				// Add new assignment record
+				// Add new assignment record.
 				$assignment_history[] = [
 					'user_id'     => $user->ID,
 					'counter_id'  => $parameters['counter_id'],
@@ -835,14 +954,14 @@ class UsersApiHandler {
 			}
 		}
 
-		// Update user status
+		// Update user status.
 		if ( isset($parameters['status']) ) {
 			$user_status = 'active' === $parameters['status'] ? 0 : 1;
 			wp_update_user([
 				'ID'          => $user->ID,
 				'user_status' => $user_status,
 			]);
-			// Also store as user meta for easier querying
+			// Also store as user meta for easier querying.
 			update_user_meta($user->ID, 'user_account_status', $parameters['status']);
 		}
 
@@ -853,7 +972,13 @@ class UsersApiHandler {
 		]);
 	}
 
-	// Delete a user
+	/**
+	 * Delete a user.
+	 * Handles the deletion of a user by their ID.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function delete_user( $request ) {
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 
@@ -889,8 +1014,13 @@ class UsersApiHandler {
 			200
 		), 200);
 	}
-
-	// Get current user
+	/**
+	 * Get current user.
+	 * Retrieves the currently logged-in user and formats the response.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|WP_Error
+	 */
 	public function get_current_user( $request ) {
 		$user = wp_get_current_user();
 
@@ -911,8 +1041,13 @@ class UsersApiHandler {
 			200
 		), 200);
 	}
-
-	// Logout user
+	/**
+	 * Logout user.
+	 * Handles the logout process for the currently logged-in user.
+	 * Clears session tokens and cookies, and redirects to the login page.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 */
 	public function logout_user( $request ) {
 		$user = wp_get_current_user();
 
@@ -927,18 +1062,18 @@ class UsersApiHandler {
 			), 401);
 		}
 
-		// Update last activity before logout
+		// Update last activity before logout.
 		update_user_meta($user->ID, 'last_activity', current_time('mysql'));
 
-		// Clear user session tokens to logout from all devices
+		// Clear user session tokens to logout from all devices.
 		$sessions = \WP_Session_Tokens::get_instance($user->ID);
 		$sessions->destroy_all();
 
-		// WordPress logout functions
+		// WordPress logout functions.
 		wp_logout();
 		wp_clear_auth_cookie();
 
-		// Clear any additional session data
+		// Clear any additional session data.
 		if ( session_id() ) {
 			session_destroy();
 		}
@@ -953,8 +1088,14 @@ class UsersApiHandler {
 		), 200);
 	}
 
-	// Get user roles
-	public function get_user_roles( $request ) {
+	/**
+	 * Get user roles.
+	 *
+	 * Retrieves all available WordPress roles for the REST API response.
+	 *
+	 * @return \WP_REST_Response REST response containing the roles.
+	 */
+	public function get_user_roles() {
 		global $wp_roles;
 		$roles = $wp_roles->roles;
 

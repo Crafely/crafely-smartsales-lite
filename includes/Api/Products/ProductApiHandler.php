@@ -1,4 +1,9 @@
 <?php
+/**
+ * Crafely SmartSales Lite Product API Handler
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Products;
 
@@ -10,10 +15,15 @@ use WC_Product_Simple;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * ProductApiHandler class
+ * Handles REST API requests related to products.
+ */
 class ProductApiHandler extends BaseApiHandler {
 
-
+	/**
+	 * Register REST API routes for product management.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -85,17 +95,23 @@ class ProductApiHandler extends BaseApiHandler {
 			)
 		);
 	}
-
+	/**
+	 * Check if the user has permission to access the API endpoints.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -105,7 +121,14 @@ class ProductApiHandler extends BaseApiHandler {
 
 		return true;
 	}
-
+	/**
+	 * Format error response for REST API.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional. Additional error details.
+	 * @param int    $statusCode Optional. HTTP status code. Default is 400.
+	 * @param string $path Optional. The API endpoint path.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
@@ -120,22 +143,25 @@ class ProductApiHandler extends BaseApiHandler {
 		return array(
 			'success' => false,
 			'message' => $message,
-			'data'    => array(), // Changed from null to empty array
+			'data'    => array(),
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
-
+	/**
+	 * Format product response for REST API.
+	 *
+	 * @param WC_Product $product The product object.
+	 *
+	 * @return array Formatted product data.
+	 */
 	private function format_product_response( $product ) {
 		$default_image_url = CSMSL_URL . 'assets/images/product.png';
 		$default_sku       = 'N/A';
+		$product_image_id  = $product->get_image_id();
 
-		// Get the product image ID
-		$product_image_id = $product->get_image_id();
-
-		// Get the image URL, or use the default if no image is set
 		$image_url = $product_image_id ? wp_get_attachment_url( $product_image_id ) : $default_image_url;
-
-		// If the image URL is false or empty, use the default image
 		if ( empty( $image_url ) ) {
 			$image_url = $default_image_url;
 		}
@@ -159,7 +185,11 @@ class ProductApiHandler extends BaseApiHandler {
 			'image_url'         => $image_url,
 		);
 	}
-
+	/**
+	 * Get products with pagination and search functionality.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object.
+	 */
 	public function get_products( $request ) {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
@@ -174,12 +204,12 @@ class ProductApiHandler extends BaseApiHandler {
 			'order'          => $request->get_param( 'order' ) ? $request->get_param( 'order' ) : 'DESC',
 		);
 
-		// Add search functionality
+		// Add search functionality.
 		if ( ! empty( $search_query ) ) {
 			$args['s'] = sanitize_text_field( $search_query );
 
-			// Add meta query for SKU search
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			// Add meta query for SKU search.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
 			$args['meta_query'] = array(
 				'relation' => 'OR',
 				array(
@@ -189,10 +219,10 @@ class ProductApiHandler extends BaseApiHandler {
 				),
 			);
 
-			// Remove default WP search behavior
+			// Remove default WP search behavior.
 			remove_filter( 'posts_search', 'relevanssi_prevent_default_request', 10 );
 
-			// Add custom search filter
+			// Add custom search filter.
 			add_filter(
 				'posts_search',
 				function ( $search, $query ) use ( $search_query ) {
@@ -201,7 +231,7 @@ class ProductApiHandler extends BaseApiHandler {
 					if ( ! empty( $search ) && ! empty( $query->query_vars['s'] ) ) {
 						$like = '%' . $wpdb->esc_like( $search_query ) . '%';
 
-						// Search in title, excerpt, content, and SKU
+						// Search in title, excerpt, content, and SKU.
 						$search = $wpdb->prepare(
 							" AND (
                             {$wpdb->posts}.post_title LIKE %s 
@@ -227,8 +257,8 @@ class ProductApiHandler extends BaseApiHandler {
 				2
 			);
 
-			// Also search in product categories and tags
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			// Also search in product categories and tags.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query.
 			$args['tax_query'] = array(
 				'relation' => 'OR',
 				array(
@@ -246,7 +276,7 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
-		// Validate orderby parameter
+		// Validate orderby parameter.
 		$valid_orderby_values = array( 'date', 'title', 'price', 'popularity' );
 		if ( ! in_array( $args['orderby'], $valid_orderby_values, true ) ) {
 			return new WP_REST_Response(
@@ -262,7 +292,7 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
-		// Validate order parameter
+		// Validate order parameter.
 		$valid_order_values = array( 'ASC', 'DESC' );
 		if ( ! in_array( strtoupper( $args['order'] ), $valid_order_values, true ) ) {
 			return new WP_REST_Response(
@@ -278,10 +308,10 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
-		// Validate category parameter
+		// Validate category parameter.
 		$category = $request->get_param( 'category');
 		if ( ! empty( $category ) ) {
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query.
 			$args['tax_query'] = array(
 				array(
 					'taxonomy' => 'product_cat',
@@ -306,9 +336,9 @@ class ProductApiHandler extends BaseApiHandler {
 		if ( empty( $products ) ) {
 			return new WP_REST_Response(
 				array(
-					'success'    => true, // Changed to true since empty results are valid
+					'success'    => true,
 					'message'    => 'No products found.',
-					'data'       => array(), // Changed from null to empty array
+					'data'       => array(),
 					'pagination' => array(
 						'total_products' => 0,
 						'total_pages'    => 0,
@@ -317,10 +347,8 @@ class ProductApiHandler extends BaseApiHandler {
 					),
 				),
 				200
-			); // Changed from 404 to 200 since this is not an error
+			);
 		}
-
-		// Add pagination information to the response
 		$total_products = $query->found_posts;
 		$total_pages    = $query->max_num_pages;
 
@@ -340,6 +368,13 @@ class ProductApiHandler extends BaseApiHandler {
 		);
 	}
 
+	/**
+	 * Get a single product by ID.
+	 *
+	 * @param array $data The request data containing the product ID.
+	 *
+	 * @return WP_REST_Response The response containing the product data or an error message.
+	 */
 	public function get_product( $data ) {
 		$product_id = $data['id'];
 		$product    = wc_get_product( $product_id );
@@ -367,11 +402,17 @@ class ProductApiHandler extends BaseApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Get product variations by product ID.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object containing the product ID and update data.
+	 *
+	 * @return WP_REST_Response The response containing the product variations or an error message.
+	 */
 	public function create_product( $request ) {
 		$data = $request->get_json_params();
 
-		// Define required fields and their error messages
+		// Define required fields and their error messages.
 		$required_fields = array(
 			'name'          => 'name is required.',
 			'sku'           => 'sku is required.',
@@ -382,27 +423,27 @@ class ProductApiHandler extends BaseApiHandler {
 
 		$errors = array();
 
-		// Check for missing required fields
+		// Check for missing required fields.
 		foreach ( $required_fields as $field => $error_message ) {
 			if ( ! isset( $data[ $field ] ) || empty( $data[ $field ] ) ) {
 				$errors[ $field ] = $error_message;
 			}
 		}
 
-		// If there are missing fields, return a comprehensive error response
+		// If there are missing fields, return a comprehensive error response.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
 					'message' => 'Missing required fields: ' . implode( ', ', array_keys( $errors ) ),
-					'data'    => array(), // Changed from null to empty array
+					'data'    => array(),
 					'error'   => $errors,
 				),
 				400
 			);
 		}
 
-		// Validate regular_price and sale_price
+		// Validate regular_price and sale_price.
 		if ( ! is_numeric( $data['regular_price'] ) || $data['regular_price'] < 0 ) {
 			$errors['regular_price'] = 'Regular price must be a non-negative number.';
 		}
@@ -411,58 +452,58 @@ class ProductApiHandler extends BaseApiHandler {
 			$errors['sale_price'] = 'Sale price must be a non-negative number.';
 		}
 
-		// Validate sale_price against regular_price
+		// Validate sale_price against regular_price.
 		if ( isset( $data['sale_price'] ) && $data['sale_price'] >= $data['regular_price'] ) {
 			$errors['sale_price'] = 'Sale price must be less than the regular price.';
 		}
 
-		// Validate status
+		// Validate status.
 		$valid_statuses = array( 'draft', 'pending', 'private', 'publish' );
 		if ( ! in_array( $data['status'], $valid_statuses, true ) ) {
 			$errors['status'] = "The status '{$data['status']}' is not supported.";
 		}
 
-		// Check if SKU already exists
+		// Check if SKU already exists.
 		$existing_product_id = wc_get_product_id_by_sku( $data['sku'] );
 		if ( $existing_product_id ) {
 			$errors['sku'] = "A product with the SKU '{$data['sku']}' already exists.";
 		}
 
-		// If there are validation errors, return them
+		// If there are validation errors, return them.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				array(
 					'success' => false,
 					'message' => 'Validation failed.',
-					'data'    => array(), // Changed from null to empty array
+					'data'    => array(),
 					'error'   => $errors,
 				),
 				400
 			);
 		}
 
-		// Create the product
+		// Create the product.
 		$product = new WC_Product_Simple();
 		$product->set_name( $data['name'] );
 		$product->set_sku( $data['sku'] );
-		$product->set_regular_price( $data['regular_price'] ); // Set regular price
+		$product->set_regular_price( $data['regular_price'] );
 
-		// Set sale price if provided and valid
+		// Set sale price if provided and valid.
 		if ( isset( $data['sale_price'] ) && $data['sale_price'] < $data['regular_price'] ) {
 			$product->set_sale_price( $data['sale_price'] );
 		} else {
-			$product->set_sale_price( '' ); // Clear sale price if invalid or not provided
+			$product->set_sale_price( '' );
 		}
 
 		$product->set_status( $data['status'] );
 
-		// Enable stock management and set stock quantity (only if product supports it)
+		// Enable stock management and set stock quantity (only if product supports it).
 		if ( $product->supports( 'stock' ) ) {
-			$product->set_manage_stock( true ); // Enable stock management
-			$product->set_stock_quantity( $data['stock'] ); // Set stock quantity
+			$product->set_manage_stock( true );
+			$product->set_stock_quantity( $data['stock'] );
 		}
 
-		// Set optional fields if provided
+		// Set optional fields if provided.
 		if ( isset( $data['description'] ) ) {
 			$product->set_description( $data['description'] );
 		}
@@ -480,13 +521,13 @@ class ProductApiHandler extends BaseApiHandler {
 		}
 		if ( isset( $data['image'] ) && ( is_array( $data['image'] ) || is_numeric( $data['image'] ) ) ) {
 			$image_id = is_array( $data['image'] ) ? $data['image'][0] : $data['image'];
-			$product->set_image_id( $image_id ); // Set the single image as the product image
+			$product->set_image_id( $image_id );
 		}
 		if ( isset( $data['featured'] ) ) {
 			$product->set_featured( $data['featured'] );
 		}
 
-		// Save the product
+		// Save the product.
 		$product_id = $product->save();
 
 		if ( ! $product_id ) {
@@ -494,7 +535,7 @@ class ProductApiHandler extends BaseApiHandler {
 				array(
 					'success' => false,
 					'message' => 'Failed to create product.',
-					'data'    => array(), // Changed from null to empty array
+					'data'    => array(),
 					'error'   => array(
 						'server' => 'The product could not be created.',
 					),
@@ -503,7 +544,7 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
-		// Refresh the product object to ensure all data is up-to-date
+		// Refresh the product object to ensure all data is up-to-date.
 		$product = wc_get_product( $product_id );
 
 		return new WP_REST_Response(
@@ -515,7 +556,15 @@ class ProductApiHandler extends BaseApiHandler {
 			201
 		);
 	}
-
+	/**
+	 * Update a WooCommerce product by product ID.
+	 *
+	 * Handles REST API requests to update product data.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object containing the product ID and update data.
+	 *
+	 * @return \WP_REST_Response The response containing success or error information.
+	 */
 	public function update_product( $request ) {
 		$product_id = $request->get_param( 'id' );
 		$product    = wc_get_product( $product_id );
@@ -536,29 +585,29 @@ class ProductApiHandler extends BaseApiHandler {
 
 		$data = $request->get_json_params();
 
-		// Fix: Ensure regular_price and sale_price are properly updated
+		// Fix: Ensure regular_price and sale_price are properly updated.
 		if ( isset( $data['regular_price'] ) && is_numeric( $data['regular_price'] ) && $data['regular_price'] > 0 ) {
 			$product->set_regular_price( (float) $data['regular_price'] );
 		} elseif ( $product->get_regular_price() === '' || $product->get_regular_price() === null ) {
-			$product->set_regular_price( 0 ); // Default price if missing
+			$product->set_regular_price( 0 );
 		}
 
 		if ( isset( $data['sale_price'] ) && is_numeric( $data['sale_price'] ) && $data['sale_price'] > 0 ) {
 			$product->set_sale_price( (float) $data['sale_price'] );
 		} elseif ( $product->get_sale_price() === '' || $product->get_sale_price() === null ) {
-			$product->set_sale_price( '' ); // Ensure sale price is empty, not 0
+			$product->set_sale_price( '' );
 		}
 
-		// Other updates
+		// Other updates.
 		if ( isset( $data['name'] ) ) {
 			$product->set_name( $data['name'] );
 		}
 
-		// Fix stock update logic
+		// Fix stock update logic.
 		if ( isset( $data['stock'] ) ) {
 			$product->set_manage_stock( true );
 			$product->set_stock_quantity( (int) $data['stock'] );
-			$product->set_stock_status( 'instock' ); // Set stock status to in stock
+			$product->set_stock_status( 'instock' );
 		}
 
 		if ( isset( $data['sku'] ) && ! empty( $data['sku'] ) ) {
@@ -590,9 +639,9 @@ class ProductApiHandler extends BaseApiHandler {
 			$product->set_featured( $data['featured'] );
 		}
 
-		// Save the product
+		// Save the product.
 		$updated_product_id = $product->save();
-		wc_delete_product_transients( $product_id ); // Clear cache
+		wc_delete_product_transients( $product_id );
 
 		if ( ! $updated_product_id ) {
 			return new WP_REST_Response(
@@ -608,7 +657,7 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
-		// Refresh the product object to ensure all data is up-to-date
+		// Refresh the product object to ensure all data is up-to-date.
 		$product = wc_get_product( $updated_product_id );
 
 		return new WP_REST_Response(
@@ -620,7 +669,15 @@ class ProductApiHandler extends BaseApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Delete a WooCommerce product by product ID.
+	 *
+	 * Handles REST API requests to delete a product.
+	 *
+	 * @param \WP_REST_Request $request The REST API request object containing the product ID.
+	 *
+	 * @return \WP_REST_Response The response containing success or error information.
+	 */
 	public function delete_product( $request ) {
 		$product_id = $request->get_param( 'id' );
 		$product    = wc_get_product( $product_id );
@@ -650,7 +707,13 @@ class ProductApiHandler extends BaseApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Get product variations by product ID.
+	 *
+	 * @param array $data The request data containing the product ID.
+	 *
+	 * @return WP_REST_Response The response containing the product variations or an error message.
+	 */
 	public function get_product_variations( $data ) {
 		$product_id = $data['id'];
 		$product    = wc_get_product( $product_id );
@@ -709,6 +772,12 @@ class ProductApiHandler extends BaseApiHandler {
 		);
 	}
 
+	/**
+	 * Bulk delete products by IDs.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing product IDs.
+	 * @return WP_REST_Response The response containing success or error information.
+	 */
 	public function bulk_delete_products( $request ) {
 		$product_ids = $request->get_param( 'ids' );
 
@@ -751,7 +820,7 @@ class ProductApiHandler extends BaseApiHandler {
 					),
 				),
 				207
-			); // 207 Multi-Status
+			);
 		}
 
 		return new WP_REST_Response(

@@ -1,14 +1,30 @@
 <?php
+/**
+ * AssistancesDB Class
+ *
+ * This class handles the database operations for assistances in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\DB;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * Class AssistancesDB
+ *
+ * This class provides methods to create and drop the assistances table in the database.
+ */
 class AssistancesDB {
 
-
+	/**
+	 * Create the assistances table in the database.
+	 *
+	 * This method creates a table to store assistances with fields for user ID, thread ID, title, page, and AI configuration.
+	 * It uses the dbDelta function to ensure the table is created with the correct structure.
+	 */
 	public static function create_table() {
 		global $wpdb;
 
@@ -28,7 +44,12 @@ class AssistancesDB {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 	}
-
+	/**
+	 * Drop the assistances table from the database.
+	 *
+	 * This method removes the assistances table if it exists.
+	 * It is typically used during plugin uninstallation or reset.
+	 */
 	public static function drop_table() {
 		global $wpdb;
 
