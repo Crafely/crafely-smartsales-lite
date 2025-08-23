@@ -13,11 +13,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Process login form submission.
 $error_message = '';
+$nonce         = wp_create_nonce(action: 'csmsl_login_error_nonce');
+
+
+
+
+
 
 
 // Check if form was submitted.
-if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) && isset( $_POST['pos_login_nonce'] ) ) {
-	if ( wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['pos_login_nonce'] ) ), 'pos_login' ) ) {
+if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) ) {
+	// Check if nonce is set before verification.
+	if ( ! isset( $_POST['pos_login_nonce'] ) ) {
+		$error_message = 'Security token missing. Please try again.';
+	} elseif ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['pos_login_nonce'] ) ), 'pos_login' ) ) {
+		$error_message = 'Security verification failed. Please try again.';
+	} else {
 		$login    = sanitize_text_field( wp_unslash( $_POST['login'] ) );
 		$password = sanitize_textarea_field( wp_unslash( $_POST['password'] ) );
 		$remember = isset( $_POST['remember_me'] ) ? true : false;
@@ -43,9 +54,19 @@ if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) && isset( $_POST['p
 		} else {
 			$error_message = wp_strip_all_tags( $user->get_error_message() );
 		}
-	} else {
-		$error_message = 'Security verification failed. Please try again.';
 	}
+} elseif ( ! empty($_POST) ) {
+	// If the form was submitted but crucial fields are missing, set a generic error.
+	$error_message = 'Please enter both username/email and password.';
+}
+
+// If an error message exists, redirect with it and the nonce.
+if ( ! empty( $error_message ) && ! isset( $_GET['login_error'] ) ) {
+	wp_safe_redirect( add_query_arg( array(
+		'login_error' => rawurldecode($error_message),
+		'_wpnonce'    => $nonce,
+	), home_url('/smart-pos/auth/login') ) );
+	exit;
 }
 
 // Check for error messages from URL or query var.

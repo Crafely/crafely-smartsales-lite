@@ -124,7 +124,13 @@ class POS {
 		$error         = get_transient('csmsl_login_error');
 
 		if ( isset($_GET['login_error']) ) {
-			$error_message = urldecode(sanitize_text_field(wp_unslash($_GET['login_error'])));
+			$error_nonce = isset($_GET['_wpnonce']) ? sanitize_text_field(wp_unslash($_GET['_wpnonce'])) : '';
+			// Verify nonce if present, otherwise treat error as invalid.
+			if ( wp_verify_nonce($error_nonce, 'csmsl_login_error_nonce') ) {
+				$error_message = rawurldecode(sanitize_text_field(wp_unslash($_GET['login_error'])));
+			} else {
+				$error_message = 'Security verification failed for login error. Please try again.';
+			}
 		} elseif ( ! empty($error) ) {
 			$error_message = $error;
 			delete_transient('csmsl_login_error');
