@@ -12,8 +12,8 @@ export const freeRoutes: RouteRecordRaw[] = [
             title: 'Dashboard',
             accessibleTo: [
                 'administrator',
-                'aipos_outlet_manager',
-                'aipos_shop_manager',
+                'csmsl_pos_outlet_manager',
+                'csmsl_pos_shop_manager',
             ],
             order: 1,
         },
@@ -26,8 +26,8 @@ export const freeRoutes: RouteRecordRaw[] = [
             title: 'Product',
             accessibleTo: [
                 'administrator',
-                'aipos_outlet_manager',
-                'aipos_shop_manager',
+                'csmsl_pos_outlet_manager',
+                'csmsl_pos_shop_manager',
             ],
             order: 2,
         },
@@ -40,9 +40,9 @@ export const freeRoutes: RouteRecordRaw[] = [
             title: 'Customer',
             accessibleTo: [
                 'administrator',
-                'aipos_cashier',
-                'aipos_outlet_manager',
-                'aipos_shop_manager',
+                'csmsl_pos_cashier',
+                'csmsl_pos_outlet_manager',
+                'csmsl_pos_shop_manager',
             ],
             order: 4,
         },
@@ -54,8 +54,8 @@ export const freeRoutes: RouteRecordRaw[] = [
         meta: {
             accessibleTo: [
                 'administrator',
-                'aipos_cashier',
-                'aipos_outlet_manager',
+                'csmsl_pos_cashier',
+                'csmsl_pos_outlet_manager',
             ],
             title: 'POS',
             order: 3,

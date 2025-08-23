@@ -126,7 +126,7 @@
             },
             "suggest": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^0.5 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
-                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
+                "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues.
             },
             "time": "2019-12-27T09:44:58+00:00",
             "type": "phpcodesniffer-standard",
@@ -136,11 +136,10 @@
                 "LGPL-3.0-or-later"
             ],
             "authors": [
-                {
                     "name": "Wim Godden",
                     "homepage": "https://github.com/wimg",
                     "role": "lead"
-                },
+               },
                 {
                     "name": "Juliette Reinders Folmer",
                     "homepage": "https://github.com/jrfnl",

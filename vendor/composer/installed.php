@@ -1,6 +1,7 @@
 <?php return array(
     'root' => array(
         'name' => 'crafely/crafely-smartsales-lite',
+
         'pretty_version' => '1.0.0',
         'version' => '1.0.0.0',
         'reference' => null,
@@ -34,6 +35,7 @@
             'reference' => '9fb324479acf6f39452e0655d2429cc0d3914243',
             'type' => 'phpcodesniffer-standard',
             'install_path' => __DIR__ . '/../phpcompatibility/php-compatibility',
+
             'aliases' => array(),
             'dev_requirement' => true,
         ),

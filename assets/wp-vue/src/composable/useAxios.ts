@@ -2,7 +2,7 @@ import axios from 'axios'
 import { has } from 'lodash'
 
 const _getBaseURL = () => {
-    return `${window.location.origin}/wp-json/ai-smart-sales/v1`
+    return `http://crafely.local/wp-json/ai-smart-sales/v1`
 }
 
 const _getHeaders = () => {
