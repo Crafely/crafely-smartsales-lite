@@ -1,9 +1,8 @@
 <?php
-
 /**
  * Abstract base class for API handlers
  *
- * @package AI Smart Sales
+ * @package crafelySmartsalesLite
  */
 
 namespace CSMSL\Includes\Api;
@@ -14,9 +13,11 @@ use WP_Error;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * BaseApiHandler
+ * This class provides common functionality for API handlers in the Crafely SmartSales Lite plugin.
+ */
 abstract class BaseApiHandler {
-
 
 	/**
 	 * API namespace
@@ -42,11 +43,11 @@ abstract class BaseApiHandler {
 	/**
 	 * Check permission for API access
 	 *
-	 * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request object containing the request data.
 	 * @return bool|\WP_Error
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in
+		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error(
 				'rest_forbidden',
@@ -55,10 +56,10 @@ abstract class BaseApiHandler {
 			);
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_cashier', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -76,8 +77,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Validate request parameters
 	 *
-	 * @param array $params
-	 * @param array $rules
+	 * @param array $params the request parameters.
+	 * @param array $rules the validation rules.
 	 * @return true|\WP_Error
 	 */
 	protected function validate_params( $params, $rules ) {
@@ -85,7 +86,7 @@ abstract class BaseApiHandler {
 			$required = isset( $rule['required'] ) ? $rule['required'] : false;
 			$type     = isset( $rule['type'] ) ? $rule['type'] : 'string';
 
-			// Check required fields
+			// Check required fields.
 			if ( $required && ! isset( $params[ $field ] ) ) {
 				return new WP_Error(
 					'missing_parameter',
@@ -95,7 +96,7 @@ abstract class BaseApiHandler {
 				);
 			}
 
-			// Validate type if parameter exists
+			// Validate type if parameter exists.
 			if ( isset( $params[ $field ] ) ) {
 				$valid = $this->validate_field_type( $params[ $field ], $type );
 				if ( ! $valid ) {
@@ -115,8 +116,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Validate field type
 	 *
-	 * @param mixed  $value
-	 * @param string $type
+	 * @param mixed  $value the value to validate.
+	 * @param string $type the expected type.
 	 * @return bool
 	 */
 	private function validate_field_type( $value, $type ) {
@@ -126,7 +127,7 @@ abstract class BaseApiHandler {
 			case 'string':
 				return is_string( $value );
 			case 'boolean':
-				return is_bool( $value ) || in_array( $value, array( 'true', 'false', '1', '0' ) );
+				return is_bool( $value ) || in_array( $value, array( 'true', 'false', '1', '0' ), true );
 			case 'array':
 				return is_array( $value );
 			case 'email':
@@ -139,9 +140,9 @@ abstract class BaseApiHandler {
 	/**
 	 * Create success response
 	 *
-	 * @param mixed  $data
-	 * @param string $message
-	 * @param int    $status
+	 * @param mixed  $data the data to include in the response.
+	 * @param string $message the message to include in the response.
+	 * @param int    $status the HTTP status code (default is 200).
 	 * @return WP_REST_Response
 	 */
 	protected function success_response( $data = null, $message = '', $status = 200 ) {
@@ -160,9 +161,9 @@ abstract class BaseApiHandler {
 	/**
 	 * Create error response
 	 *
-	 * @param string $message
-	 * @param int    $status
-	 * @param string $code
+	 * @param string $message the error message to include in the response.
+	 * @param int    $status the HTTP status code (default is 400).
+	 * @param string $code the error code (default is 'api_error').
 	 * @return WP_Error
 	 */
 	protected function error_response( $message, $status = 400, $code = 'api_error' ) {
@@ -172,8 +173,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Sanitize request data
 	 *
-	 * @param array $data
-	 * @param array $fields
+	 * @param array $data the request data to sanitize.
+	 * @param array $fields the fields to sanitize with their expected types.
 	 * @return array
 	 */
 	protected function sanitize_request_data( $data, $fields ) {
@@ -191,8 +192,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Log API activity
 	 *
-	 * @param string $action
-	 * @param array  $data
+	 * @param string $action the action being logged.
+	 * @param array  $data additional data to log.
 	 */
 	protected function log_activity( $action, $data = array() ) {
 		$user     = wp_get_current_user();

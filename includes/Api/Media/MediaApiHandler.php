@@ -1,22 +1,42 @@
 <?php
+/**
+ * Crafely SmartSales Lite Media API Handler
+ *
+ * This file handles the REST API endpoints for media management in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
+
 namespace CSMSL\Includes\Api\Media;
 
 use WP_REST_Response;
 
-// Exit if accessed directly
+// Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Define the API handler class
+/**
+ * Class MediaApiHandler
+ *
+ * Handles media-related REST API requests.
+ */
 class MediaApiHandler {
 
-	// Constructor to register routes
+	/**
+	 * Constructor.
+	 *
+	 * Initializes the REST API routes for media management.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
-	// Register REST API routes
+	/**
+	 * Register REST API routes for media management.
+	 *
+	 * This method registers the routes for getting, uploading, and deleting media.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -59,17 +79,23 @@ class MediaApiHandler {
 		);
 	}
 
-	// Check permission
-	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+	/**
+	 * Check if the user has permission to access the media endpoints.
+	 *
+	 * This method checks if the user is logged in and has the appropriate capabilities.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_permission() {
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_spos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -80,26 +106,43 @@ class MediaApiHandler {
 		return true;
 	}
 
-	// Format success response
+	/**
+	 * Format success response.
+	 * This method formats a successful response for the REST API.
+	 *
+	 * @param string $message The success message.
+	 * @param array  $data    Optional. Additional data to include in the response.
+	 * @param int    $statusCode Optional. HTTP status code for the response.
+	 * @return array The formatted success response.
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
 
-	// Format error response
+	/**
+	 * Format error response.
+	 * This method formats an error response for the REST API.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional. Additional error details.
+	 * @param int    $statusCode Optional. HTTP status code for the response.
+	 * @param string $path Optional. The path of the request that caused the error.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors;
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -108,10 +151,18 @@ class MediaApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
 
-	// Get all media
+	/**
+	 * Get all media.
+	 * This method retrieves all media items from the WordPress media library.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response containing the media items or an error message.
+	 */
 	public function get_media( $request ) {
 		$args  = array(
 			'post_type'      => 'attachment',
@@ -153,12 +204,18 @@ class MediaApiHandler {
 		);
 	}
 
-	// Get single media
+	/**
+	 * Get single media.
+	 * This method retrieves a single media item by its ID.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response containing the media item or an error message.
+	 */
 	public function get_single_media( $request ) {
 		$id    = $request['id'];
 		$media = get_post( $id );
 
-		if ( ! $media || $media->post_type !== 'attachment' ) {
+		if ( ! $media || 'attachment' !== $media->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Media not found.',
@@ -186,7 +243,13 @@ class MediaApiHandler {
 		);
 	}
 
-	// Upload media
+	/**
+	 * Upload media.
+	 * This method handles the upload of media files to the WordPress media library.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response containing the uploaded media item or an error message
+	 */
 	public function upload_media( $request ) {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 
@@ -261,12 +324,18 @@ class MediaApiHandler {
 		);
 	}
 
-	// Delete media
+	/**
+	 * Delete media.
+	 * This method deletes a media item from the WordPress media library.
+	 *
+	 * @param WP_REST_Request $request The REST API request object.
+	 * @return WP_REST_Response The response indicating success or failure of the deletion.
+	 */
 	public function delete_media( $request ) {
 		$id         = $request['id'];
 		$attachment = get_post( $id );
 
-		if ( ! $attachment || $attachment->post_type !== 'attachment' ) {
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
 					'Invalid media ID.',
@@ -306,5 +375,5 @@ class MediaApiHandler {
 	}
 }
 
-// Initialize the API handler
+// Initialize the API handler.
 new MediaApiHandler();

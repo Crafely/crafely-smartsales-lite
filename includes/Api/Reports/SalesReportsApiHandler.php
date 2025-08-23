@@ -1,16 +1,34 @@
 <?php
+/**
+ * Sales Reports API Handler
+ *
+ * Handles the REST API requests for sales reports.
+ *
+ * @package Crafely_SmartSales_Lite
+ */
+
 namespace CSMSL\Includes\Api\Reports;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class SalesReportsApiHandler
+ * Handles the sales reports API endpoints.
+ */
 class SalesReportsApiHandler {
 
+	/**
+	 * Constructor.
+	 * Initializes the API routes and permissions.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
-
+	/**
+	 * Registers the REST API routes for sales reports.
+	 */
 	public function register_routes() {
 		register_rest_route(
 			'ai-smart-sales/v1',
@@ -23,16 +41,21 @@ class SalesReportsApiHandler {
 		);
 	}
 
-	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+	/**
+	 * Checks if the user has permission to access the sales reports.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_permission() {
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -42,8 +65,12 @@ class SalesReportsApiHandler {
 
 		return true;
 	}
-
-	public function get_sales_reports( $request ) {
+	/**
+	 * Fetches sales reports data.
+	 *
+	 * @return WP_REST_Response The response containing sales reports data.
+	 */
+	public function get_sales_reports() {
 		$args = array(
 			'post_type'      => 'shop_order',
 			'post_status'    => array( 'wc-completed', 'wc-processing' ),

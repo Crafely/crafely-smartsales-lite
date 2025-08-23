@@ -3,6 +3,8 @@
  * Crafely SmartSales Lite POS Login Template
  *
  * This template is used for the Crafely SmartSales Lite POS system.
+ *
+ * @package CrafelySmartSalesLite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,7 +29,7 @@ $api_data = array(
 	'root'          => esc_url_raw( rest_url() ),
 	'nonce'         => $rest_nonce,
 	'baseUrl'       => esc_url_raw( CSMSL_URL ),
-	'assetsUrl'     => esc_url_raw( CSMSL_URL . 'dist/' ),
+	'assetsUrl'     => esc_url_raw( CSMSL_URL . 'assets/dist/' ),
 	'isLoggedIn'    => is_user_logged_in(),
 	'templateNonce' => $template_nonce,
 	'currentUser'   => is_user_logged_in() ? wp_get_current_user()->ID : 0,
@@ -36,12 +38,12 @@ $api_data = array(
 );
 
 // Validate and sanitize CSS file path.
-$css_files = glob( CSMSL_DIR . 'dist/css/main.*.css' );
-$css_file  = ! empty( $css_files ) ? esc_url( CSMSL_URL . 'dist/css/' . basename( $css_files[0] ) ) : '';
+$css_files = glob( CSMSL_DIR . 'assets/dist/css/main.*.css' );
+$css_file  = ! empty( $css_files ) ? esc_url( CSMSL_URL . 'assets/dist/css/' . basename( $css_files[0] ) ) : '';
 
 // Validate and sanitize JS file path.
-$js_files = glob( CSMSL_DIR . 'dist/js/main.*.js' );
-$js_file  = ! empty( $js_files ) ? esc_url( CSMSL_URL . 'dist/js/' . basename( $js_files[0] ) ) : '';
+$js_files = glob( CSMSL_DIR . 'assets/dist/js/main.*.js' );
+$js_file  = ! empty( $js_files ) ? esc_url( CSMSL_URL . 'assets/dist/js/' . basename( $js_files[0] ) ) : '';
 
 // Enqueue styles and scripts properly.
 if ( $css_file ) {

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Crafely Smart Sales Lite
+ *
+ * @package Crafely_Smart_Sales_Lite
+ */
 
 namespace CSMSL\Includes\Api\App;
 
@@ -6,17 +11,27 @@ use WP_REST_Request;
 use WP_REST_Response;
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
+/**
+ * Class AppApiHandler
+ *
+ * Handles REST API endpoints for the AI Smart Sales app.
+ */
 class AppApiHandler {
 
+	/**
+	 * Constructor to initialize the API routes.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
+	/**
+	 * Registers the REST API routes for the app.
+	 */
 	public function register_routes() {
-		// GET: Retrieve business data
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/app',
@@ -27,7 +42,7 @@ class AppApiHandler {
 			)
 		);
 
-		// PUT: Update business data
+		// PUT: Update business data.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/app',
@@ -40,16 +55,21 @@ class AppApiHandler {
 		);
 	}
 
-	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
+	/**
+	 * Checks if the current user has permission to access the app data.
+	 *
+	 * @return bool True if user has permission, false otherwise.
+	 */
+	public function check_permission() {
+		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
+		// Get current user.
 		$user = wp_get_current_user();
 
-		// Check if user has any of our POS roles or is an administrator
+		// Check if user has any of our POS roles or is an administrator.
 		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
@@ -60,8 +80,13 @@ class AppApiHandler {
 		return true;
 	}
 
-	public function check_admin_permission( $request ) {
-		// Check if user is logged in and is an administrator
+	/**
+	 * Checks if the current user has admin permissions.
+	 *
+	 * @return bool|\WP_Error True if user has permission, WP_Error otherwise.
+	 */
+	public function check_admin_permission() {
+		// Check if user is logged in and is an administrator.
 		if ( ! is_user_logged_in() ) {
 			return new \WP_Error(
 				'rest_forbidden',
@@ -69,12 +94,10 @@ class AppApiHandler {
 				array( 'status' => 401 )
 			);
 		}
-
-		// Get current user
 		$user = wp_get_current_user();
 
-		// Only administrators can update app data
-		if ( ! in_array( 'administrator', (array) $user->roles ) ) {
+		// Only administrators can update app data.
+		if ( ! in_array( 'administrator', (array) $user->roles, true ) ) {
 			return new \WP_Error(
 				'rest_forbidden',
 				__( 'You do not have permission to update app data. Administrator role required.', 'crafely-smartsales-lite' ),
@@ -84,9 +107,13 @@ class AppApiHandler {
 
 		return true;
 	}
-
-	public function get_app_data( WP_REST_Request $request ) {
-		// Sample WooCommerce store details (already present)
+	/**
+	 * Retrieves app data including store details, inventory size, and wizard data.
+	 *
+	 * @return WP_REST_Response The response containing app data.
+	 */
+	public function get_app_data() {
+		// Sample WooCommerce store details (already present).
 		$store_address   = get_option( 'woocommerce_store_address', '123 Default St' );
 		$store_address_2 = get_option( 'woocommerce_store_address_2', '' );
 		$store_city      = get_option( 'woocommerce_store_city', 'Default City' );
@@ -94,7 +121,7 @@ class AppApiHandler {
 		$store_country   = get_option( 'woocommerce_default_country', 'US' );
 		$currency        = get_option( 'woocommerce_currency', 'USD' );
 
-		// Get inventory size
+		// Get inventory size.
 		$inventory_size = 0;
 		if ( function_exists( 'wc_get_products' ) ) {
 			$args           = array(
@@ -106,7 +133,7 @@ class AppApiHandler {
 			$inventory_size = count( $products );
 		}
 
-		// Get wizard data
+		// Get wizard data.
 		$wizard_data = get_option(
 			'csmsl_wizard_data',
 			array(
@@ -117,7 +144,7 @@ class AppApiHandler {
 			)
 		);
 
-		// Check for actual outlets in the system
+		// Check for actual outlets in the system.
 		$outlets              = get_posts(
 			array(
 				'post_type'      => 'outlet',
@@ -128,10 +155,10 @@ class AppApiHandler {
 		);
 		$actual_outlets_exist = ! empty( $outlets );
 
-		// Convert has_outlet to boolean with better logic
-		$has_outlet_value = $wizard_data['has_outlet'] ?: 'no';
+		// Convert has_outlet to boolean with better logic.
+		$has_outlet_value = $wizard_data['has_outlet'] ? $wizard_data['has_outlet'] : 'no';
 		$has_outlet       = $actual_outlets_exist ||
-			in_array( strtolower( $has_outlet_value ), array( 'yes', 'true', '1', 'on' ) );
+		in_array( strtolower( $has_outlet_value ), array( 'yes', 'true', '1', 'on' ), true );
 
 		$data = array(
 			'store_address'     => $store_address,
@@ -141,11 +168,11 @@ class AppApiHandler {
 			'store_country'     => $store_country,
 			'currency'          => $currency,
 			'email'             => get_option( 'csmsl_admin_email', get_option( 'admin_email', '' ) ),
-			'business_type'     => $wizard_data['business_type'] ?: 'retail',
-			'inventory_range'   => $wizard_data['inventory_range'] ?: 'small',
+			'business_type'     => $wizard_data['business_type'] ? $wizard_data['business_type'] : 'retail',
+			'inventory_range'   => $wizard_data['inventory_range'] ? $wizard_data['inventory_range'] : 'small',
 			'inventory_size'    => $inventory_size,
 			'has_outlet'        => $has_outlet,
-			'additional_notes'  => $wizard_data['additional_notes'] ?: '',
+			'additional_notes'  => $wizard_data['additional_notes'] ? $wizard_data['additional_notes'] : '',
 			'plugin_name'       => defined( 'CSMSL_NAME' ) ? CSMSL_NAME : 'AI Smart Sales',
 			'plugin_version'    => defined( 'CSMSL_VERSION' ) ? CSMSL_VERSION : '1.0.0',
 			'site_url'          => get_site_url(),
@@ -162,12 +189,18 @@ class AppApiHandler {
 		);
 	}
 
+	/**
+	 * Updates app data including store settings, admin email, and wizard data.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response|WP_Error The response containing updated fields or errors.
+	 */
 	public function update_app_data( WP_REST_Request $request ) {
 		$params         = $request->get_params();
 		$updated_fields = array();
 		$errors         = array();
 
-		// Validate and update WooCommerce store settings
+		// Validate and update WooCommerce store settings.
 		$wc_options = array(
 			'store_address'   => 'woocommerce_store_address',
 			'store_address_2' => 'woocommerce_store_address_2',
@@ -181,13 +214,13 @@ class AppApiHandler {
 			if ( isset( $params[ $param_key ] ) ) {
 				$value = $params[ $param_key ];
 
-				// Additional validation for specific fields
-				if ( $param_key === 'currency' && ! $this->is_valid_currency( $value ) ) {
+				// Additional validation for specific fields.
+				if ( 'currency' === $param_key && ! $this->is_valid_currency( $value ) ) {
 					$errors[] = "Invalid currency code: {$value}";
 					continue;
 				}
 
-				if ( $param_key === 'store_country' && ! $this->is_valid_country( $value ) ) {
+				if ( 'store_country' === $param_key && ! $this->is_valid_country( $value ) ) {
 					$errors[] = "Invalid country code: {$value}";
 					continue;
 				}
@@ -197,7 +230,7 @@ class AppApiHandler {
 			}
 		}
 
-		// Update admin email (store in plugin-specific option instead of WordPress core)
+		// Update admin email (store in plugin-specific option instead of WordPress core).
 		if ( isset( $params['email'] ) ) {
 			if ( is_email( $params['email'] ) ) {
 				update_option( 'csmsl_admin_email', $params['email'] );
@@ -207,13 +240,13 @@ class AppApiHandler {
 			}
 		}
 
-		// Update site name (store in plugin-specific option instead of WordPress core)
+		// Update site name (store in plugin-specific option instead of WordPress core).
 		if ( isset( $params['site_name'] ) ) {
 			update_option( 'csmsl_site_name', $params['site_name'] );
 			$updated_fields['site_name'] = $params['site_name'];
 		}
 
-		// Update wizard data
+		// Update wizard data.
 		$wizard_data   = get_option( 'csmsl_wizard_data', array() );
 		$wizard_fields = array( 'business_type', 'inventory_range', 'has_outlet', 'additional_notes' );
 
@@ -230,7 +263,7 @@ class AppApiHandler {
 			update_option( 'csmsl_wizard_data', $wizard_data );
 		}
 
-		// Return response
+		// Return response.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				array(
@@ -266,8 +299,14 @@ class AppApiHandler {
 		);
 	}
 
+	/**
+	 * Validates if the provided currency code is valid.
+	 *
+	 * @param string $currency The currency code to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
 	private function is_valid_currency( $currency ) {
-		// Extended currency validation - you can expand this list
+		// Extended currency validation - you can expand this list.
 		$valid_currencies = array(
 			'USD',
 			'EUR',
@@ -404,11 +443,17 @@ class AppApiHandler {
 			'KID',
 			'AUD',
 		);
-		return in_array( strtoupper( $currency ), $valid_currencies );
+		return in_array( strtoupper( $currency ), $valid_currencies, true );
 	}
 
+	/**
+	 * Validates if the provided country code is valid.
+	 *
+	 * @param string $country The country code to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
 	private function is_valid_country( $country ) {
-		// Extended country validation - WordPress/WooCommerce country codes
+		// Extended country validation - WordPress/WooCommerce country codes.
 		$valid_countries = array(
 			'US',
 			'CA',
@@ -545,17 +590,29 @@ class AppApiHandler {
 			'KI',
 			'PW',
 		);
-		return in_array( strtoupper( $country ), $valid_countries );
+		return in_array( strtoupper( $country ), $valid_countries, true );
 	}
-
+	/**
+	 * Formats a successful response for the API.
+	 *
+	 * @param string $message The success message.
+	 * @param array  $data Additional data to include in the response.
+	 * @param int    $statusCode HTTP status code for the response.
+	 * @return array The formatted response.
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
-
+	/**
+	 * Get the schema for the update app data endpoint.
+	 *
+	 * @return array The schema for the update app data endpoint.
+	 */
 	private function get_update_args_schema() {
 		return array(
 			'store_address'    => array(

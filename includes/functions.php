@@ -1,97 +1,93 @@
 <?php
-
 /**
- * Global helper functions for AI Smart Sales
+ * Global helper functions for Crafely SmartSales Lite
  *
- * @package AI Smart Sales
+ * @package CrafelySmartSalesLite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Check if WooCommerce is active
- *
- * @return bool
- */
 if ( ! function_exists( 'csmsl_is_woocommerce_active' ) ) {
-
+	/**
+	 * Check if WooCommerce is active.
+	 * This function checks if WooCommerce is active by looking for its main plugin file in the list of active plugins.
+	 * * @return bool True if WooCommerce is active, false otherwise.
+	 */
 	function csmsl_is_woocommerce_active() {
-		return in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) );
+		return in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true );
 	}
 }
 
-/**
- * Check if AI Smart Sales is active
- *
- * @return bool
- */
 if ( ! function_exists( 'csmsl_is_active' ) ) {
-
+	/**
+	 * Check if Crafely SmartSales Lite is active.
+	 *
+	 * @return bool
+	 */
 	function csmsl_is_active() {
 		return is_plugin_active( plugin_basename( CSMSL_DIR . 'crafely-smartsales-lite.php' ) );
 	}
 }
 
-/**
- * Get plugin instance
- *
- * @return CSMSL\Includes\Core\Plugin
- */
-if ( ! function_exists( 'csmsl' ) ) {
 
+if ( ! function_exists( 'csmsl' ) ) {
+	/**
+	 * Get the Crafely SmartSales Lite plugin instance.
+	 *
+	 * @return CSMSL\Includes\Core\Plugin
+	 */
 	function csmsl() {
 		return CSMSL\Includes\Core\Plugin::instance();
 	}
 }
 
-/**
- * Get plugin version
- *
- * @return string
- */
 if ( ! function_exists( 'csmsl_get_version' ) ) {
-
+	/**
+	 * Get the Crafely SmartSales Lite plugin version.
+	 *
+	 * @return string
+	 */
 	function csmsl_get_version() {
 		return defined( 'CSMSL_VERSION' ) ? CSMSL_VERSION : '1.0.0';
 	}
 }
 
-/**
- * Get plugin directory path
- *
- * @param string $path Optional path to append
- * @return string
- */
 if ( ! function_exists( 'csmsl_get_plugin_path' ) ) {
-
+	/**
+	 * Get the Crafely SmartSales Lite plugin directory path.
+	 *
+	 * @param string $path Optional path to append.
+	 * @return string
+	 */
 	function csmsl_get_plugin_path( $path = '' ) {
 		return CSMSL_DIR . ltrim( $path, '/' );
 	}
 }
 
-/**
- * Get plugin directory URL
- *
- * @param string $path Optional path to append
- * @return string
- */
-if ( ! function_exists( 'csmsl_get_plugin_url' ) ) {
 
+if ( ! function_exists( 'csmsl_get_plugin_url' ) ) {
+	/**
+	 * Get the Crafely SmartSales Lite plugin directory URL.
+	 *
+	 * @param string $path Optional path to append.
+	 * @return string
+	 */
 	function csmsl_get_plugin_url( $path = '' ) {
 		return CSMSL_URL . ltrim( $path, '/' );
 	}
 }
 
-/**
- * Log messages for debugging
- *
- * @param mixed $message
- * @param string $level
- */
-if ( ! function_exists( 'csmsl_log' ) ) {
 
+if ( ! function_exists( 'csmsl_log' ) ) {
+	/**
+	 * Log messages for debugging.
+	 * This function logs messages to a debug file if CSMSL_DEV_MODE is enabled.
+	 *
+	 * @param mixed  $message The message to log.
+	 * @param string $level The log level (e.g., 'info', 'error').
+	 */
 	function csmsl_log( $message, $level = 'info' ) {
 		if ( ! defined( 'CSMSL_DEV_MODE' ) || ! CSMSL_DEV_MODE ) {
 			return;
@@ -99,13 +95,11 @@ if ( ! function_exists( 'csmsl_log' ) ) {
 	}
 }
 
-/**
- * Check if current user has POS access
- *
- * @return bool
- */
 if ( ! function_exists( 'csmsl_user_has_pos_access' ) ) {
-
+	/**
+	 * Check if the current user has access to the POS system.
+	 * This function checks if the user is logged in and has one of the required POS roles.
+	 */
 	function csmsl_user_has_pos_access() {
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -118,14 +112,15 @@ if ( ! function_exists( 'csmsl_user_has_pos_access' ) ) {
 	}
 }
 
-/**
- * Get formatted currency amount
- *
- * @param float $amount
- * @return string
- */
 if ( ! function_exists( 'csmsl_format_currency' ) ) {
 
+	/**
+	 * Format a currency amount.
+	 * This function formats a given amount as a currency string using WooCommerce's wc_price function
+	 * if WooCommerce is active, otherwise formats it as a simple dollar amount.
+	 *
+	 * @param float $amount The amount to format.
+	 */
 	function csmsl_format_currency( $amount ) {
 		if ( function_exists( 'wc_price' ) ) {
 			return wc_price( $amount );
@@ -135,15 +130,15 @@ if ( ! function_exists( 'csmsl_format_currency' ) ) {
 	}
 }
 
-/**
- * Sanitize and validate data
- *
- * @param mixed $data
- * @param string $type
- * @return mixed
- */
 if ( ! function_exists( 'csmsl_sanitize_data' ) ) {
-
+	/**
+	 * Sanitize and validate data based on type.
+	 * This function sanitizes input data based on the specified type.
+	 * It supports various types such as 'email', 'url', 'int', 'float', 'html', and 'text'.
+	 *
+	 * @param mixed  $data The data to sanitize.
+	 * @param string $type The type of data to sanitize (default is 'text').
+	 */
 	function csmsl_sanitize_data( $data, $type = 'text' ) {
 		switch ( $type ) {
 			case 'email':
@@ -163,15 +158,15 @@ if ( ! function_exists( 'csmsl_sanitize_data' ) ) {
 	}
 }
 
-/**
- * Handle AJAX responses consistently
- *
- * @param mixed $data
- * @param string $message
- * @param bool $success
- */
 if ( ! function_exists( 'csmsl_ajax_response' ) ) {
-
+	/**
+	 * Handle AJAX responses consistently.
+	 * This function formats and sends a JSON response for AJAX requests.
+	 *
+	 * @param mixed  $data The data to include in the response.
+	 * @param string $message A message to include in the response.
+	 * @param bool   $success Whether the request was successful or not.
+	 */
 	function csmsl_ajax_response( $data = null, $message = '', $success = true ) {
 		$response = array(
 			'success' => $success,
@@ -183,19 +178,19 @@ if ( ! function_exists( 'csmsl_ajax_response' ) ) {
 	}
 }
 
-/**
- * Get template part
- *
- * @param string $template_name
- * @param array $args
- * @param string $template_path
- */
-if ( ! function_exists( 'csmsl_get_template' ) ) {
 
+if ( ! function_exists( 'csmsl_get_template' ) ) {
+	/**
+	 * Get template part.
+	 * This function loads a template file from the plugin's templates directory or the theme's directory.
+	 *
+	 * @param string $template_name The name of the template file to load.
+	 * @param array  $args Optional. Arguments to pass to the template.
+	 * @param string $template_path Optional. Path to the template directory.
+	 */
 	function csmsl_get_template( $template_name, $args = array(), $template_path = '' ) {
-		if ( ! empty( $args ) && is_array( $args ) ) {
-			extract( $args );
-		}
+		$defaults = array();
+		$args     = wp_parse_args( $args, $defaults );
 
 		$located = csmsl_locate_template( $template_name, $template_path );
 
@@ -208,21 +203,22 @@ if ( ! function_exists( 'csmsl_get_template' ) ) {
 	}
 }
 
-/**
- * Locate template file
- *
- * @param string $template_name
- * @param string $template_path
- * @return string
- */
-if ( ! function_exists( 'csmsl_locate_template' ) ) {
 
+if ( ! function_exists( 'csmsl_locate_template' ) ) {
+	/**
+	 * Locate template file.
+	 * This function searches for a template file in the theme directory first, then in the plugin's templates directory.
+	 *
+	 * @param string $template_name The name of the template file to locate.
+	 * @param string $template_path Optional. Path to the template directory.
+	 * @return string The path to the located template file.
+	 */
 	function csmsl_locate_template( $template_name, $template_path = '' ) {
 		if ( ! $template_path ) {
 			$template_path = 'crafely-smartsales-lite/';
 		}
 
-		// Look in theme first
+		// Look in theme first.
 		$template = locate_template(
 			array(
 				trailingslashit( $template_path ) . $template_name,
@@ -230,7 +226,7 @@ if ( ! function_exists( 'csmsl_locate_template' ) ) {
 			)
 		);
 
-		// Get default template
+		// Get default template.
 		if ( ! $template ) {
 			$template = csmsl_get_plugin_path( 'templates/' . $template_name );
 		}
