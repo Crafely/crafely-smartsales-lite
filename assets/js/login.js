@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         buttonText.textContent = 'Sign in';
         submitButton.disabled = false;
       } else {
-        window.location.href = window.aiposLoginRedirectUrl || '/aipos#/pos';
+        window.location.href = window.aiposLoginRedirectUrl || '/smart-pos#/pos';
       }
     })
     .catch(error => {

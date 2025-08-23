@@ -1,4 +1,11 @@
 <?php
+/**
+ * Crafely SmartSales Lite
+ *
+ * This file handles the REST API for customer management in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Customers;
 
@@ -89,10 +96,9 @@ class CustomersApiHandler {
 	/**
 	 * Checks if the current user has permission to access the API.
 	 *
-	 * @param WP_REST_Request $request The request object.
 	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission( $request ) {
+	public function check_permission() {
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
@@ -109,19 +115,28 @@ class CustomersApiHandler {
 
 	/**
 	 * Formats a successful response.
+	 *
 	 * @param string $message The success message.
-	 * @param array $data Optional. Additional data to include in the response.
-	 * @param int $statusCode Optional. HTTP status code for the response.
+	 * @param array  $data Optional. Additional data to include in the response.
+	 * @param int    $statusCode Optional. HTTP status code for the response.
 	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
-
-	// Format error response.
+	/**
+	 * Formats an error response.
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional. An associative array of error details.
+	 * @param int    $statusCode Optional. HTTP status code for the response.
+	 * @param string $path Optional. The API endpoint path that caused the error.
+	 * * @return array The formatted error response.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
@@ -140,10 +155,17 @@ class CustomersApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
-
-	// Get all customers using WooCommerce standard approach.
+	/**
+	 * Get all customers with pagination and search functionality.
+	 * This method retrieves customers who have placed orders or have the 'customer' role.
+	 * It supports pagination and searching by customer name or email.
+	 *
+	 * @param WP_REST_Request $request The request object containing pagination and search parameters.
+	 */
 	public function get_customers( $request ) {
 		// Get pagination parameters.
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
@@ -224,7 +246,7 @@ class CustomersApiHandler {
 									'is_guest'      => true,
 								);
 							} else {
-								// Add order to guest's order list
+								// Add order to guest's order list.
 								$guest_customers[ $guest_id ]['orders'][] = array(
 									'order_id' => $order->get_id(),
 									'total'    => $order->get_total(),
@@ -304,7 +326,13 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Format customer data using WooCommerce customer object.
+	/**
+	 * Formats customer data for API response.
+	 * This method retrieves user data, WooCommerce customer data if available,
+	 * and formats it into a structured array.
+	 *
+	 * @param int $user_id The user ID of the customer.
+	 */
 	private function format_customer_data( $user_id ) {
 		// Get user data.
 		$user_data = get_userdata( $user_id );
@@ -315,11 +343,8 @@ class CustomersApiHandler {
 		// Get WooCommerce customer object if available.
 		$wc_customer = null;
 		if ( class_exists( 'WC_Customer' ) ) {
-			try {
-				$wc_customer = new \WC_Customer( $user_id );
-			} catch ( \Exception $e ) {
-				// Customer might not exist in WooCommerce, use WordPress user data only.
-			}
+			$wc_customer = new \WC_Customer( $user_id );
+
 		}
 
 		// Get profile image.
@@ -381,7 +406,7 @@ class CustomersApiHandler {
 				'country'    => $wc_customer->get_shipping_country() ? $wc_customer->get_shipping_country() : $billing['country'],
 			);
 		} else {
-			// Fallback to user meta
+			// Fallback to user meta.
 			$first_name = ! empty( get_user_meta( $user_id, 'first_name', true ) ) ? get_user_meta( $user_id, 'first_name', true ) : get_user_meta( $user_id, 'billing_first_name', true );
 			$last_name  = ! empty( get_user_meta( $user_id, 'last_name', true ) ) ? get_user_meta( $user_id, 'last_name', true ) : get_user_meta( $user_id, 'billing_last_name', true );
 			$billing    = array(
@@ -427,7 +452,12 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Get a single customer.
+	/**
+	 * Get a single customer by ID.
+	 * This method retrieves a customer by their user ID, checking if they exist and are in the customer list.
+	 *
+	 * @param WP_REST_Request $request The request object containing the customer ID.
+	 */
 	public function get_customer( $request ) {
 		$user_id = $request['id'];
 
@@ -450,18 +480,15 @@ class CustomersApiHandler {
 		// Check if user has 'customer' role.
 		if ( in_array( 'customer', (array) $user->roles, true ) ) {
 			$is_customer = true;
-		} else {
-			// Check if user has placed an order.
-			if ( class_exists( 'WC_Order_Query' ) ) {
+		} elseif ( class_exists( 'WC_Order_Query' ) ) {
 				$orders = wc_get_orders(
 					array(
 						'customer_id' => $user_id,
 						'limit'       => 1,
 					)
 				);
-				if ( ! empty( $orders ) ) {
-					$is_customer = true;
-				}
+			if ( ! empty( $orders ) ) {
+				$is_customer = true;
 			}
 		}
 		if ( ! $is_customer ) {
@@ -486,7 +513,12 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Create a new customer.
+	/**
+	 * Delete a customer by ID.
+	 * This method deletes a customer by their user ID, checking if they exist and are in the customer list.
+	 *
+	 * @param WP_REST_Request $request The request object containing the customer ID.
+	 */
 	public function create_customer( $request ) {
 		$data   = $request->get_json_params();
 		$errors = array();
@@ -573,7 +605,12 @@ class CustomersApiHandler {
 		);
 	}
 
-	// Update a customer.
+	/**
+	 * Update a customer by ID.
+	 * This method updates a customer's details by their user ID, checking if they exist and are in the customer list.
+	 *
+	 * @param WP_REST_Request $request The request object containing the customer ID and data to update.
+	 */
 	public function update_customer( $request ) {
 		$data    = $request->get_json_params();
 		$user_id = $request['id'];
@@ -695,8 +732,13 @@ class CustomersApiHandler {
 			200
 		);
 	}
-
-	// Helper method to update customer meta directly.
+	/**
+	 * Update customer meta data.
+	 * This method updates the customer's meta data such as first name, last name, phone, billing, and shipping details.
+	 *
+	 * @param int   $user_id The user ID of the customer.
+	 * @param array $data The data to update.
+	 */
 	private function update_customer_meta( $user_id, $data ) {
 		if ( isset( $data['first_name'] ) ) {
 			update_user_meta( $user_id, 'first_name', sanitize_text_field( $data['first_name'] ) );
@@ -722,8 +764,12 @@ class CustomersApiHandler {
 			}
 		}
 	}
-
-	// Delete a customer.
+	/**
+	 * Delete a customer by ID.
+	 * This method deletes a customer by their user ID, checking if they exist and are in the customer list.
+	 *
+	 * @param WP_REST_Request $request The request object containing the customer ID.
+	 */
 	public function delete_customer( $request ) {
 		$user_id = $request['id'];
 

@@ -1,18 +1,21 @@
 <?php
+/**
+ * Core functionality bootstrap for the plugin.
+ *
+ * Handles initialization, constants, and setup for Crafely Smart Sales Lite.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Core;
 
 if ( ! defined('ABSPATH') ) {
 	exit;
 }
-
 /**
  * Main Plugin Class
- *
- * @package AI Smart Sales
  */
 class Plugin {
-
 
 	/**
 	 * Plugin instance
@@ -56,6 +59,8 @@ class Plugin {
 
 	/**
 	 * Prevent unserialization
+	 *
+	 * @throws \Exception When attempting to unserialize the singleton.
 	 */
 	public function __wakeup() {
 		throw new \Exception('Cannot unserialize singleton');

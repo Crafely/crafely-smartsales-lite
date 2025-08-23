@@ -3,6 +3,8 @@
  * Crafely SmartSales Lite POS Login Template
  *
  * This template is used for the Crafely SmartSales Lite POS system.
+ *
+ * @package CrafelySmartSalesLite
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Crafely SmartSales Lite Channels API Handler
+ *
+ * This class handles the REST API endpoints for managing channels in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Api\Channels;
 
@@ -11,11 +18,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * ChannelsApiHandler class
+ */
 class ChannelsApiHandler {
 
+	/**
+	 * The taxonomy used for channels.
+	 *
+	 * @var string
+	 */
 
 	private $taxonomy = 'csmsl_channel';
 
+	/**
+	 * Constructor for the ChannelsApiHandler class.
+	 * Initializes the REST API routes and registers the taxonomy.
+	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -102,8 +121,13 @@ class ChannelsApiHandler {
 
 	/**
 	 * Check permissions
+	 * This method checks if the current user has the necessary permissions to access the API endpoints.
+	 * It returns true if the user is logged in and has one of the allowed roles,
+	 * otherwise it returns false.
+	 *
+	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission( $request ) {
+	public function check_permission() {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -125,17 +149,32 @@ class ChannelsApiHandler {
 
 	/**
 	 * Format success response
+	 * This method formats a successful response for the API.
+	 * It takes a message, optional data, and an HTTP status code,
+	 * and returns an associative array with the success status, message, and data.
+	 *
+	 * @param string $message The success message.
+	 * @param array  $data Optional data to include in the response.
+	 * @param int    $statusCode Optional HTTP status code (default is 200).
+	 * @return array An associative array containing the success status, message, and data.
 	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
 
 	/**
-	 * Format error response
+	 * Formats a eror response for the API.
+	 *
+	 * @param string $message The success message.
+	 * @param array  $errors Additional data to include in the response.
+	 * @param int    $statusCode HTTP status code for the response.
+	 * @param string $path The path of the API endpoint.
+	 * @return array The formatted response.
 	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
@@ -155,11 +194,20 @@ class ChannelsApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
+
 		);
 	}
 
 	/**
 	 * Format channel response
+	 * This method formats a channel term object into a structured array.
+	 * It extracts the term ID, name, slug, description, count, and parent ID
+	 * and returns them in an associative array.
+	 *
+	 * @param object $term The term object representing the channel.
+	 * @return array An associative array containing the channel details.
 	 */
 	private function format_channel_response( $term ) {
 		return array(
@@ -174,6 +222,13 @@ class ChannelsApiHandler {
 
 	/**
 	 * Get all channels
+	 * This method retrieves all channels from the specified taxonomy.
+	 * It uses the `get_terms` function to fetch terms from the taxonomy,
+	 * and formats the response using the `format_channel_response` method.
+	 * If there is an error retrieving the terms, it returns an error response.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response A response object containing the channels or an error message
 	 */
 	public function get_channels( WP_REST_Request $request ) {
 		$args = array(
@@ -211,6 +266,13 @@ class ChannelsApiHandler {
 
 	/**
 	 * Get a single channel
+	 * This method retrieves a single channel by its ID from the specified taxonomy.
+	 * It uses the `get_term` function to fetch the term object,
+	 * and formats the response using the `format_channel_response` method.
+	 * If the term does not exist or there is an error, it returns an error response.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the channel ID.
+	 * @return WP_REST_Response A response object containing the channel or an error message
 	 */
 	public function get_channel( WP_REST_Request $request ) {
 		$channel_id = $request['id'];
@@ -242,6 +304,14 @@ class ChannelsApiHandler {
 
 	/**
 	 * Create a channel
+	 * This method creates a new channel in the specified taxonomy.
+	 * It validates the required fields from the request data,
+	 * and if validation passes, it inserts the term using `wp_insert_term`.
+	 * If there are validation errors or if the term creation fails,
+	 * it returns an error response.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the channel data.
+	 * @return WP_REST_Response A response object containing the created channel or an error message
 	 */
 	public function create_channel( WP_REST_Request $request ) {
 		$data   = $request->get_json_params();
@@ -301,6 +371,14 @@ class ChannelsApiHandler {
 
 	/**
 	 * Update a channel
+	 * This method updates an existing channel in the specified taxonomy.
+	 * It validates the channel ID and the fields to be updated,
+	 * and if validation passes, it updates the term using `wp_update_term`
+	 * If there are validation errors or if the term update fails,
+	 * it returns an error response.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the channel ID and data.
+	 * @return WP_REST_Response A response object containing the updated channel or an error
 	 */
 	public function update_channel( WP_REST_Request $request ) {
 		$channel_id = $request['id'];
@@ -366,6 +444,14 @@ class ChannelsApiHandler {
 
 	/**
 	 * Delete a channel
+	 * This method deletes a channel from the specified taxonomy.
+	 * It checks if the channel exists, and if it does, it attempts to delete it
+	 * using `wp_delete_term`. If the deletion is successful, it returns a success response
+	 * or an error response if the deletion fails.
+	 *
+	 * @param WP_REST_Request $request The REST request object containing the channel ID.
+	 *
+	 * @return WP_REST_Response A response object indicating the success or failure of the deletion
 	 */
 	public function delete_channel( WP_REST_Request $request ) {
 		$channel_id = intval( $request['id'] );
@@ -432,6 +518,12 @@ class ChannelsApiHandler {
 		);
 	}
 
+	/**
+	 * Create predefined channels
+	 * This method creates predefined channels in the taxonomy if they do not already exist.
+	 * It defines a set of predefined channels with their names, descriptions, and slugs,
+	 * and inserts them into the taxonomy using `wp_insert_term`.
+	 */
 	public function create_predefined_channels() {
 		$predefined_channels = array(
 			'POS System'   => array(

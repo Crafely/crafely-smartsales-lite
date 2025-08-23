@@ -1,4 +1,9 @@
 <?php
+/**
+ * Crafely SmartSales Lite
+ *
+ * @package CrafelySmartSalesLite
+ */
 
 namespace CSMSL\Includes\Core;
 
@@ -66,7 +71,7 @@ class Activation {
 	 */
 	private static function create_tables() {
 		global $wpdb;
-		// Add table creation logic here
+		// Add table creation logic here.
 	}
 
 	/**
@@ -85,7 +90,7 @@ class Activation {
 	 */
 	private static function cleanup_tables() {
 		global $wpdb;
-		// Add table cleanup logic here
+		// Add table cleanup logic here.
 	}
 
 	/**

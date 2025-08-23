@@ -1,9 +1,8 @@
 <?php
-
 /**
  * Abstract base class for API handlers
  *
- * @package AI Smart Sales
+ * @package crafelySmartsalesLite
  */
 
 namespace CSMSL\Includes\Api;
@@ -14,7 +13,10 @@ use WP_Error;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+/**
+ * BaseApiHandler
+ * This class provides common functionality for API handlers in the Crafely SmartSales Lite plugin.
+ */
 abstract class BaseApiHandler {
 
 	/**
@@ -41,7 +43,7 @@ abstract class BaseApiHandler {
 	/**
 	 * Check permission for API access
 	 *
-	 * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request object containing the request data.
 	 * @return bool|\WP_Error
 	 */
 	public function check_permission( $request ) {
@@ -75,8 +77,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Validate request parameters
 	 *
-	 * @param array $params
-	 * @param array $rules
+	 * @param array $params the request parameters.
+	 * @param array $rules the validation rules.
 	 * @return true|\WP_Error
 	 */
 	protected function validate_params( $params, $rules ) {
@@ -114,8 +116,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Validate field type
 	 *
-	 * @param mixed  $value
-	 * @param string $type
+	 * @param mixed  $value the value to validate.
+	 * @param string $type the expected type.
 	 * @return bool
 	 */
 	private function validate_field_type( $value, $type ) {
@@ -138,9 +140,9 @@ abstract class BaseApiHandler {
 	/**
 	 * Create success response
 	 *
-	 * @param mixed  $data
-	 * @param string $message
-	 * @param int    $status
+	 * @param mixed  $data the data to include in the response.
+	 * @param string $message the message to include in the response.
+	 * @param int    $status the HTTP status code (default is 200).
 	 * @return WP_REST_Response
 	 */
 	protected function success_response( $data = null, $message = '', $status = 200 ) {
@@ -159,9 +161,9 @@ abstract class BaseApiHandler {
 	/**
 	 * Create error response
 	 *
-	 * @param string $message
-	 * @param int    $status
-	 * @param string $code
+	 * @param string $message the error message to include in the response.
+	 * @param int    $status the HTTP status code (default is 400).
+	 * @param string $code the error code (default is 'api_error').
 	 * @return WP_Error
 	 */
 	protected function error_response( $message, $status = 400, $code = 'api_error' ) {
@@ -171,8 +173,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Sanitize request data
 	 *
-	 * @param array $data
-	 * @param array $fields
+	 * @param array $data the request data to sanitize.
+	 * @param array $fields the fields to sanitize with their expected types.
 	 * @return array
 	 */
 	protected function sanitize_request_data( $data, $fields ) {
@@ -190,8 +192,8 @@ abstract class BaseApiHandler {
 	/**
 	 * Log API activity
 	 *
-	 * @param string $action
-	 * @param array  $data
+	 * @param string $action the action being logged.
+	 * @param array  $data additional data to log.
 	 */
 	protected function log_activity( $action, $data = array() ) {
 		$user     = wp_get_current_user();
