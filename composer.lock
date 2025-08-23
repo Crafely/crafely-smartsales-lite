@@ -104,7 +104,6 @@
             "time": "2025-07-17T20:45:56+00:00"
         },
         {
-
             "name": "phpcompatibility/php-compatibility",
             "version": "9.3.5",
             "source": {
@@ -127,7 +126,6 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "~4.5 || ^5.0 || ^6.0 || ^7.0"
-
             },
             "suggest": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^0.5 || This Composer plugin will sort out the PHPCS 'installed_paths' automatically.",
@@ -152,7 +150,6 @@
                 {
                     "name": "Contributors",
                     "homepage": "https://github.com/PHPCompatibility/PHPCompatibility/graphs/contributors"
-
                 }
             ],
             "description": "A set of sniffs for PHP_CodeSniffer that checks for PHP cross-version compatibility.",
@@ -555,7 +552,7 @@
                 "wiki": "https://github.com/PHPCSStandards/PHP_CodeSniffer/wiki"
             },
             "funding": [
-
+                {
                     "url": "https://github.com/PHPCSStandards",
                     "type": "github"
                 },
