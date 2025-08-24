@@ -68,9 +68,10 @@ class WizardApiHandler {
 	 * Checks if the current user has permission to access the wizard API endpoints.
 	 * This method verifies if the user is logged in and has the appropriate roles to access the wizard functionality.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;

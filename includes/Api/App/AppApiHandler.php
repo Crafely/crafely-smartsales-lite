@@ -58,9 +58,10 @@ class AppApiHandler {
 	/**
 	 * Checks if the current user has permission to access the app data.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool True if user has permission, false otherwise.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -83,9 +84,10 @@ class AppApiHandler {
 	/**
 	 * Checks if the current user has admin permissions.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool|\WP_Error True if user has permission, WP_Error otherwise.
 	 */
-	public function check_admin_permission() {
+	public function check_admin_permission( $request ) {
 		// Check if user is logged in and is an administrator.
 		if ( ! is_user_logged_in() ) {
 			return new \WP_Error(
@@ -110,9 +112,10 @@ class AppApiHandler {
 	/**
 	 * Retrieves app data including store details, inventory size, and wizard data.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return WP_REST_Response The response containing app data.
 	 */
-	public function get_app_data() {
+	public function get_app_data( WP_REST_Request $request ) {
 		// Sample WooCommerce store details (already present).
 		$store_address   = get_option( 'woocommerce_store_address', '123 Default St' );
 		$store_address_2 = get_option( 'woocommerce_store_address_2', '' );

@@ -94,9 +94,10 @@ class CountersApiHandler {
 	/**
 	 * Check if the user has permission to access the API
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool Whether the user has permission.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -179,13 +180,13 @@ class CountersApiHandler {
 	 * @param int    $exclude_id Optional. Counter ID to exclude from check. Default is 0.
 	 */
 	private function is_duplicate_counter( $name, $outlet_id, $exclude_id = 0 ) {
-        // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+        // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		$args = array(
 			'post_type'      => 'csmsl_counter',
 			'post_status'    => 'publish',
 			'title'          => $name,
 			'posts_per_page' => 1,
-            // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude.
+            // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
 			'exclude'        => array( $exclude_id ),
 			'meta_query'     => array(
 				array(
@@ -197,7 +198,7 @@ class CountersApiHandler {
 		);
 
 		$existing_counter = new \WP_Query( $args );
-        // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+        // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		return $existing_counter->have_posts();
 	}
 	/**

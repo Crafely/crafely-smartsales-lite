@@ -209,7 +209,7 @@ class ProductApiHandler extends BaseApiHandler {
 			$args['s'] = sanitize_text_field( $search_query );
 
 			// Add meta query for SKU search.
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			$args['meta_query'] = array(
 				'relation' => 'OR',
 				array(
@@ -258,7 +258,7 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 
 			// Also search in product categories and tags.
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 			$args['tax_query'] = array(
 				'relation' => 'OR',
 				array(
@@ -311,7 +311,7 @@ class ProductApiHandler extends BaseApiHandler {
 		// Validate category parameter.
 		$category = $request->get_param( 'category');
 		if ( ! empty( $category ) ) {
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 			$args['tax_query'] = array(
 				array(
 					'taxonomy' => 'product_cat',
