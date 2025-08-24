@@ -96,9 +96,10 @@ class CustomersApiHandler {
 	/**
 	 * Checks if the current user has permission to access the API.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}

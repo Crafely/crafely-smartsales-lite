@@ -202,7 +202,7 @@ class UsersApiHandler {
 				$counters = get_posts([
 					'post_type'      => 'csmsl_counter',
 					'posts_per_page' => -1,
-                    // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+                    // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					'meta_query'     => [
 						[
 							'key'     => 'counter_outlet_id',
@@ -459,7 +459,7 @@ class UsersApiHandler {
 	private function get_user_total_orders( $user_id ) {
 		global $wpdb;
 		// Count orders where user is either the author or marked as created_by.
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$count = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p
@@ -505,7 +505,7 @@ class UsersApiHandler {
 	 */
 	private function get_user_last_order_date( $user_id ) {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$last_order_date = $wpdb->get_var($wpdb->prepare(
 			"SELECT p.post_date
             FROM {$wpdb->posts} p
@@ -531,7 +531,7 @@ class UsersApiHandler {
 	 */
 	private function get_user_recent_activity( $user_id ) {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$recent_orders = $wpdb->get_results($wpdb->prepare(
 			"SELECT p.ID as order_id, p.post_date, pm.meta_value as order_total
             FROM {$wpdb->posts} p
@@ -573,7 +573,7 @@ class UsersApiHandler {
 		$month_start = gmdate('Y-m-01', strtotime($today));
 
 		// Get sales for today.
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$today_sales = $wpdb->get_var($wpdb->prepare(
 			"SELECT SUM(CAST(pm_total.meta_value AS DECIMAL(10,2)))
             FROM {$wpdb->posts} p
@@ -590,7 +590,7 @@ class UsersApiHandler {
 		));
 
 		// Get sales for current month.
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$month_sales = $wpdb->get_var($wpdb->prepare(
 			"SELECT SUM(CAST(pm_total.meta_value AS DECIMAL(10,2)))
             FROM {$wpdb->posts} p
@@ -607,7 +607,7 @@ class UsersApiHandler {
 		));
 
 		// Get total orders count.
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total_orders = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(DISTINCT p.ID)
             FROM {$wpdb->posts} p

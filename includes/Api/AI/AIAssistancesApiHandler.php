@@ -85,9 +85,10 @@ class AIAssistancesApiHandler {
 		/**
 		 * Checks if the current user has permission to access the API.
 		 *
+		 * @param WP_REST_Request $request The REST request object.
 		 * @return bool True if the user has permission, false otherwise.
 		 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -167,7 +168,7 @@ class AIAssistancesApiHandler {
 		// Escaping the table name (good).
 		$table_name = esc_sql( $wpdb->prefix . 'ai_smart_sales_assistances' );
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
 
 		if ( empty( $results ) ) {

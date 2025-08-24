@@ -77,9 +77,10 @@ class OutletsApiHandler {
 	/**
 	 * Checks if the current user has permission to access the API.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -109,7 +110,7 @@ class OutletsApiHandler {
 		$counters = get_posts([
 			'post_type'      => 'csmsl_counter',
 			'posts_per_page' => -1,
-            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			'meta_query'     => [
 				[
 					'key'     => 'counter_outlet_id',

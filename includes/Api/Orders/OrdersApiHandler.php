@@ -425,7 +425,7 @@ class OrdersApiHandler {
 
 		// If user is a cashier, restrict to orders they created.
 		if ( $is_cashier ) {
-			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			$count_args['meta_query'] = array(
 				array(
 					'key'     => '_created_by_id',

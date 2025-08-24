@@ -44,9 +44,10 @@ class SalesReportsApiHandler {
 	/**
 	 * Checks if the user has permission to access the sales reports.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return bool True if the user has permission, false otherwise.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		// Check if user is logged in and has appropriate capabilities.
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -68,9 +69,10 @@ class SalesReportsApiHandler {
 	/**
 	 * Fetches sales reports data.
 	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 * @return WP_REST_Response The response containing sales reports data.
 	 */
-	public function get_sales_reports() {
+	public function get_sales_reports( $request ) {
 		$args = array(
 			'post_type'      => 'shop_order',
 			'post_status'    => array( 'wc-completed', 'wc-processing' ),

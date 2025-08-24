@@ -77,8 +77,10 @@ class DashboardApiHandler {
 
 	/**
 	 * Check if the request has valid permission
+	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 */
-	public function check_permission() {
+	public function check_permission( $request ) {
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
@@ -322,7 +324,7 @@ class DashboardApiHandler {
 			}
 
 			// For product stats, filter by outlet if specified.
-			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query.
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			$products_query = array(
 				'limit'  => -1,
 				'status' => 'publish',
@@ -910,14 +912,14 @@ class DashboardApiHandler {
 			$outlet_stats[ $outlet->ID ]['counters'] = count( $counters );
 
 			// Get staff count.
-			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value.
+			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			$staff = get_users(
 				array(
 					'meta_key'   => 'assigned_outlet_id',
 					'meta_value' => $outlet->ID,
 				)
 			);
-			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value.
+			// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			$outlet_stats[ $outlet->ID ]['staff'] = count( $staff );
 		}
 
