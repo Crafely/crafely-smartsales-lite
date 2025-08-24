@@ -1,12 +1,13 @@
 {
-    "name": "crafely/ai-smart-sales",
+    "name": "crafely/crafely-smartsales-lite",
     "description": "AI-powered smart sales plugin for WooCommerce: automate inventory, orders, and insights with seamless integration and scalability.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
+    "version": "1.0.0",
     "autoload": {
         "psr-4": {
-            "AISMARTSALES\\Includes\\": "includes/",
-            "AISMARTSALES\\": "src/"
+            "CSMSL\\Includes\\": "includes/",
+            "CSMSL\\": "src/"
         },
         "files": [
             "includes/functions.php"
@@ -14,7 +15,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "AISMARTSALES\\Tests\\": "tests/"
+            "CSMSL\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -23,22 +24,31 @@
             "email": "thisismdalamin@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "require": {
         "php": ">=7.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
-        "squizlabs/php_codesniffer": "^3.6"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/php-compatibility": "^9.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpcsstandards/phpcsextra": "^1.4",
+        "phpcsstandards/phpcsutils": "^1.1",
+        "squizlabs/php_codesniffer": "^3.13.0",
+        "wp-coding-standards/wpcs": "^3.2"
     },
     "scripts": {
-        "test": "phpunit",
-        "cs-check": "phpcs --standard=WordPress",
-        "cs-fix": "phpcbf --standard=WordPress"
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "lint": "phpcs --standard=phpcs.xml",
+        "fix": "phpcbf --standard=phpcs.xml",
+        "test": "phpunit"
     },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
     }
 }

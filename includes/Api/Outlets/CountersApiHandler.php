@@ -1,491 +1,632 @@
 <?php
+/**
+ * Crafely SmartSales Lite REST API Handler for Outlets Counters
+ *
+ * This file handles the REST API endpoints for managing counters in outlets.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
-namespace AISMARTSALES\Includes\Api\Outlets;
+namespace CSMSL\Includes\Api\Outlets;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
-class CountersApiHandler
-{
-    public function __construct()
-    {
-        add_action('rest_api_init', [$this, 'register_routes']);
-    }
+/**
+ * Class CountersApiHandler
+ *
+ * Handles REST API requests for managing counters in outlets.
+ */
+class CountersApiHandler {
 
-    public function register_routes()
-    {
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters', [
-            'methods'             => 'GET',
-            'callback'            => [$this, 'get_counters'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
+	/**
+	 * Constructor to register REST API routes.
+	 */
+	public function __construct() {
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+	}
+	/**
+	 * Register REST API routes for counters.
+	 */
+	public function register_routes() {
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_counters' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)', [
-            'methods'             => 'GET',
-            'callback'            => [$this, 'get_counter'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'get_counter' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'create_counter'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'create_counter' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)', [
-            'methods'             => 'PUT',
-            'callback'            => [$this, 'update_counter'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)',
+			array(
+				'methods'             => 'PUT',
+				'callback'            => array( $this, 'update_counter' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)', [
-            'methods'             => 'DELETE',
-            'callback'            => [$this, 'delete_counter'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)',
+			array(
+				'methods'             => 'DELETE',
+				'callback'            => array( $this, 'delete_counter' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 
-        // Add new route for assigning user to counter
-        register_rest_route('ai-smart-sales/v1', '/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)/assign-user', [
-            'methods'             => 'POST',
-            'callback'            => [$this, 'assign_user_to_counter'],
-            'permission_callback' => [$this, 'check_permission'],
-        ]);
-    }
+		// Add new route for assigning user to counter.
+		register_rest_route(
+			'ai-smart-sales/v1',
+			'/outlets/(?P<outlet_id>\d+)/counters/(?P<counter_id>\d+)/assign-user',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'assign_user_to_counter' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
+	}
 
-    public function check_permission($request)
-    {
-        // Check if user is logged in and has appropriate capabilities
-        if (!is_user_logged_in()) {
-            return false;
-        }
+	/**
+	 * Check if the user has permission to access the API
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 * @return bool Whether the user has permission.
+	 */
+	public function check_permission( $request ) {
+		// Check if user is logged in and has appropriate capabilities.
+		if ( ! is_user_logged_in() ) {
+			return false;
+		}
 
-        // Get current user
-        $user = wp_get_current_user();
+		$user = wp_get_current_user();
+		// Check if user has any of our POS roles or is an administrator.
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
+		$user_roles    = (array) $user->roles;
 
-        // Check if user has any of our POS roles or is an administrator
-        $allowed_roles = ['administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager'];
-        $user_roles = (array) $user->roles;
+		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
+			return false;
+		}
 
-        if (!array_intersect($allowed_roles, $user_roles)) {
-            return false;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	/**
+	 * Format the counter response for REST API
+	 *
+	 * @param object $counter The counter post object.
+	 * @return array Formatted counter response.
+	 */
+	private function format_counter_response( $counter ) {
+		$current_user_id = get_post_meta( $counter->ID, 'current_assigned_user', true );
+		$outlet_id       = get_post_meta( $counter->ID, 'counter_outlet_id', true );
+		$status          = get_post_meta( $counter->ID, 'counter_status', true ) ? get_post_meta( $counter->ID, 'counter_status', true ) : 'active';
+		$description     = get_post_meta( $counter->ID, 'counter_description', true );
+		$position        = get_post_meta( $counter->ID, 'counter_position', true );
+		$response        = array(
+			'id'            => $counter->ID,
+			'name'          => $counter->post_title,
+			'outlet_id'     => $outlet_id,
+			'status'        => $status,
+			'description'   => $description,
+			'position'      => $position,
+			'created_at'    => $counter->post_date,
+			'updated_at'    => $counter->post_modified,
+			'assigned_user' => $current_user_id ? array(
+				'id'   => $current_user_id,
+				'name' => get_user_by( 'id', $current_user_id )->display_name,
+			) : null,
+		);
+		return $response;
+	}
+	/**
+	 * Format error response for REST API
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional. Additional error details.
+	 * @param int    $statusCode Optional. HTTP status code. Default is 400.
+	 * @param string $path Optional. The API endpoint path.
+	 * @return array Formatted error response.
+	 */
+	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
+		$error = array();
+		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
+			$error = $errors;
+		} else {
+			$error = array(
+				'error' => $message,
+			);
+		}
 
-    private function format_counter_response($counter)
-    {
-        $current_user_id = get_post_meta($counter->ID, 'current_assigned_user', true);
-        $response = [
-            'id'           => $counter->ID,
-            'name'         => $counter->post_title,
-            'outlet_id'    => get_post_meta($counter->ID, 'counter_outlet_id', true),
-            'status'       => get_post_meta($counter->ID, 'counter_status', true) ?: 'active',
-            'description'  => get_post_meta($counter->ID, 'counter_description', true),
-            'position'     => get_post_meta($counter->ID, 'counter_position', true),
-            'created_at'   => $counter->post_date,
-            'updated_at'   => $counter->post_modified,
-            'assigned_user' => $current_user_id ? [
-                'id' => $current_user_id,
-                'name' => get_user_by('id', $current_user_id)->display_name
-            ] : null,
-        ];
-        return $response;
-    }
+		return array(
+			'success' => false,
+			'message' => $message,
+			'data'    => null,
+			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
+		);
+	}
 
-    private function format_error_response($message, $errors = [], $statusCode = 400, $path = '')
-    {
-        $error = [];
-        if (is_array($errors) && !empty($errors) && array_keys($errors) !== range(0, count($errors) - 1)) {
-            $error = $errors;
-        } else {
-            $error = [
-                'error' => $message,
-            ];
-        }
-
-        return [
-            'success' => false,
-            'message' => $message,
-            'data'    => null,
-            'error'   => $error,
-        ];
-    }
-
-    private function is_duplicate_counter($name, $outlet_id, $exclude_id = 0)
-    {
+	/**
+	 * Check if a counter with the same name already exists in the outlet
+	 *
+	 * @param string $name The counter name.
+	 * @param int    $outlet_id The outlet ID.
+	 * @param int    $exclude_id Optional. Counter ID to exclude from check. Default is 0.
+	 */
+	private function is_duplicate_counter( $name, $outlet_id, $exclude_id = 0 ) {
         // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-        $args = [
-            'post_type'      => 'smartsales_counter',
-            'post_status'    => 'publish',
-            'title'          => $name,
-            'posts_per_page' => 1,
+		$args = array(
+			'post_type'      => 'csmsl_counter',
+			'post_status'    => 'publish',
+			'title'          => $name,
+			'posts_per_page' => 1,
             // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
-            'exclude'        => [$exclude_id],
-            'meta_query'     => [
-                [
-                    'key'     => 'counter_outlet_id',
-                    'value'   => $outlet_id,
-                    'compare' => '='
-                ]
-            ]
-        ];
+			'exclude'        => array( $exclude_id ),
+			'meta_query'     => array(
+				array(
+					'key'     => 'counter_outlet_id',
+					'value'   => $outlet_id,
+					'compare' => '=',
+				),
+			),
+		);
 
-        $existing_counter = new \WP_Query($args);
+		$existing_counter = new \WP_Query( $args );
         // phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-        return $existing_counter->have_posts();
-    }
+		return $existing_counter->have_posts();
+	}
+	/**
+	 * Get all counters for a specific outlet
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response
+	 */
+	public function get_counters( $request ) {
+		$outlet_id = $request['outlet_id'];
 
-    public function get_counters($request)
-    {
-        $outlet_id = $request['outlet_id'];
+		$args = array(
+			'post_type'      => 'csmsl_counter',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				array(
+					'key'     => 'counter_outlet_id',
+					'value'   => $outlet_id,
+					'compare' => '=',
+				),
+			),
+		);
 
-        $args = [
-            'post_type'      => 'smartsales_counter',
-            'posts_per_page' => -1,
-            'meta_query'     => [
-                [
-                    'key'     => 'counter_outlet_id',
-                    'value'   => $outlet_id,
-                    'compare' => '='
-                ]
-            ]
-        ];
+		$counters = get_posts( $args );
 
-        $counters = get_posts($args);
+		if ( is_wp_error( $counters ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Failed to retrieve counters.',
+					array( 'server' => 'An internal server error occurred.' ),
+					500,
+					$request->get_route()
+				)
+			);
+		}
 
-        if (is_wp_error($counters)) {
-            return rest_ensure_response($this->format_error_response(
-                'Failed to retrieve counters.',
-                ['server' => 'An internal server error occurred.'],
-                500,
-                $request->get_route()
-            ));
-        }
+		$formatted_counters = array_map( array( $this, 'format_counter_response' ), $counters );
 
-        $formatted_counters = array_map([$this, 'format_counter_response'], $counters);
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Counters retrieved successfully.',
+				'data'    => $formatted_counters,
+			)
+		);
+	}
+	/**
+	 * Get a specific counter by ID
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response
+	 */
+	public function get_counter( $request ) {
+		$counter = get_post( $request['counter_id'] );
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'Counters retrieved successfully.',
-            'data'    => $formatted_counters,
-        ]);
-    }
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $request['outlet_id'] ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Counter not found.',
+					array( 'id' => 'Counter not found for the specified outlet.' ),
+					404,
+					$request->get_route()
+				)
+			);
+		}
 
-    public function get_counter($request)
-    {
-        $counter = get_post($request['counter_id']);
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Counter retrieved successfully.',
+				'data'    => $this->format_counter_response( $counter ),
+			)
+		);
+	}
+	/**
+	 * Create a new counter
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response
+	 */
+	public function create_counter( $request ) {
+		$data      = $request->get_json_params();
+		$outlet_id = $request['outlet_id'];
 
-        if (!$counter || get_post_meta($counter->ID, 'counter_outlet_id', true) != $request['outlet_id']) {
-            return rest_ensure_response($this->format_error_response(
-                'Counter not found.',
-                ['id' => "Counter not found for the specified outlet."],
-                404,
-                $request->get_route()
-            ));
-        }
+		$errors = array();
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'Counter retrieved successfully.',
-            'data'    => $this->format_counter_response($counter),
-        ]);
-    }
+		if ( ! isset( $data['name'] ) || trim( $data['name'] ) === '' ) {
+			$errors['name'] = 'Counter name cannot be empty.';
+		}
 
-    public function create_counter($request)
-    {
-        $data = $request->get_json_params();
-        $outlet_id = $request['outlet_id'];
+		if ( $this->is_duplicate_counter( $data['name'], $outlet_id ) ) {
+			$errors['name'] = 'A counter with this name already exists in this outlet.';
+		}
 
-        $errors = [];
+		if ( ! empty( $errors ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Invalid input provided.',
+					$errors,
+					400,
+					$request->get_route()
+				)
+			);
+		}
 
-        if (!isset($data['name']) || trim($data['name']) === '') {
-            $errors['name'] = 'Counter name cannot be empty.';
-        }
+		$counter_id = wp_insert_post(
+			array(
+				'post_type'   => 'csmsl_counter',
+				'post_title'  => $data['name'],
+				'post_status' => 'publish',
+			)
+		);
 
-        if ($this->is_duplicate_counter($data['name'], $outlet_id)) {
-            $errors['name'] = 'A counter with this name already exists in this outlet.';
-        }
+		if ( is_wp_error( $counter_id ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Failed to create counter.',
+					array( 'server' => 'An internal server error occurred.' ),
+					500,
+					$request->get_route()
+				)
+			);
+		}
 
-        if (!empty($errors)) {
-            return rest_ensure_response($this->format_error_response(
-                'Invalid input provided.',
-                $errors,
-                400,
-                $request->get_route()
-            ));
-        }
+		update_post_meta( $counter_id, 'counter_outlet_id', $outlet_id );
+		update_post_meta( $counter_id, 'counter_status', $data['status'] ?? 'active' );
+		update_post_meta( $counter_id, 'counter_description', $data['description'] ?? '' );
+		update_post_meta( $counter_id, 'counter_position', $data['position'] ?? '' );
 
-        $counter_id = wp_insert_post([
-            'post_type'   => 'smartsales_counter',
-            'post_title'  => $data['name'],
-            'post_status' => 'publish',
-        ]);
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Counter created successfully.',
+				'data'    => $this->format_counter_response( get_post( $counter_id ) ),
+			)
+		);
+	}
 
-        if (is_wp_error($counter_id)) {
-            return rest_ensure_response($this->format_error_response(
-                'Failed to create counter.',
-                ['server' => 'An internal server error occurred.'],
-                500,
-                $request->get_route()
-            ));
-        }
+	/**
+	 * Update a counter
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response
+	 */
+	public function update_counter( $request ) {
+		$data       = $request->get_json_params();
+		$counter_id = $request['counter_id'];
+		$outlet_id  = $request['outlet_id'];
 
-        update_post_meta($counter_id, 'counter_outlet_id', $outlet_id);
-        update_post_meta($counter_id, 'counter_status', $data['status'] ?? 'active');
-        update_post_meta($counter_id, 'counter_description', $data['description'] ?? '');
-        update_post_meta($counter_id, 'counter_position', $data['position'] ?? '');
+		$counter = get_post( $counter_id );
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Counter not found.',
+					array( 'id' => 'Counter not found for the specified outlet.' ),
+					404,
+					$request->get_route()
+				)
+			);
+		}
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'Counter created successfully.',
-            'data'    => $this->format_counter_response(get_post($counter_id)),
-        ]);
-    }
+		$errors = array();
+		if ( isset( $data['name'] ) && empty( $data['name'] ) ) {
+			$errors['name'] = 'Counter name cannot be empty.';
+		}
 
-    public function update_counter($request)
-    {
-        $data = $request->get_json_params();
-        $counter_id = $request['counter_id'];
-        $outlet_id = $request['outlet_id'];
+		if ( isset( $data['name'] ) && $this->is_duplicate_counter( $data['name'], $outlet_id, $counter_id ) ) {
+			$errors['name'] = 'A counter with this name already exists in this outlet.';
+		}
 
-        $counter = get_post($counter_id);
-        if (!$counter || get_post_meta($counter->ID, 'counter_outlet_id', true) != $outlet_id) {
-            return rest_ensure_response($this->format_error_response(
-                'Counter not found.',
-                ['id' => "Counter not found for the specified outlet."],
-                404,
-                $request->get_route()
-            ));
-        }
+		if ( ! empty( $errors ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Invalid input provided.',
+					$errors,
+					400,
+					$request->get_route()
+				)
+			);
+		}
 
-        $errors = [];
-        if (isset($data['name']) && empty($data['name'])) {
-            $errors['name'] = 'Counter name cannot be empty.';
-        }
+		if ( isset( $data['name'] ) ) {
+			wp_update_post(
+				array(
+					'ID'         => $counter_id,
+					'post_title' => $data['name'],
+				)
+			);
+		}
 
-        if (isset($data['name']) && $this->is_duplicate_counter($data['name'], $outlet_id, $counter_id)) {
-            $errors['name'] = 'A counter with this name already exists in this outlet.';
-        }
+		if ( isset( $data['status'] ) ) {
+			update_post_meta( $counter_id, 'counter_status', $data['status'] );
+		}
+		if ( isset( $data['description'] ) ) {
+			update_post_meta( $counter_id, 'counter_description', $data['description'] );
+		}
+		if ( isset( $data['position'] ) ) {
+			update_post_meta( $counter_id, 'counter_position', $data['position'] );
+		}
 
-        if (!empty($errors)) {
-            return rest_ensure_response($this->format_error_response(
-                'Invalid input provided.',
-                $errors,
-                400,
-                $request->get_route()
-            ));
-        }
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Counter updated successfully.',
+				'data'    => $this->format_counter_response( get_post( $counter_id ) ),
+			)
+		);
+	}
+	/**
+	 * Delete a counter
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 */
+	public function delete_counter( $request ) {
+		$counter_id = $request['counter_id'];
+		$outlet_id  = $request['outlet_id'];
 
-        if (isset($data['name'])) {
-            wp_update_post([
-                'ID'         => $counter_id,
-                'post_title' => $data['name'],
-            ]);
-        }
+		$counter = get_post( $counter_id );
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Counter not found.',
+					array( 'id' => 'Counter not found for the specified outlet.' ),
+					404,
+					$request->get_route()
+				)
+			);
+		}
 
-        if (isset($data['status'])) {
-            update_post_meta($counter_id, 'counter_status', $data['status']);
-        }
-        if (isset($data['description'])) {
-            update_post_meta($counter_id, 'counter_description', $data['description']);
-        }
-        if (isset($data['position'])) {
-            update_post_meta($counter_id, 'counter_position', $data['position']);
-        }
+		$deleted = wp_delete_post( $counter_id, true );
+		if ( ! $deleted ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Failed to delete counter.',
+					array( 'server' => 'An internal server error occurred.' ),
+					500,
+					$request->get_route()
+				)
+			);
+		}
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'Counter updated successfully.',
-            'data'    => $this->format_counter_response(get_post($counter_id)),
-        ]);
-    }
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'Counter deleted successfully.',
+				'data'    => null,
+			)
+		);
+	}
 
-    public function delete_counter($request)
-    {
-        $counter_id = $request['counter_id'];
-        $outlet_id = $request['outlet_id'];
+	/**
+	 * Check if the user can manage the counter
+	 *
+	 * @param int $user_id The user ID to check.
+	 * @param int $counter_id The counter ID to check.
+	 * @return bool Whether the user can manage the counter
+	 */
+	private function can_manage_counter( $user_id, $counter_id ) {
 
-        $counter = get_post($counter_id);
-        if (!$counter || get_post_meta($counter->ID, 'counter_outlet_id', true) != $outlet_id) {
-            return rest_ensure_response($this->format_error_response(
-                'Counter not found.',
-                ['id' => "Counter not found for the specified outlet."],
-                404,
-                $request->get_route()
-            ));
-        }
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			return false;
+		}
 
-        $deleted = wp_delete_post($counter_id, true);
-        if (!$deleted) {
-            return rest_ensure_response($this->format_error_response(
-                'Failed to delete counter.',
-                ['server' => 'An internal server error occurred.'],
-                500,
-                $request->get_route()
-            ));
-        }
+		if ( user_can( $user_id, 'administrator' ) ) {
+			return true;
+		}
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'Counter deleted successfully.',
-            'data'    => null,
-        ]);
-    }
+		if ( user_can( $user, 'csmsl_pos_outlet_manager' ) ) {
+			$counter_outlet = get_post_meta( $counter_id, 'counter_outlet_id', true );
+			$user_outlet    = get_user_meta( $user_id, 'assigned_outlet_id', true );
+			return $counter_outlet === $user_outlet;
+		}
 
-    private function can_manage_counter($user_id, $counter_id)
-    {
-        if (user_can($user_id, 'administrator')) return true;
+		return false;
+	}
 
-        $user = get_user_by('id', $user_id);
-        if (!$user) return false;
+	/**
+	 * Assign a user to a counter
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response
+	 */
+	public function assign_user_to_counter( $request ) {
+		$current_user_id = get_current_user_id();
+		if ( ! $this->can_manage_counter( $current_user_id, $request['counter_id'] ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Permission denied',
+					array( 'permission' => 'You do not have permission to manage this counter' ),
+					403
+				)
+			);
+		}
 
-        if (user_can($user, 'aipos_outlet_manager')) {
-            $counter_outlet = get_post_meta($counter_id, 'counter_outlet_id', true);
-            $user_outlet = get_user_meta($user_id, 'assigned_outlet_id', true);
-            return $counter_outlet == $user_outlet;
-        }
+		$counter_id = $request['counter_id'];
+		$outlet_id  = $request['outlet_id'];
+		$data       = $request->get_json_params();
+		$user_id    = isset( $data['user_id'] ) ? intval( $data['user_id'] ) : 0;
 
-        return false;
-    }
+		$errors = array();
 
-    public function assign_user_to_counter($request)
-    {
-        $current_user_id = get_current_user_id();
-        if (!$this->can_manage_counter($current_user_id, $request['counter_id'])) {
-            return rest_ensure_response($this->format_error_response(
-                'Permission denied',
-                ['permission' => 'You do not have permission to manage this counter'],
-                403
-            ));
-        }
+		// Validate user ID.
+		if ( empty( $user_id ) ) {
+			$errors['user_id'] = 'User ID is required.';
+		} elseif ( ! get_user_by( 'id', $user_id ) ) {
+			$errors['user_id'] = 'Invalid user ID.';
+		}
 
-        $counter_id = $request['counter_id'];
-        $outlet_id = $request['outlet_id'];
-        $data = $request->get_json_params();
-        $user_id = isset($data['user_id']) ? intval($data['user_id']) : 0;
+		// Check if user exists and has cashier role.
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Invalid user',
+					array( 'user' => 'User not found' ),
+					400
+				)
+			);
+		}
 
-        $errors = [];
+		// Get user roles.
+		$user_roles = $user->roles;
 
-        // Validate user ID
-        if (empty($user_id)) {
-            $errors['user_id'] = 'User ID is required.';
-        } elseif (!get_user_by('id', $user_id)) {
-            $errors['user_id'] = 'Invalid user ID.';
-        }
+		// Check if user has cashier role (using the correct role slug).
+		if ( ! in_array( 'csmsl_pos_cashier', $user_roles, true ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Invalid user',
+					array( 'user' => 'User must have cashier role' ),
+					400
+				)
+			);
+		}
 
-        // Check if user exists and has cashier role
-        $user = get_user_by('id', $user_id);
-        if (!$user) {
-            return rest_ensure_response($this->format_error_response(
-                'Invalid user',
-                ['user' => 'User not found'],
-                400
-            ));
-        }
+		// Validate counter belongs to outlet.
+		$counter = get_post( $counter_id );
+		if ( ! $counter || get_post_meta( $counter->ID, 'counter_outlet_id', true ) !== $outlet_id ) {
+			$errors['counter'] = 'Counter not found in the specified outlet.';
+		}
 
-        // Get user roles
-        $user_roles = $user->roles;
+		// Check if user is assigned to the outlet.
+		$user_outlet_id = get_user_meta( $user_id, 'assigned_outlet_id', true );
+		if ( ! $user_outlet_id ) {
+			// Auto-assign user to the outlet if not assigned.
+			update_user_meta( $user_id, 'assigned_outlet_id', $outlet_id );
+		} elseif ( $user_outlet_id !== $outlet_id ) {
+			$errors['user'] = 'User is already assigned to a different outlet.';
+		}
 
-        // Check if user has cashier role (using the correct role slug)
-        if (!in_array('aipos_cashier', $user_roles)) {
-            return rest_ensure_response($this->format_error_response(
-                'Invalid user',
-                ['user' => 'User must have cashier role'],
-                400
-            ));
-        }
+		// Check if user is already assigned to another counter.
+		$existing_counter = get_user_meta( $user_id, 'assigned_counter_id', true );
+		if ( $existing_counter && $existing_counter !== $counter_id ) {
+			$errors['assignment'] = 'User is already assigned to another counter.';
+		}
 
-        // Validate counter belongs to outlet
-        $counter = get_post($counter_id);
-        if (!$counter || get_post_meta($counter->ID, 'counter_outlet_id', true) != $outlet_id) {
-            $errors['counter'] = 'Counter not found in the specified outlet.';
-        }
+		if ( ! empty( $errors ) ) {
+			return rest_ensure_response(
+				$this->format_error_response(
+					'Invalid input provided.',
+					$errors,
+					400,
+					$request->get_route()
+				)
+			);
+		}
 
-        // Check if user is assigned to the outlet
-        $user_outlet_id = get_user_meta($user_id, 'assigned_outlet_id', true);
-        if (!$user_outlet_id) {
-            // Auto-assign user to the outlet if not assigned
-            update_user_meta($user_id, 'assigned_outlet_id', $outlet_id);
-        } else if ($user_outlet_id != $outlet_id) {
-            $errors['user'] = 'User is already assigned to a different outlet.';
-        }
+		// Update user's counter assignment.
+		update_user_meta( $user_id, 'assigned_counter_id', $counter_id );
 
-        // Check if user is already assigned to another counter
-        $existing_counter = get_user_meta($user_id, 'assigned_counter_id', true);
-        if ($existing_counter && $existing_counter != $counter_id) {
-            $errors['assignment'] = 'User is already assigned to another counter.';
-        }
+		// Store the assignment history.
+		$assignment_history = array(
+			'user_id'     => $user_id,
+			'counter_id'  => $counter_id,
+			'outlet_id'   => $outlet_id,
+			'assigned_at' => current_time( 'mysql' ),
+			'assigned_by' => get_current_user_id(),
+		);
 
-        if (!empty($errors)) {
-            return rest_ensure_response($this->format_error_response(
-                'Invalid input provided.',
-                $errors,
-                400,
-                $request->get_route()
-            ));
-        }
+		add_post_meta( $counter_id, 'counter_assignment_history', $assignment_history );
 
-        // Update user's counter assignment
-        update_user_meta($user_id, 'assigned_counter_id', $counter_id);
+		// Update counter's current user.
+		update_post_meta( $counter_id, 'current_assigned_user', $user_id );
 
-        // Store the assignment history
-        $assignment_history = [
-            'user_id' => $user_id,
-            'counter_id' => $counter_id,
-            'outlet_id' => $outlet_id,
-            'assigned_at' => current_time('mysql'),
-            'assigned_by' => get_current_user_id()
-        ];
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'message' => 'User assigned to counter successfully.',
+				'data'    => array(
+					'user_id'     => $user_id,
+					'counter_id'  => $counter_id,
+					'outlet_id'   => $outlet_id,
+					'assigned_at' => current_time( 'mysql' ),
+				),
+			)
+		);
+	}
 
-        add_post_meta($counter_id, 'counter_assignment_history', $assignment_history);
+	/**
+	 * Check if a user has an assigned counter
+	 *
+	 * @param int $user_id The user ID to check.
+	 * @return bool Whether the user has an assigned counter
+	 */
+	public function user_has_assigned_counter( $user_id ) {
+		$assigned_counter_id = get_user_meta( $user_id, 'assigned_counter_id', true );
+		if ( ! $assigned_counter_id ) {
+			return false;
+		}
 
-        // Update counter's current user
-        update_post_meta($counter_id, 'current_assigned_user', $user_id);
+		// Verify the counter still exists and is active.
+		$counter = get_post( $assigned_counter_id );
+		if ( ! $counter || 'csmsl_counter' !== $counter->post_type ) {
+			return false;
+		}
 
-        return rest_ensure_response([
-            'success' => true,
-            'message' => 'User assigned to counter successfully.',
-            'data'    => [
-                'user_id' => $user_id,
-                'counter_id' => $counter_id,
-                'outlet_id' => $outlet_id,
-                'assigned_at' => current_time('mysql')
-            ]
-        ]);
-    }
+		// Check if counter is active.
+		$counter_status = get_post_meta( $assigned_counter_id, 'counter_status', true );
+		if ( 'active' !== $counter_status ) {
+			return false;
+		}
 
-    /**
-     * Check if a user has an assigned counter
-     * 
-     * @param int $user_id The user ID to check
-     * @return bool Whether the user has an assigned counter
-     */
-    public function user_has_assigned_counter($user_id)
-    {
-        $assigned_counter_id = get_user_meta($user_id, 'assigned_counter_id', true);
-        if (!$assigned_counter_id) {
-            return false;
-        }
+		// Verify user is still assigned as the current user of this counter.
+		$current_assigned_user = get_post_meta( $assigned_counter_id, 'current_assigned_user', true );
+		if ( (int) $current_assigned_user !== (int) $user_id ) {
+			return false;
+		}
 
-        // Verify the counter still exists and is active
-        $counter = get_post($assigned_counter_id);
-        if (!$counter || $counter->post_type !== 'smartsales_counter') {
-            return false;
-        }
-
-        // Check if counter is active
-        $counter_status = get_post_meta($assigned_counter_id, 'counter_status', true);
-        if ($counter_status !== 'active') {
-            return false;
-        }
-
-        // Verify user is still assigned as the current user of this counter
-        $current_assigned_user = get_post_meta($assigned_counter_id, 'current_assigned_user', true);
-        if ((int)$current_assigned_user !== (int)$user_id) {
-            return false;
-        }
-
-        return true;
-    }
+		return true;
+	}
 }

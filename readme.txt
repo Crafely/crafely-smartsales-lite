@@ -1,5 +1,5 @@
 === Crafely SmartSales Lite ===
-Contributors: alaminit
+Contributors: alaminit, jalal02
 Tags: pos, woocommerce, sales, inventory, ai
 Tested up to: 6.8
 Stable tag: 1.0.0
@@ -10,12 +10,12 @@ Transform your WooCommerce store into a complete Point of Sale system with AI-po
 
 == Description ==
 
-**SmartSales Lite** is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
+** Crafely SmartSales Lite** is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
 
 = 🚀 Key Features =
 
 **💻 Modern POS System**
-* Intuitive touch-friendly POS interface accessible at `/aipos`
+* Intuitive touch-friendly POS interface accessible at `/smart-pos`
 * Real-time inventory synchronization across all channels
 * Support for multiple payment methods (cash, card, bank transfer, PayPal, UPI, cryptocurrency)
 * Professional receipt generation and printing
@@ -61,7 +61,7 @@ Transform your WooCommerce store into a complete Point of Sale system with AI-po
 
 = 🔌 Powerful API =
 
-SmartSales Lite provides a comprehensive REST API for developers:
+Crafely SmartSales Lite provides a comprehensive REST API for developers:
 
 * Complete CRUD operations for products, orders, customers
 * Outlet and counter management endpoints
@@ -92,7 +92,7 @@ SmartSales Lite provides a comprehensive REST API for developers:
 
 1. Go to your WordPress admin panel
 2. Navigate to Plugins > Add New
-3. Search for "SmartSales Lite"
+3. Search for " Crafely SmartSales Lite"
 4. Click "Install Now" and then "Activate"
 
 = Manual Installation =
@@ -103,11 +103,11 @@ SmartSales Lite provides a comprehensive REST API for developers:
 
 = Post-Installation Setup =
 
-1. Navigate to **SmartSales Lite** in WordPress admin
+1. Navigate to ** Crafely SmartSales Lite** in WordPress admin
 2. Run the Setup Wizard to configure your business
 3. Create your first outlet and counter
 4. Assign user roles and permissions
-5. Access POS system at `/aipos` URL
+5. Access POS system at `/smart-pos` URL
 
 == Frequently Asked Questions ==
 
@@ -121,11 +121,11 @@ SmartSales Lite provides a comprehensive REST API for developers:
 
 = How do I access the POS system? =
 
-Navigate to `/aipos` in your browser. You'll need appropriate user roles (aipos_cashier, aipos_outlet_manager, or aipos_shop_manager) to access the POS interface.
+Navigate to `/smart-pos` in your browser. You'll need appropriate user roles (csmsl_pos_cashier, csmsl_pos_outlet_manager, or csmsl_pos_shop_manager) to access the POS interface.
 
 = Can I use this with my existing WooCommerce products? =
 
-Yes! SmartSales Lite seamlessly integrates with your existing WooCommerce products, orders, and customers. All POS sales are created as standard WooCommerce orders.
+Yes! Crafely SmartSales Lite seamlessly integrates with your existing WooCommerce products, orders, and customers. All POS sales are created as standard WooCommerce orders.
 
 = Does it work with multiple store locations? =
 
@@ -137,7 +137,7 @@ The plugin supports multiple payment methods including cash, card, bank transfer
 
 = Is there an API for developers? =
 
-Yes! SmartSales Lite provides a comprehensive REST API with endpoints for all functionality. Check the documentation for detailed API reference.
+Yes! Crafely SmartSales Lite provides a comprehensive REST API with endpoints for all functionality. Check the documentation for detailed API reference.
 
 = Can I customize the POS interface? =
 
@@ -175,23 +175,7 @@ Yes, the POS system has offline capability to continue sales even during interne
 == Upgrade Notice ==
 
 = 1.0.0 =
-This is the initial release of SmartSales Lite. Install now to transform your WooCommerce store into a complete POS system!
-
-== Pro Features (Coming Soon) ==
-
-**🚀 SmartSales Pro** will include additional advanced features:
-
-* **Advanced AI Analytics**: Machine learning-powered sales predictions and inventory optimization
-* **Conversational AI Dashboard**: Chat with your sales data, get instant insights, and generate reports using natural language queries
-* **Multi-currency Support**: Handle international sales with automatic currency conversion
-* **Advanced Reporting**: Custom report builder with advanced filtering and scheduling
-* **Hardware Integration**: Support for barcode scanners, receipt printers, and cash drawers
-* **Mobile Apps**: Dedicated iOS and Android apps for mobile POS
-* **Advanced Inventory**: Low stock alerts, automatic reordering, and supplier management
-* **Customer Loyalty**: Built-in loyalty program and customer rewards system
-* **Advanced Integrations**: QuickBooks, Xero, and other accounting software integrations
-* **Priority Support**: Direct access to support team with faster response times
-* **White Label**: Remove branding and customize with your own branding
+This is the initial release of Crafely SmartSales Lite. Install now to transform your WooCommerce store into a complete POS system!
 
 == Support ==
 
@@ -199,7 +183,7 @@ For support and documentation, please use the WordPress.org support forum for th
 
 == Contributing ==
 
-SmartSales Lite is open source! Contribute on [GitHub](https://github.com/Crafely/crafely-smartsales-lite).
+Crafely SmartSales Lite is open source! Contribute on [GitHub](https://github.com/Crafely/crafely-smartsales-lite).
 
 We welcome:
 * Bug reports and feature requests

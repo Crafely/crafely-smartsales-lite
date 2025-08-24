@@ -1,13 +1,27 @@
 <?php
+/**
+ * Crafely SmartSales Lite Orders API Handler
+ *
+ * This class handles REST API requests for orders in the Crafely SmartSales Lite plugin.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
-namespace AISMARTSALES\Includes\Api\Orders;
+namespace CSMSL\Includes\Api\Orders;
 
 use WP_REST_Response;
 use WP_Error;
 use WC_Order_Item_Fee;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * Class OrdersApiHandler
+ *
+ * Handles REST API requests for orders in the Crafely SmartSales Lite plugin.
+ */
 class OrdersApiHandler {
 
 	/**
@@ -21,7 +35,7 @@ class OrdersApiHandler {
 	 * Register the routes for the objects of the controller.
 	 */
 	public function register_routes() {
-		// Basic CRUD operations
+		// Basic CRUD operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/orders',
@@ -61,7 +75,7 @@ class OrdersApiHandler {
 			)
 		);
 
-		// Bulk operations
+		// Bulk operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/orders/restore',
@@ -82,7 +96,7 @@ class OrdersApiHandler {
 			)
 		);
 
-		// Trash operations
+		// Trash operations.
 		register_rest_route(
 			'ai-smart-sales/v1',
 			'/orders/trash',
@@ -96,29 +110,29 @@ class OrdersApiHandler {
 
 	/**
 	 * Check if the request has valid permission
+	 *
+	 * @param WP_REST_Request $request The request object.
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in
+		// Check if user is logged in.
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
 
-		// Get current user
 		$user = wp_get_current_user();
 
-		// Define role-based permissions
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		// Define role-based permissions.
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
-		// Check if user has appropriate role
+		// Check if user has appropriate role.
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
 			return false;
 		}
 
-		// For destructive operations, require higher privileges
-		if (
-			in_array( $request->get_method(), array( 'DELETE', 'PUT' ) ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager' ), $user_roles )
+		// For destructive operations, require higher privileges.
+		if ( in_array( $request->get_method(), array( 'DELETE', 'PUT' ), true ) &&
+			! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager' ), $user_roles )
 		) {
 			return false;
 		}
@@ -129,35 +143,48 @@ class OrdersApiHandler {
 	/**
 	 * Check if an order is a refund
 	 *
-	 * @param object $order WC_Order object
+	 * @param object $order WC_Order object.
 	 * @return bool
 	 */
 	private function is_refund( $order ) {
 		return is_a( $order, 'Automattic\WooCommerce\Admin\Overrides\OrderRefund' ) ||
-			is_a( $order, 'WC_Order_Refund' );
+		is_a( $order, 'WC_Order_Refund' );
 	}
 
 	/**
 	 * Response formatting methods
+	 *
+	 * @param string $message The message to include in the response.
+	 * @param array  $data Optional data to include in the response.
+	 * @param int    $statusCode Optional HTTP status code for the response.
 	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
 
+	/**
+	 * Format error response
+	 *
+	 * @param string $message The error message.
+	 * @param array  $errors Optional additional error details.
+	 * @param int    $statusCode Optional HTTP status code for the response.
+	 * @param string $path Optional path for the error.
+	 */
 	private function format_error_response( $message, $errors = array(), $statusCode = 400, $path = '' ) {
 		$error = array();
 
-		// If $errors is an associative array, use it as-is
+		// If $errors is an associative array, use it as-is.
 		if ( is_array( $errors ) && ! empty( $errors ) && array_keys( $errors ) !== range( 0, count( $errors ) - 1 ) ) {
-			$error = $errors; // Use the associative array directly
+			$error = $errors; // Use the associative array directly.
 		} else {
-			// Otherwise, use a generic error structure
+			// Otherwise, use a generic error structure.
 			$error = array(
-				'error' => $message, // Fallback for non-associative errors
+				'error' => $message,
 			);
 		}
 
@@ -166,11 +193,19 @@ class OrdersApiHandler {
 			'message' => $message,
 			'data'    => null,
 			'error'   => $error,
+			'status'  => $statusCode,
+			'path'    => $path,
 		);
 	}
 
+	/**
+	 * Format order response
+	 *
+	 * @param WC_Order $order The order object to format.
+	 * @return array Formatted order data.
+	 */
 	private function format_order_response( $order ) {
-		// Skip refund orders - they don't have the methods we need
+		// Skip refund orders - they don't have the methods we need.
 		if ( $this->is_refund( $order ) ) {
 			return array(
 				'id'            => (int) $order->get_id(),
@@ -188,25 +223,25 @@ class OrdersApiHandler {
 		$discount_total = 0;
 
 		foreach ( $order->get_items( 'fee' ) as $fee ) {
-			// Check for exact 'Discount' name or any name containing 'discount' (case-insensitive)
+			// Check for exact 'Discount' name or any name containing 'discount' (case-insensitive).
 			if ( $fee->get_name() === 'Discount' || stripos( $fee->get_name(), 'discount' ) !== false ) {
 				$discount_total += abs( $fee->get_total() );
 			}
 		}
 
-		// Get created_by_id from order meta
+		// Get created_by_id from order meta.
 		$created_by_id        = $order->get_meta( '_created_by_id' );
-		$created_by_outlet_id = $order->get_meta( '_created_by_outlet_id' ); // Get the stored outlet ID
+		$created_by_outlet_id = $order->get_meta( '_created_by_outlet_id' );
 
-		// Check if this is a website order
-		$channels = wp_get_post_terms( $order->get_id(), 'crafsmli_channel', array( 'fields' => 'slugs' ) );
+		// Check if this is a website order.
+		$channels = wp_get_post_terms( $order->get_id(), 'csmsl_channel', array( 'fields' => 'slugs' ) );
 
-		// Handle potential WP_Error from wp_get_post_terms
+		// Handle potential WP_Error from wp_get_post_terms.
 		if ( is_wp_error( $channels ) ) {
 			$channels = array();
 		}
 
-		$is_website_order = empty( $created_by_id ) || in_array( 'website', $channels );
+		$is_website_order = empty( $created_by_id ) || in_array( 'website', $channels, true );
 
 		if ( $is_website_order ) {
 			$creator_data = array(
@@ -219,21 +254,18 @@ class OrdersApiHandler {
 			$creator_name = '';
 
 			if ( $creator ) {
-				// First try to get the full name
+				// First try to get the full name.
 				if ( ! empty( $creator->first_name ) && ! empty( $creator->last_name ) ) {
 					$creator_name = $creator->first_name . ' ' . $creator->last_name;
-				}
-				// If no full name, try display name
-				elseif ( ! empty( $creator->display_name ) ) {
+				} elseif ( ! empty( $creator->display_name ) ) {
 					$creator_name = $creator->display_name;
-				}
-				// Finally, fall back to username
-				else {
+				} else {
+					// Finally, fall back to username.
 					$creator_name = $creator->user_login;
 				}
 			}
 
-			// Use the stored outlet ID instead of current assigned outlet
+			// Use the stored outlet ID instead of current assigned outlet.
 			$creator_outlet      = $created_by_outlet_id ? get_post( $created_by_outlet_id ) : null;
 			$creator_outlet_name = $creator_outlet ? $creator_outlet->post_title : '';
 
@@ -244,12 +276,11 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Format customer data similar to CustomerApiHandler
+		// Format customer data similar to CustomerApiHandler.
 		$customer_data = array();
 		if ( $customer_id && $customer ) {
-			// Registered customer
 			$profile_image_id  = get_user_meta( $customer_id, 'profile_image', true );
-			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : SMARTSALES_URL . 'assets/images/avatar.png';
+			$profile_image_url = $profile_image_id ? wp_get_attachment_url( $profile_image_id ) : CSMSL_URL . 'assets/images/avatar.png';
 
 			$customer_data = array(
 				'id'            => (int) $customer_id,
@@ -287,7 +318,7 @@ class OrdersApiHandler {
 				'is_guest'      => false,
 			);
 		} else {
-			// Guest customer
+			// Guest customer.
 			$email         = $order->get_billing_email();
 			$customer_data = array(
 				'id'            => 'guest_' . md5( $email ),
@@ -321,24 +352,24 @@ class OrdersApiHandler {
 					'postcode'   => $order->get_shipping_postcode(),
 					'country'    => $order->get_shipping_country(),
 				),
-				'profile_image' => SMARTSALES_URL . 'assets/images/avatar.png',
+				'profile_image' => CSMSL_URL . 'assets/images/avatar.png',
 				'is_guest'      => true,
 			);
 		}
 
-		// Get split payment information and payment details
+		// Get split payment information and payment details.
 		$split_payments  = $order->get_meta( '_split_payments' );
 		$payment_details = $split_payments ?
-			array(
-				'payment_method' => null,
-				'split_payments' => json_decode( $split_payments, true ),
-			) :
-			array(
-				'payment_method' => $order->get_payment_method(),
-				'split_payments' => null,
-			);
+		array(
+			'payment_method' => null,
+			'split_payments' => json_decode( $split_payments, true ),
+		) :
+		array(
+			'payment_method' => $order->get_payment_method(),
+			'split_payments' => null,
+		);
 
-		// Convert line items to array
+		// Convert line items to array.
 		$line_items = array();
 		foreach ( $order->get_items() as $item ) {
 			$product_id   = $item->get_product_id();
@@ -366,31 +397,33 @@ class OrdersApiHandler {
 			'updated_at'      => $order->get_date_modified() ? $order->get_date_modified()->date( 'Y-m-d H:i:s' ) : null,
 			'line_items'      => $line_items,
 			'channel'         => $channels,
-			'customer_note'   => $order->get_customer_note(), // Add this line
+			'customer_note'   => $order->get_customer_note(),
 		);
 	}
 
 	/**
 	 * Order listing methods
+	 *
+	 * @param WP_REST_Request $request The request object.
 	 */
 	public function get_orders( $request ) {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 
-		// Check user role and apply restrictions for cashiers
+		// Check user role and apply restrictions for cashiers.
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles, true ) &&
+		! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
-		// Query args for getting total count
+		// Query args for getting total count.
 		$count_args = array(
 			'limit'  => -1,
 			'return' => 'ids',
-			'type'   => 'shop_order', // Only count orders, not refunds
+			'type'   => 'shop_order',
 		);
 
-		// If user is a cashier, restrict to orders they created
+		// If user is a cashier, restrict to orders they created.
 		if ( $is_cashier ) {
 			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			$count_args['meta_query'] = array(
@@ -401,29 +434,30 @@ class OrdersApiHandler {
 				),
 			);
 		}
-
-		if ( $status = $request->get_param( 'status' ) ) {
+		$status = $request->get_param( 'status' );
+		if ( ! empty( $status ) ) {
 			$count_args['status'] = sanitize_text_field( $status );
 		}
-		if ( $customer_id = $request->get_param( 'customer_id' ) ) {
+		$customer_id = $request->get_param( 'customer_id' );
+		if ( ! empty( $customer_id ) ) {
 			$count_args['customer_id'] = intval( $customer_id );
 		}
 
-		// Get total count
+		// Get total count.
 		$count_query  = new \WC_Order_Query( $count_args );
-		$total_orders = count( $count_query->get_orders() ); // This will return an array of IDs
+		$total_orders = count( $count_query->get_orders() );
 
-		// Query args for paginated results
+		// Query args for paginated results.
 		$query_args = array(
 			'limit'   => $per_page,
 			'offset'  => ( $current_page - 1 ) * $per_page,
 			'orderby' => 'date',
 			'order'   => 'DESC',
 			'return'  => 'objects',
-			'type'    => 'shop_order', // Only get orders, not refunds
+			'type'    => 'shop_order',
 		);
 
-		// If user is a cashier, restrict to orders they created
+		// If user is a cashier, restrict to orders they created.
 		if ( $is_cashier ) {
 			$query_args['meta_query'] = array(
 				array(
@@ -441,7 +475,7 @@ class OrdersApiHandler {
 			$query_args['customer_id'] = intval( $customer_id );
 		}
 
-		// Get paginated orders
+		// Get paginated orders.
 		$order_query = new \WC_Order_Query( $query_args );
 		$orders      = $order_query->get_orders();
 
@@ -476,25 +510,30 @@ class OrdersApiHandler {
 		);
 	}
 
+	/**
+	 * Get trash orders
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 */
 	public function get_trash_orders( $request ) {
 		$current_page = $request->get_param( 'current_page' ) ? intval( $request->get_param( 'current_page' ) ) : 1;
 		$per_page     = $request->get_param( 'per_page' ) ? intval( $request->get_param( 'per_page' ) ) : 10;
 
-		// Check user role and apply restrictions for cashiers
+		// Check user role and apply restrictions for cashiers.
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles, true ) &&
+		! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
-		// Query args for getting total count of trash orders
+		// Query args for getting total count of trash orders.
 		$count_args = array(
 			'limit'  => -1,
 			'return' => 'ids',
-			'status' => 'trash', // Specifically get trash orders
-			'type'   => 'shop_order', // Only count orders, not refunds
+			'status' => 'trash',
+			'type'   => 'shop_order',
 		);
 
-		// If user is a cashier, restrict to orders they created
+		// If user is a cashier, restrict to orders they created.
 		if ( $is_cashier ) {
 			$count_args['meta_query'] = array(
 				array(
@@ -505,11 +544,11 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Get total count
+		// Get total count.
 		$count_query  = new \WC_Order_Query( $count_args );
 		$total_orders = count( $count_query->get_orders() );
 
-		// Query args for paginated trash orders
+		// Query args for paginated trash orders.
 		$query_args = array(
 			'limit'   => $per_page,
 			'offset'  => ( $current_page - 1 ) * $per_page,
@@ -517,10 +556,10 @@ class OrdersApiHandler {
 			'order'   => 'DESC',
 			'return'  => 'objects',
 			'status'  => 'trash',
-			'type'    => 'shop_order', // Only get orders, not refunds
+			'type'    => 'shop_order',
 		);
 
-		// If user is a cashier, restrict to orders they created
+		// If user is a cashier, restrict to orders they created.
 		if ( $is_cashier ) {
 			$query_args['meta_query'] = array(
 				array(
@@ -531,7 +570,7 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Get paginated trash orders
+		// Get paginated trash orders.
 		$order_query = new \WC_Order_Query( $query_args );
 		$orders      = $order_query->get_orders();
 
@@ -568,6 +607,9 @@ class OrdersApiHandler {
 
 	/**
 	 * Single order operations
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_order( $request ) {
 		$order_id = intval( $request->get_param( 'id' ) );
@@ -587,16 +629,16 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Check user role and apply restrictions for cashiers
+		// Check user role and apply restrictions for cashiers.
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles, true ) &&
+		! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
-		// If user is a cashier, check if they created this order
+		// If user is a cashier, check if they created this order.
 		if ( $is_cashier ) {
 			$created_by_id = $order->get_meta( '_created_by_id' );
-			if ( $created_by_id != get_current_user_id() ) {
+			if ( get_current_user_id() !== $created_by_id ) {
 				return new WP_REST_Response(
 					$this->format_error_response(
 						'Access denied.',
@@ -621,11 +663,17 @@ class OrdersApiHandler {
 		);
 	}
 
+	/**
+	 * Create a new order
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function create_order( $request ) {
 		$data   = $request->get_json_params();
-		$errors = array(); // Array to collect all validation errors
+		$errors = array();
 
-		// Validate customer_id
+		// Validate customer_id.
 		$customer_id = intval( $data['customer_id'] ?? 0 );
 		if ( ! $customer_id || $customer_id <= 0 ) {
 			$errors['customer_id'] = 'Customer ID must be a valid, non-zero integer.';
@@ -636,16 +684,16 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Only validate payment_method if split_payments is not provided
+		// Only validate payment_method if split_payments is not provided.
 		if ( ! isset( $data['split_payments'] ) ) {
 			$payment_method        = strtolower( sanitize_text_field( $data['payment_method'] ?? '' ) );
 			$valid_payment_methods = array( 'cash', 'card', 'bank_transfer', 'paypal', 'upi', 'cryptocurrency', 'cod' );
-			if ( empty( $payment_method ) || ! in_array( $payment_method, $valid_payment_methods ) ) {
+			if ( empty( $payment_method ) || ! in_array( $payment_method, $valid_payment_methods, true ) ) {
 				$errors['payment_method'] = "The payment method '{$payment_method}' is not supported.";
 			}
 		}
 
-		// Validate line_items
+		// Validate line_items.
 		if ( empty( $data['line_items'] ) || ! is_array( $data['line_items'] ) ) {
 			$errors['line_items'] = 'At least one line item is required.';
 		} else {
@@ -668,7 +716,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Validate discount_total
+		// Validate discount_total.
 		if ( isset( $data['discount_total'] ) ) {
 			$discount_total = floatval( $data['discount_total'] );
 			if ( $discount_total < 0 ) {
@@ -676,7 +724,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Validate current user (creator)
+		// Validate current user (creator).
 		$current_user_id = get_current_user_id();
 		if ( ! $current_user_id ) {
 			$errors['authentication'] = 'Please log in to create an order.';
@@ -687,7 +735,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Validate split payments if provided
+		// Validate split payments if provided.
 		if ( isset( $data['split_payments'] ) ) {
 			if ( ! is_array( $data['split_payments'] ) ) {
 				$errors['split_payments'] = 'Split payments must be an array.';
@@ -702,7 +750,7 @@ class OrdersApiHandler {
 					$method = strtolower( sanitize_text_field( $payment['method'] ) );
 					$amount = floatval( $payment['amount'] );
 
-					if ( ! in_array( $method, array( 'cash', 'card', 'bank_transfer', 'paypal', 'upi', 'cryptocurrency', 'cod' ) ) ) {
+					if ( ! in_array( $method, array( 'cash', 'card', 'bank_transfer', 'paypal', 'upi', 'cryptocurrency', 'cod' ), true ) ) {
 						$errors[ "split_payments.{$index}.method" ] = "Payment method '{$method}' is not supported.";
 					}
 
@@ -715,7 +763,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// If there are validation errors, return them all
+		// If there are validation errors, return them all.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -728,11 +776,11 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Create temporary order to calculate total
+		// Create temporary order to calculate total.
 		$temp_order = wc_create_order();
 		$temp_order->set_customer_id( $customer_id );
 
-		// Add billing address if provided
+		// Add billing address if provided.
 		if ( isset( $data['customer']['billing_address'] ) ) {
 			$billing = $data['customer']['billing_address'];
 			$temp_order->set_billing_address_1( $billing['address'] ?? '' );
@@ -745,7 +793,7 @@ class OrdersApiHandler {
 			$temp_order->set_billing_email( $billing['email'] ?? '' );
 			$temp_order->set_billing_phone( $billing['phone'] ?? '' );
 
-			// If shipping address is not provided, copy billing address
+			// If shipping address is not provided, copy billing address.
 			if ( ! isset( $data['customer']['shipping_address'] ) ) {
 				$temp_order->set_shipping_address_1( $billing['address'] ?? '' );
 				$temp_order->set_shipping_address_2( $billing['address_2'] ?? '' );
@@ -757,7 +805,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Add shipping address if provided separately
+		// Add shipping address if provided separately.
 		if ( isset( $data['customer']['shipping_address'] ) ) {
 			$shipping = $data['customer']['shipping_address'];
 			$temp_order->set_shipping_address_1( $shipping['address'] ?? '' );
@@ -769,7 +817,7 @@ class OrdersApiHandler {
 			$temp_order->set_shipping_company( $shipping['company'] ?? '' );
 		}
 
-		// Add line items to temp order
+		// Add line items to temp order.
 		foreach ( $data['line_items'] as $item ) {
 			$product_id     = intval( $item['product_id'] );
 			$quantity       = intval( $item['quantity'] );
@@ -777,7 +825,7 @@ class OrdersApiHandler {
 			$temp_order->add_product( $product_object, $quantity );
 		}
 
-		// Apply discount if provided
+		// Apply discount if provided.
 		if ( ! empty( $data['discount_total'] ) ) {
 			$discount_total = floatval( $data['discount_total'] );
 			$discount       = new WC_Order_Item_Fee();
@@ -788,15 +836,15 @@ class OrdersApiHandler {
 			$temp_order->add_item( $discount );
 		}
 
-		// Calculate total
+		// Calculate total.
 		$temp_order->calculate_totals();
 		$order_total = $temp_order->get_total();
 
-		// Validate split payments against calculated total
+		// Validate split payments against calculated total.
 		if ( isset( $data['split_payments'] ) ) {
 			$total_split_amount = array_sum( array_column( $data['split_payments'], 'amount' ) );
 			if ( abs( $total_split_amount - $order_total ) > 0.01 ) {
-				// Delete temporary order
+				// Delete temporary order.
 				$temp_order->delete( true );
 
 				return new WP_REST_Response(
@@ -813,41 +861,41 @@ class OrdersApiHandler {
 			}
 		}
 
-		// If we made it here, validation passed - use the temp order as the real order
+		// If we made it here, validation passed - use the temp order as the real order.
 		$order = $temp_order;
 
-		// Store the current user's outlet ID at the time of order creation
+		// Store the current user's outlet ID at the time of order creation.
 		$current_user_id   = get_current_user_id();
 		$current_outlet_id = get_user_meta( $current_user_id, 'assigned_outlet_id', true );
 
-		// Add metadata and finish order setup
+		// Add metadata and finish order setup.
 		$order->update_meta_data( '_created_by_id', $current_user_id );
-		$order->update_meta_data( '_created_by_outlet_id', $current_outlet_id ); // Store the outlet ID
+		$order->update_meta_data( '_created_by_outlet_id', $current_outlet_id );
 
 		if ( isset( $data['split_payments'] ) ) {
 			$order->update_meta_data( '_split_payments', wp_json_encode( $data['split_payments'] ) );
-			$order->set_payment_method( 'split_payment' ); // Set a generic identifier
+			$order->set_payment_method( 'split_payment' );
 			$order->set_status( 'completed' );
 		} else {
 			$order->set_payment_method( $payment_method );
 			$order->set_status( 'completed' );
 		}
 
-		// Add this after creating the order but before saving
+		// Add this after creating the order but before saving.
 		if ( isset( $data['customer_note'] ) ) {
 			$order->set_customer_note( sanitize_textarea_field( $data['customer_note'] ) );
 		}
 
-		// Assign channel for POS users
+		// Assign channel for POS users.
 		$current_user = get_userdata( $current_user_id );
-		if ( in_array( 'aipos_outlet_manager', $current_user->roles ) ) {
-			$pos_channel = get_term_by( 'slug', 'pos-system', 'crafsmli_channel' );
+		if ( in_array( 'csmsl_pos_outlet_manager', $current_user->roles, true ) ) {
+			$pos_channel = get_term_by( 'slug', 'pos-system', 'csmsl_channel' );
 			if ( $pos_channel ) {
-				wp_set_object_terms( $order->get_id(), $pos_channel->term_id, 'crafsmli_channel' );
+				wp_set_object_terms( $order->get_id(), $pos_channel->term_id, 'csmsl_channel' );
 			}
 		}
 
-		// Save the order
+		// Save the order.
 		$order_id = $order->save();
 
 		if ( ! $order_id ) {
@@ -864,7 +912,7 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Return the response with current user's details
+		// Return the response with current user's details.
 		return new WP_REST_Response(
 			$this->format_success_response(
 				'Order created successfully.',
@@ -874,7 +922,12 @@ class OrdersApiHandler {
 			201
 		);
 	}
-
+	/**
+	 * Update an existing order
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function update_order( $request ) {
 		$order_id = intval( $request->get_param( 'id' ) );
 		$order    = wc_get_order( $order_id );
@@ -893,16 +946,16 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Check user role and apply restrictions for cashiers
+		// Check user role and apply restrictions for cashiers.
 		$current_user = wp_get_current_user();
 		$user_roles   = (array) $current_user->roles;
-		$is_cashier   = in_array( 'aipos_cashier', $user_roles ) &&
-			! array_intersect( array( 'administrator', 'aipos_outlet_manager', 'aipos_shop_manager' ), $user_roles );
+		$is_cashier   = in_array( 'csmsl_pos_cashier', $user_roles, true ) &&
+		! array_intersect( array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_shop_manager' ), $user_roles );
 
-		// If user is a cashier, check if they created this order
+		// If user is a cashier, check if they created this order.
 		if ( $is_cashier ) {
 			$created_by_id = $order->get_meta( '_created_by_id' );
-			if ( $created_by_id != get_current_user_id() ) {
+			if ( get_current_user_id() !== $created_by_id ) {
 				return new WP_REST_Response(
 					$this->format_error_response(
 						'Access denied.',
@@ -919,39 +972,38 @@ class OrdersApiHandler {
 
 		$data = $request->get_json_params();
 
-		// Update payment method if provided
+		// Update payment method if provided.
 		if ( isset( $data['payment_method'] ) ) {
 			$payment_method        = sanitize_text_field( $data['payment_method'] );
 			$valid_payment_methods = array( 'cash', 'card', 'bank_transfer', 'paypal', 'upi', 'cryptocurrency', 'cod' );
-			if ( in_array( $payment_method, $valid_payment_methods ) ) {
+			if ( in_array( $payment_method, $valid_payment_methods, true ) ) {
 				$order->set_payment_method( $payment_method );
 			}
 		}
 
-		// Update status if provided
+		// Update status if provided.
 		if ( isset( $data['status'] ) ) {
 			$old_status = $order->get_status();
 			$new_status = sanitize_text_field( $data['status'] );
 
-			// Only trigger if status actually changed
+			// Only trigger if status actually changed.
 			if ( $old_status !== $new_status ) {
-				// First set the new status
 				$order->set_status( $new_status );
-
-				// Check if we should trigger the email
 				$should_send_email = apply_filters( 'ai_smart_sales_should_send_status_email', true, $order, $old_status, $new_status );
 
 				if ( $should_send_email ) {
-					// Get mailer from WooCommerce
 					$mailer = WC()->mailer();
 
 					/**
+					 * Order mail emails.
+					 * Suppress Intelephense warning for ->get_emails() method
+					 *
 					 * @var array<string, \WC_Email> $emails
 					 * Suppress Intelephense warning for ->trigger() method
 					 */
 					$emails = $mailer->get_emails();
 
-					// Send the email based on the new status
+					// Send the email based on the new status.
 					switch ( $new_status ) {
 						case 'completed':
 							if ( isset( $emails['WC_Email_Customer_Completed_Order'] ) ) {
@@ -983,10 +1035,10 @@ class OrdersApiHandler {
 							}
 							break;
 
-							// Add more status cases as needed
+						// Add more status cases as needed.
 					}
 
-					// Also notify admin about the status change
+					// Also notify admin about the status change.
 					if ( isset( $emails['WC_Email_Admin_Order_Status_Changed'] ) ) {
 						$emails['WC_Email_Admin_Order_Status_Changed']->trigger( $order->get_id(), $old_status, $new_status );
 					}
@@ -994,7 +1046,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Update customer addresses if provided
+		// Update customer addresses if provided.
 		if ( isset( $data['customer']['billing_address'] ) ) {
 			$billing = $data['customer']['billing_address'];
 			$order->set_billing_address_1( $billing['address'] ?? '' );
@@ -1007,7 +1059,7 @@ class OrdersApiHandler {
 			$order->set_billing_email( $billing['email'] ?? '' );
 			$order->set_billing_phone( $billing['phone'] ?? '' );
 
-			// If shipping address is not provided, copy billing address
+			// If shipping address is not provided, copy billing address.
 			if ( ! isset( $data['customer']['shipping_address'] ) ) {
 				$order->set_shipping_address_1( $billing['address'] ?? '' );
 				$order->set_shipping_address_2( $billing['address_2'] ?? '' );
@@ -1030,14 +1082,14 @@ class OrdersApiHandler {
 			$order->set_shipping_company( $shipping['company'] ?? '' );
 		}
 
-		// Update line items if provided
+		// Update line items if provided.
 		if ( ! empty( $data['line_items'] ) ) {
-			// Remove existing line items
+			// Remove existing line items.
 			foreach ( $order->get_items() as $item_id => $item ) {
 				wc_delete_order_item( $item_id );
 			}
 
-			// Add new line items
+			// Add new line items.
 			foreach ( $data['line_items'] as $item ) {
 				$product_id = intval( $item['product_id'] );
 				$quantity   = intval( $item['quantity'] );
@@ -1049,7 +1101,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Update split payments if provided
+		// Update split payments if provided.
 		if ( isset( $data['split_payments'] ) ) {
 			if ( is_array( $data['split_payments'] ) ) {
 				$order->update_meta_data( '_split_payments', wp_json_encode( $data['split_payments'] ) );
@@ -1057,25 +1109,25 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Apply discount total if provided
+		// Apply discount total if provided.
 		if ( isset( $data['discount_total'] ) ) {
 			$discount_total = floatval( $data['discount_total'] );
 
-			// Remove ALL existing discount fees in a single pass
+			// Remove ALL existing discount fees in a single pass.
 			$items_to_remove = array();
 			foreach ( $order->get_items( 'fee' ) as $item_id => $fee ) {
-				// Check for exact 'Discount' name or any name containing 'discount' (case-insensitive)
+				// Check for exact 'Discount' name or any name containing 'discount' (case-insensitive).
 				if ( $fee->get_name() === 'Discount' || stripos( $fee->get_name(), 'discount' ) !== false ) {
 					$items_to_remove[] = $item_id;
 				}
 			}
 
-			// Remove collected items
+			// Remove collected items.
 			foreach ( $items_to_remove as $item_id ) {
 				$order->remove_item( $item_id );
 			}
 
-			// Add new discount fee only if amount is greater than 0
+			// Add new discount fee only if amount is greater than 0.
 			if ( $discount_total > 0 ) {
 				$discount = new WC_Order_Item_Fee();
 				$discount->set_name( 'Discount' );
@@ -1086,24 +1138,24 @@ class OrdersApiHandler {
 			}
 		}
 
-		// Add this block before order->save()
+		// Add this block before order->save().
 		if ( isset( $data['customer_note'] ) ) {
 			$order->set_customer_note( sanitize_textarea_field( $data['customer_note'] ) );
 		}
 
-		// Recalculate totals and save
+		// Recalculate totals and save.
 		$order->calculate_totals();
 		$order->save();
 
-		// Prepare response with potential warning about total mismatch
+		// Prepare response with potential warning about total mismatch.
 		$response_data    = $this->format_order_response( $order );
 		$response_message = 'Order updated successfully.';
 
-		// Check if provided total differs from calculated total and add warning
+		// Check if provided total differs from calculated total and add warning.
 		if ( isset( $data['total'] ) ) {
 			$provided_total   = floatval( $data['total'] );
 			$calculated_total = floatval( $order->get_total() );
-			if ( abs( $provided_total - $calculated_total ) > 0.01 ) { // Allow for minor floating point differences
+			if ( abs( $provided_total - $calculated_total ) > 0.01 ) {
 				$response_data['warning'] = "Note: The provided total ({$provided_total}) was different from the calculated total ({$calculated_total}). WooCommerce automatically calculates totals based on line items, fees, and discounts.";
 			}
 		}
@@ -1117,7 +1169,12 @@ class OrdersApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Delete an order (move to trash)
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function delete_order( $request ) {
 		$order_id = intval( $request->get_param( 'id' ) );
 		$order    = wc_get_order( $order_id );
@@ -1136,7 +1193,7 @@ class OrdersApiHandler {
 			);
 		}
 
-		// Set force parameter to false to move to trash instead of permanent deletion
+		// Set force parameter to false to move to trash instead of permanent deletion.
 		$order->delete( false );
 
 		return new WP_REST_Response(
@@ -1151,11 +1208,15 @@ class OrdersApiHandler {
 
 	/**
 	 * Bulk order operations
+	 * Bulk restore orders from trash
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function bulk_restore_orders( $request ) {
 		$data = $request->get_json_params();
 
-		// Validate order IDs
+		// Validate order IDs.
 		if ( empty( $data['ids'] ) || ! is_array( $data['ids'] ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -1191,13 +1252,13 @@ class OrdersApiHandler {
 				$order->set_status( 'draft' );
 				$order->save();
 
-				$restored_orders[] = $order_id; // Just store the ID instead of full order data
+				$restored_orders[] = $order_id;
 			} catch ( Exception $e ) {
 				$errors[] = "Failed to restore order with ID {$order_id}: " . $e->getMessage();
 			}
 		}
 
-		// If no orders were restored
+		// If no orders were restored.
 		if ( empty( $restored_orders ) ) {
 			return new WP_REST_Response(
 				array(
@@ -1212,24 +1273,30 @@ class OrdersApiHandler {
 			);
 		}
 
-		// All orders restored (with or without errors)
+		// All orders restored (with or without errors).
 		return new WP_REST_Response(
 			array(
 				'success' => true,
 				'message' => sprintf( '%d order(s) restored successfully.', count( $restored_orders ) ),
 				'data'    => array(
 					'restored_orders' => $restored_orders,
-					'errors'          => $errors ?: null,
+					'errors'          => empty( $errors ) ? null : $errors,
 				),
 			),
 			200
 		);
 	}
 
+	/**
+	 * Bulk delete orders (move to trash)
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function bulk_delete_orders( $request ) {
 		$data = $request->get_json_params();
 
-		// Validate order IDs
+		// Validate order IDs.
 		if ( empty( $data['ids'] ) || ! is_array( $data['ids'] ) ) {
 			return new WP_REST_Response(
 				$this->format_error_response(
@@ -1257,7 +1324,7 @@ class OrdersApiHandler {
 			}
 
 			try {
-				$deleted = $order->delete( false ); // Always move to trash
+				$deleted = $order->delete( false );
 
 				if ( $deleted ) {
 					$deleted_orders[] = $order_id;
@@ -1269,7 +1336,7 @@ class OrdersApiHandler {
 			}
 		}
 
-		// If no orders were moved to trash
+		// If no orders were moved to trash.
 		if ( empty( $deleted_orders ) ) {
 			return new WP_REST_Response(
 				array(
@@ -1284,7 +1351,7 @@ class OrdersApiHandler {
 			);
 		}
 
-		// If some orders were moved to trash but others failed
+		// If some orders were moved to trash but others failed.
 		if ( ! empty( $errors ) ) {
 			return new WP_REST_Response(
 				array(
@@ -1299,7 +1366,7 @@ class OrdersApiHandler {
 			);
 		}
 
-		// All orders moved to trash successfully
+		// All orders moved to trash successfully.
 		return new WP_REST_Response(
 			array(
 				'success' => true,

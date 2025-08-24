@@ -1,6 +1,13 @@
 <?php
+/**
+ * Crafely SmartSales Lite Dashboard API Handler
+ *
+ * This class handles the REST API requests for the dashboard functionalities.
+ *
+ * @package CrafelySmartSalesLite
+ */
 
-namespace AISMARTSALES\Includes\Api\Dashboard;
+namespace CSMSL\Includes\Api\Dashboard;
 
 use WP_REST_Response;
 use WP_Error;
@@ -9,12 +16,24 @@ use Exception;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+/**
+ * Class DashboardApiHandler
+ *
+ * Handles REST API requests for the dashboard.
+ */
 class DashboardApiHandler {
 
+	/**
+	 * Constructor.
+	 * Registers REST API routes.
+	 */
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
-
+	/**
+	 * Registers REST API routes for the dashboard.
+	 */
 	public function register_routes() {
 		$routes = array(
 			'/dashboard/summary'           => array(
@@ -58,18 +77,15 @@ class DashboardApiHandler {
 
 	/**
 	 * Check if the request has valid permission
+	 *
+	 * @param WP_REST_Request $request The REST request object.
 	 */
 	public function check_permission( $request ) {
-		// Check if user is logged in and has appropriate capabilities
 		if ( ! is_user_logged_in() ) {
 			return false;
 		}
-
-		// Get current user
-		$user = wp_get_current_user();
-
-		// Check if user has any of our POS roles or is an administrator
-		$allowed_roles = array( 'administrator', 'aipos_outlet_manager', 'aipos_cashier', 'aipos_shop_manager' );
+		$user          = wp_get_current_user();
+		$allowed_roles = array( 'administrator', 'csmsl_pos_outlet_manager', 'csmsl_pos_cashier', 'csmsl_pos_shop_manager' );
 		$user_roles    = (array) $user->roles;
 
 		if ( ! array_intersect( $allowed_roles, $user_roles ) ) {
@@ -78,15 +94,30 @@ class DashboardApiHandler {
 
 		return true;
 	}
-
+	/**
+	 * Format success response
+	 *
+	 * @param string $message Success message.
+	 * @param array  $data    Additional data.
+	 * @param int    $statusCode HTTP status code.
+	 * @return array
+	 */
 	private function format_success_response( $message, $data = array(), $statusCode = 200 ) {
 		return array(
 			'success' => true,
 			'message' => $message,
 			'data'    => $data,
+			'status'  => $statusCode,
 		);
 	}
-
+	/**
+	 * Format error response
+	 *
+	 * @param string $message Error message.
+	 * @param string $code Error code.
+	 * @param int    $status HTTP status code.
+	 * @return WP_Error
+	 */
 	private function format_error_response( $message, $code = 'error', $status = 400 ) {
 		return new WP_Error(
 			$code,
@@ -98,29 +129,35 @@ class DashboardApiHandler {
 	/**
 	 * Check if an order is a refund
 	 *
-	 * @param object $order WC_Order object
+	 * @param object $order WC_Order object.
 	 * @return bool
 	 */
 	private function is_refund( $order ) {
 		return is_a( $order, 'Automattic\WooCommerce\Admin\Overrides\OrderRefund' ) ||
-			is_a( $order, 'WC_Order_Refund' );
+		is_a( $order, 'WC_Order_Refund' );
 	}
 
+	/**
+	 * Get date range from request parameters
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters.
+	 * @return array|WP_Error
+	 */
 	private function get_date_range( $request ) {
 		try {
-			$range        = $request->get_param( 'range' ) ?: 'last_30_days';
+			$range        = $request->get_param( 'range' ) ? $request->get_param( 'range' ) : 'last_30_days';
 			$custom_start = $request->get_param( 'start_date' );
 			$custom_end   = $request->get_param( 'end_date' );
 
-			// Validate custom date range
-			if ( $range === 'custom' && ( ! $custom_start || ! $custom_end ) ) {
+			// Validate custom date range.
+			if ( 'custom' === $range && ( ! $custom_start || ! $custom_end ) ) {
 				return $this->format_error_response(
 					__( 'Start date and end date are required for custom range.', 'crafely-smartsales-lite' ),
 					'invalid_date_range'
 				);
 			}
-
-			$end_date   = date_i18n( 'd-m-Y', current_time( 'timestamp' ) );
+			$current_ts = time();
+			$end_date   = gmdate( 'd-m-Y', $current_ts );
 			$start_date = '';
 
 			switch ( $range ) {
@@ -128,41 +165,41 @@ class DashboardApiHandler {
 					$start_date = $end_date;
 					break;
 				case 'yesterday':
-					$start_date = date_i18n( 'd-m-Y', strtotime( '-1 day', current_time( 'timestamp' ) ) );
+					$start_date = gmdate( 'd-m-Y', strtotime( '-1 day', $current_ts ) );
 					$end_date   = $start_date;
 					break;
 				case 'this_week':
-					$start_date = date_i18n( 'd-m-Y', strtotime( 'monday this week', current_time( 'timestamp' ) ) );
+					$start_date = gmdate( 'd-m-Y', strtotime( 'monday this week', $current_ts ) );
 					break;
 				case 'last_week':
-					$start_date = date_i18n( 'd-m-Y', strtotime( 'monday last week', current_time( 'timestamp' ) ) );
-					$end_date   = date_i18n( 'd-m-Y', strtotime( 'sunday last week', current_time( 'timestamp' ) ) );
+					$start_date = gmdate( 'd-m-Y', strtotime( 'monday last week', $current_ts ) );
+					$end_date   = gmdate( 'd-m-Y', strtotime( 'sunday last week', $current_ts ) );
 					break;
 				case 'this_month':
-					$start_date = date_i18n( 'd-m-Y', strtotime( date_i18n( 'Y-m-01', current_time( 'timestamp' ) ) ) );
-
+					$start_date = gmdate( 'd-m-Y', strtotime( 'first day of this month', $current_ts ) );
 					break;
 				case 'last_month':
-					$start_date = date_i18n( 'd-m-Y', strtotime( 'first day of last month', current_time( 'timestamp' ) ) );
-					$end_date   = date_i18n( 'd-m-Y', strtotime( 'last day of last month', current_time( 'timestamp' ) ) );
-
+					$start_date = gmdate( 'd-m-Y', strtotime( 'first day of last month', $current_ts ) );
+					$end_date   = gmdate( 'd-m-Y', strtotime( 'last day of last month', $current_ts ) );
 					break;
+
 				case 'this_year':
-					$start_date = date_i18n( 'd-m-Y', strtotime( 'first day of january this year', current_time( 'timestamp' ) ) );
+					$start_date = gmdate( 'd-m-Y', strtotime( 'first day of january this year', $current_ts ) );
 					break;
-				case 'last_year':
-					$start_date = date_i18n( 'd-m-Y', strtotime( 'first day of january last year', current_time( 'timestamp' ) ) );
-					$end_date   = date_i18n( 'd-m-Y', strtotime( 'last day of december last year', current_time( 'timestamp' ) ) );
 
+				case 'last_year':
+					$start_date = gmdate( 'd-m-Y', strtotime( 'first day of january last year', $current_ts ) );
+					$end_date   = gmdate( 'd-m-Y', strtotime( 'last day of december last year', $current_ts ) );
 					break;
+
 				case 'custom':
 					if ( $custom_start && $custom_end ) {
-						$start_date = date_i18n( 'd-m-Y', strtotime( $custom_start ) );
-						$end_date   = date_i18n( 'd-m-Y', strtotime( $custom_end ) );
+						$start_date = gmdate( 'd-m-Y', strtotime( $custom_start ) );
+						$end_date   = gmdate( 'd-m-Y', strtotime( $custom_end ) );
 					}
 					break;
-				default: // last_30_days
-					$start_date = date_i18n( 'd-m-Y', strtotime( '-30 days', current_time( 'timestamp' ) ) );
+				default:
+					$start_date = gmdate( 'd-m-Y', strtotime( '-30 days', $current_ts ) );
 			}
 
 			return array(
@@ -176,7 +213,15 @@ class DashboardApiHandler {
 			);
 		}
 	}
-
+	/**
+	 * Get orders by outlet ID.
+	 * This method filters orders based on the specified outlet ID.
+	 * It returns all orders if no outlet ID is specified.
+	 *
+	 * @param array $orders Array of WC_Order objects.
+	 * @param int   $outlet_id Outlet ID to filter orders by.
+	 * @return array Filtered orders.
+	 */
 	private function get_orders_by_outlet( $orders, $outlet_id ) {
 		if ( ! $outlet_id ) {
 			return $orders;
@@ -186,28 +231,32 @@ class DashboardApiHandler {
 			$orders,
 			function ( $order ) use ( $outlet_id ) {
 				if ( $this->is_refund( $order ) ) {
-					return false; // Skip refunds
+					return false;
 				}
 				$order_outlet_id = $order->get_meta( '_created_by_outlet_id' );
-				return $order_outlet_id == $outlet_id;
+				return $order_outlet_id === $outlet_id;
 			}
 		);
 	}
-
+	/**
+	 * Get dashboard summary.
+	 * This method retrieves a summary of sales, inventory, customers, and outlets for the dashboard.
+	 * It includes sales metrics, product stats, and customer counts.
+	 *
+	 * @param WP_REST_Request $request The REST request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_dashboard_summary( $request ) {
 		try {
 			$date_range = $this->get_date_range( $request );
 			if ( is_wp_error( $date_range ) ) {
 				return $date_range;
 			}
-
-			// Get outlet filter
 			$outlet_id = $request->get_param( 'outlet_id' );
-
-			// Validate outlet if specified
 			if ( $outlet_id ) {
 				$outlet = get_post( $outlet_id );
-				if ( ! $outlet || $outlet->post_type !== 'outlet' ) {
+				if ( ! $outlet || 'outlet' !== $outlet->post_type ) {
 					return $this->format_error_response(
 						__( 'Invalid outlet ID specified.', 'crafely-smartsales-lite' ),
 						'invalid_outlet',
@@ -216,22 +265,22 @@ class DashboardApiHandler {
 				}
 			}
 
-			// Get orders within date range
+			// Get orders within date range.
 			$orders = wc_get_orders(
 				array(
 					'date_created' => $date_range['start'] . '...' . $date_range['end'],
 					'status'       => array( 'completed', 'processing' ),
 					'limit'        => -1,
-					'type'         => 'shop_order', // Ensure we only get orders, not refunds
+					'type'         => 'shop_order',
 				)
 			);
 
-			// Filter orders by outlet if specified
+			// Filter orders by outlet if specified.
 			if ( $outlet_id ) {
 				$orders = $this->get_orders_by_outlet( $orders, $outlet_id );
 			}
 
-			// Calculate basic metrics
+			// Calculate basic metrics.
 			$total_sales     = 0;
 			$total_orders    = count( $orders );
 			$total_items     = 0;
@@ -239,7 +288,7 @@ class DashboardApiHandler {
 			$payment_methods = array();
 
 			foreach ( $orders as $order ) {
-				// Skip refunds
+				// Skip refunds.
 				if ( $this->is_refund( $order ) ) {
 					continue;
 				}
@@ -247,9 +296,9 @@ class DashboardApiHandler {
 				$total_sales += $order->get_total();
 				$total_items += $order->get_item_count();
 
-				// Track sales by channel - with proper error handling
-				if ( taxonomy_exists( 'crafsmli_channel' ) ) {
-					$channels = wp_get_post_terms( $order->get_id(), 'crafsmli_channel' );
+				// Track sales by channel - with proper error handling.
+				if ( taxonomy_exists( 'csmsl_channel' ) ) {
+					$channels = wp_get_post_terms( $order->get_id(), 'csmsl_channel' );
 					if ( ! is_wp_error( $channels ) && ! empty( $channels ) ) {
 						foreach ( $channels as $channel ) {
 							if ( ! isset( $channels_data[ $channel->name ] ) ) {
@@ -258,7 +307,7 @@ class DashboardApiHandler {
 							$channels_data[ $channel->name ] += $order->get_total();
 						}
 					} else {
-						// If no channel is assigned, track as "Uncategorized"
+						// If no channel is assigned, track as "Uncategorized".
 						if ( ! isset( $channels_data['Uncategorized'] ) ) {
 							$channels_data['Uncategorized'] = 0;
 						}
@@ -266,15 +315,15 @@ class DashboardApiHandler {
 					}
 				}
 
-				// Track payment methods
-				$method = $order->get_payment_method_title() ?: __( 'Unknown', 'crafely-smartsales-lite' );
+				// Track payment methods.
+				$method = $order->get_payment_method_title() ? $order->get_payment_method_title() : __( 'Unknown', 'crafely-smartsales-lite' );
 				if ( ! isset( $payment_methods[ $method ] ) ) {
 					$payment_methods[ $method ] = 0;
 				}
 				++$payment_methods[ $method ];
 			}
 
-			// For product stats, filter by outlet if specified
+			// For product stats, filter by outlet if specified.
 			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			$products_query = array(
 				'limit'  => -1,
@@ -304,13 +353,13 @@ class DashboardApiHandler {
 					} elseif ( $stock <= $low_stock_threshold ) {
 						++$low_stock_count;
 					}
-					// Convert price to float before multiplication
+					// Convert price to float before multiplication.
 					$regular_price          = (float) $product->get_regular_price();
 					$total_inventory_value += $stock * $regular_price;
 				}
 			}
 
-			// Get customer stats (registered + guest)
+			// Get customer stats (registered + guest).
 			$customer_ids    = array();
 			$guest_customers = array();
 			$order_query     = array(
@@ -324,7 +373,7 @@ class DashboardApiHandler {
 					if ( $order ) {
 						$customer_id = $order->get_customer_id();
 						if ( $customer_id ) {
-							if ( ! in_array( $customer_id, $customer_ids ) ) {
+							if ( ! in_array( $customer_id, $customer_ids, true ) ) {
 								$customer_ids[] = $customer_id;
 							}
 						} else {
@@ -339,7 +388,7 @@ class DashboardApiHandler {
 					}
 				}
 			}
-			// Also include users with 'customer' role
+			// Also include users with 'customer' role.
 			$role_customers = get_users(
 				array(
 					'role'   => 'customer',
@@ -347,13 +396,13 @@ class DashboardApiHandler {
 				)
 			);
 			foreach ( $role_customers as $id ) {
-				if ( ! in_array( $id, $customer_ids ) ) {
+				if ( ! in_array( $id, $customer_ids, true ) ) {
 					$customer_ids[] = $id;
 				}
 			}
 			$total_customers = count( $customer_ids ) + count( $guest_customers );
 
-			// Get outlet stats
+			// Get outlet stats.
 			$outlets       = get_posts(
 				array(
 					'post_type'      => 'outlet',
@@ -362,7 +411,7 @@ class DashboardApiHandler {
 			);
 			$total_outlets = count( $outlets );
 
-			// Calculate average order value
+			// Calculate average order value.
 			$average_order_value = $total_orders > 0 ? $total_sales / $total_orders : 0;
 
 			return new WP_REST_Response(
@@ -402,22 +451,27 @@ class DashboardApiHandler {
 			);
 		}
 	}
-
+	/**
+	 * Get sales analytics for the dashboard.
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_sales_analytics( $request ) {
 		$date_range = $this->get_date_range( $request );
 		$outlet_id  = $request->get_param( 'outlet_id' );
 
-		// Get orders within date range
+		// Get orders within date range.
 		$orders = wc_get_orders(
 			array(
 				'date_created' => $date_range['start'] . '...' . $date_range['end'],
 				'status'       => array( 'completed', 'processing' ),
 				'limit'        => -1,
-				'type'         => 'shop_order', // Only get orders, not refunds
+				'type'         => 'shop_order',
 			)
 		);
 
-		// Filter orders by outlet if specified
+		// Filter orders by outlet if specified.
 		if ( $outlet_id ) {
 			$orders = $this->get_orders_by_outlet( $orders, $outlet_id );
 		}
@@ -429,42 +483,42 @@ class DashboardApiHandler {
 		$best_selling_products = array();
 
 		foreach ( $orders as $order ) {
-			// Skip refunds
+			// Skip refunds.
 			if ( $this->is_refund( $order ) ) {
 				continue;
 			}
 
 			$date  = $order->get_date_created()->format( 'd-m-Y' );
-			$hour  = $order->get_date_created()->format( 'G' ); // 24-hour format without leading zeros
+			$hour  = $order->get_date_created()->format( 'G' );
 			$total = $order->get_total();
 
-			// Sales by date
+			// Sales by date.
 			if ( ! isset( $sales_by_date[ $date ] ) ) {
 				$sales_by_date[ $date ] = 0;
 			}
 			$sales_by_date[ $date ] += $total;
 
-			// Sales by hour
+			// Sales by hour.
 			$sales_by_hour[ $hour ] += $total;
 
-			// Sales by outlet
+			// Sales by outlet.
 			$outlet_id = $order->get_meta( '_created_by_outlet_id' );
 			if ( $outlet_id ) {
-				$outlet_name = get_the_title( $outlet_id ) ?: 'Unknown Outlet';
+				$outlet_name = get_the_title( $outlet_id ) ? get_the_title( $outlet_id ) : 'Unknown Outlet';
 				if ( ! isset( $sales_by_outlet[ $outlet_name ] ) ) {
 					$sales_by_outlet[ $outlet_name ] = 0;
 				}
 				$sales_by_outlet[ $outlet_name ] += $total;
 			}
 
-			// Sales by payment method
+			// Sales by payment method.
 			$payment_method = $order->get_payment_method_title();
 			if ( ! isset( $sales_by_payment[ $payment_method ] ) ) {
 				$sales_by_payment[ $payment_method ] = 0;
 			}
 			$sales_by_payment[ $payment_method ] += $total;
 
-			// Track product sales
+			// Track product sales.
 			foreach ( $order->get_items() as $item ) {
 				$product_id = $item->get_product_id();
 				if ( ! isset( $best_selling_products[ $product_id ] ) ) {
@@ -480,7 +534,7 @@ class DashboardApiHandler {
 			}
 		}
 
-		// Sort best selling products by quantity
+		// Sort best selling products by quantity.
 		uasort(
 			$best_selling_products,
 			function ( $a, $b ) {
@@ -488,7 +542,7 @@ class DashboardApiHandler {
 			}
 		);
 
-		// Take top 10 products
+		// Take top 10 products.
 		$best_selling_products = array_slice( $best_selling_products, 0, 10 );
 
 		return new WP_REST_Response(
@@ -506,26 +560,31 @@ class DashboardApiHandler {
 			200
 		);
 	}
-
+	/**
+	 * Get customer analytics for the dashboard.
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_customer_analytics( $request ) {
 		$date_range = $this->get_date_range( $request );
 		$outlet_id  = $request->get_param( 'outlet_id' );
 
-		// Get all customers
+		// Get all customers.
 		$customers       = get_users( array( 'role' => 'customer' ) );
 		$total_customers = count( $customers );
 
-		// Get orders within date range
+		// Get orders within date range.
 		$orders = wc_get_orders(
 			array(
 				'date_created' => $date_range['start'] . '...' . $date_range['end'],
 				'status'       => array( 'completed', 'processing' ),
 				'limit'        => -1,
-				'type'         => 'shop_order', // Only get orders, not refunds
+				'type'         => 'shop_order',
 			)
 		);
 
-		// Filter orders by outlet if specified
+		// Filter orders by outlet if specified.
 		if ( $outlet_id ) {
 			$orders = $this->get_orders_by_outlet( $orders, $outlet_id );
 		}
@@ -536,7 +595,7 @@ class DashboardApiHandler {
 		$order_frequency = array();
 
 		foreach ( $orders as $order ) {
-			// Skip refunds
+			// Skip refunds.
 			if ( $this->is_refund( $order ) ) {
 				continue;
 			}
@@ -555,20 +614,20 @@ class DashboardApiHandler {
 			++$customer_stats[ $customer_id ]['orders'];
 			$customer_stats[ $customer_id ]['total_spent'] += $total;
 
-			// Track order frequency
+			// Track order frequency.
 			if ( ! isset( $order_frequency[ $customer_id ] ) ) {
 				$order_frequency[ $customer_id ] = array();
 			}
 			$order_frequency[ $customer_id ][] = $order->get_date_created()->getTimestamp();
 		}
 
-		// Calculate average order value and frequency
+		// Calculate average order value and frequency.
 		$average_order_value = count( $orders ) > 0 ? $total_spent / count( $orders ) : 0;
 
-		// Calculate customer segments based on RFM
+		// Calculate customer segments based on RFM.
 		$segments = $this->calculate_customer_segments( $customer_stats, $order_frequency );
 
-		// Get top customers
+		// Get top customers.
 		uasort(
 			$customer_stats,
 			function ( $a, $b ) {
@@ -612,6 +671,14 @@ class DashboardApiHandler {
 		);
 	}
 
+	/**
+	 * Calculate customer segments based on RFM (Recency, Frequency, Monetary).
+	 * This is a simplified version for demonstration purposes.
+	 *
+	 * @param array $customer_stats Array of customer stats with 'orders' and 'total_spent'.
+	 * @param array $order_frequency Array of order timestamps indexed by customer ID.
+	 * @return array Segmented customer counts.
+	 */
 	private function calculate_customer_segments( $customer_stats, $order_frequency ) {
 		$segments = array(
 			'vip'       => 0,
@@ -622,17 +689,17 @@ class DashboardApiHandler {
 		);
 
 		foreach ( $customer_stats as $customer_id => $stats ) {
-			// Calculate recency
+			// Calculate recency.
 			$last_order   = max( $order_frequency[ $customer_id ] );
 			$recency_days = ( time() - $last_order ) / ( 60 * 60 * 24 );
 
-			// Calculate frequency
+			// Calculate frequency.
 			$frequency = $stats['orders'];
 
-			// Calculate monetary value
+			// Calculate monetary value.
 			$monetary = $stats['total_spent'];
 
-			// Simple segmentation logic
+			// Simple segmentation logic.
 			if ( $frequency > 10 && $monetary > 1000 && $recency_days < 30 ) {
 				++$segments['vip'];
 			} elseif ( $frequency > 5 && $monetary > 500 && $recency_days < 60 ) {
@@ -649,17 +716,23 @@ class DashboardApiHandler {
 		return $segments;
 	}
 
+	/**
+	 * Get product analytics for the dashboard.
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_product_analytics( $request ) {
 		$date_range = $this->get_date_range( $request );
 		$outlet_id  = $request->get_param( 'outlet_id' );
 
-		// Get products query
+		// Get products query.
 		$products_query = array(
 			'limit'  => -1,
 			'status' => 'publish',
 		);
 
-		// Add outlet filter if specified
+		// Add outlet filter if specified.
 		if ( $outlet_id ) {
 			$products_query['meta_query'] = array(
 				array(
@@ -692,7 +765,7 @@ class DashboardApiHandler {
 		);
 
 		foreach ( $products as $product ) {
-			// Inventory stats
+			// Inventory stats.
 			if ( $product->managing_stock() ) {
 				$stock         = (int) $product->get_stock_quantity();
 				$regular_price = (float) $product->get_regular_price();
@@ -705,13 +778,13 @@ class DashboardApiHandler {
 					++$inventory_stats['in_stock'];
 				}
 
-				// Only add to total value if both stock and price are valid numbers
+				// Only add to total value if both stock and price are valid numbers.
 				if ( $regular_price > 0 ) {
 					$inventory_stats['total_value'] += $stock * $regular_price;
 				}
 			}
 
-			// Category stats
+			// Category stats.
 			$categories = get_the_terms( $product->get_id(), 'product_cat' );
 			if ( $categories ) {
 				foreach ( $categories as $category ) {
@@ -722,7 +795,7 @@ class DashboardApiHandler {
 				}
 			}
 
-			// Price range stats
+			// Price range stats.
 			$price = $product->get_regular_price();
 			if ( $price <= 10 ) {
 				++$price_ranges['0-10'];
@@ -737,7 +810,7 @@ class DashboardApiHandler {
 			}
 		}
 
-		// Get orders
+		// Get orders.
 		$orders = wc_get_orders(
 			array(
 				'date_created' => $date_range['start'] . '...' . $date_range['end'],
@@ -746,7 +819,7 @@ class DashboardApiHandler {
 			)
 		);
 
-		// Filter orders by outlet if specified
+		// Filter orders by outlet if specified.
 		if ( $outlet_id ) {
 			$orders = $this->get_orders_by_outlet( $orders, $outlet_id );
 		}
@@ -768,7 +841,7 @@ class DashboardApiHandler {
 			}
 		}
 
-		// Sort products by revenue
+		// Sort products by revenue.
 		uasort(
 			$sales_by_product,
 			function ( $a, $b ) {
@@ -776,7 +849,7 @@ class DashboardApiHandler {
 			}
 		);
 
-		// Get top 10 products
+		// Get top 10 products.
 		$top_products = array_slice( $sales_by_product, 0, 10 );
 
 		return new WP_REST_Response(
@@ -794,10 +867,16 @@ class DashboardApiHandler {
 		);
 	}
 
+	/**
+	 * Get outlet analytics for the dashboard.
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters.
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_outlet_analytics( $request ) {
 		$date_range = $this->get_date_range( $request );
 
-		// Get all outlets
+		// Get all outlets.
 		$outlets = get_posts(
 			array(
 				'post_type'      => 'outlet',
@@ -817,7 +896,7 @@ class DashboardApiHandler {
 				'staff'               => 0,
 			);
 
-			// Get counters for this outlet
+			// Get counters for this outlet.
 			$counters                                = get_posts(
 				array(
 					'post_type'      => 'counter',
@@ -832,7 +911,7 @@ class DashboardApiHandler {
 			);
 			$outlet_stats[ $outlet->ID ]['counters'] = count( $counters );
 
-			// Get staff count
+			// Get staff count.
 			// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			$staff = get_users(
 				array(
@@ -844,7 +923,7 @@ class DashboardApiHandler {
 			$outlet_stats[ $outlet->ID ]['staff'] = count( $staff );
 		}
 
-		// Get orders within date range
+		// Get orders within date range.
 		$orders = wc_get_orders(
 			array(
 				'date_created' => $date_range['start'] . '...' . $date_range['end'],
@@ -861,14 +940,14 @@ class DashboardApiHandler {
 			}
 		}
 
-		// Calculate average order value for each outlet
+		// Calculate average order value for each outlet.
 		foreach ( $outlet_stats as &$stats ) {
 			$stats['average_order_value'] = $stats['total_orders'] > 0
-				? $stats['total_sales'] / $stats['total_orders']
-				: 0;
+			? $stats['total_sales'] / $stats['total_orders']
+			: 0;
 		}
 
-		// Sort outlets by total sales
+		// Sort outlets by total sales.
 		uasort(
 			$outlet_stats,
 			function ( $a, $b ) {
@@ -889,16 +968,25 @@ class DashboardApiHandler {
 		);
 	}
 
+	/**
+	 * Get recent activities for the dashboard.
+	 *
+	 * @param WP_REST_Request $request Request object containing parameters:
+	 *                                - limit (int)     Number of items to retrieve. Default 20.
+	 *                                - outlet_id (int) Optional outlet ID for filtering.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
 	public function get_recent_activities( $request ) {
-		$limit     = $request->get_param( 'limit' ) ?: 20;
+		$limit     = $request->get_param( 'limit' ) ? $request->get_param( 'limit' ) : 20;
 		$outlet_id = $request->get_param( 'outlet_id' );
 
-		// Get recent orders with outlet filter if specified
+		// Get recent orders with outlet filter if specified.
 		$orders_args = array(
 			'limit'   => $limit,
 			'orderby' => 'date',
 			'order'   => 'DESC',
-			'type'    => 'shop_order', // Only get orders, not refunds
+			'type'    => 'shop_order',
 		);
 
 		$recent_orders = wc_get_orders( $orders_args );
@@ -907,7 +995,7 @@ class DashboardApiHandler {
 			$recent_orders = $this->get_orders_by_outlet( $recent_orders, $outlet_id );
 		}
 
-		// Get recent products with outlet filter if specified
+		// Get recent products with outlet filter if specified.
 		$products_args = array(
 			'post_type'      => 'product',
 			'posts_per_page' => $limit,
@@ -926,7 +1014,7 @@ class DashboardApiHandler {
 
 		$recent_products = get_posts( $products_args );
 
-		// Get recent customers
+		// Get recent customers.
 		$recent_customers = get_users(
 			array(
 				'role'    => 'customer',
@@ -938,9 +1026,9 @@ class DashboardApiHandler {
 
 		$activities = array();
 
-		// Format orders
+		// Format orders.
 		foreach ( $recent_orders as $order ) {
-			// Skip refunds
+			// Skip refunds.
 			if ( $this->is_refund( $order ) ) {
 				continue;
 			}
@@ -956,7 +1044,7 @@ class DashboardApiHandler {
 			);
 		}
 
-		// Format products
+		// Format products.
 		foreach ( $recent_products as $product ) {
 			$activities[] = array(
 				'type'      => 'product',
@@ -969,7 +1057,7 @@ class DashboardApiHandler {
 			);
 		}
 
-		// Format customers
+		// Format customers.
 		foreach ( $recent_customers as $customer ) {
 			$activities[] = array(
 				'type'      => 'customer',
@@ -982,7 +1070,7 @@ class DashboardApiHandler {
 			);
 		}
 
-		// Sort activities by timestamp
+		// Sort activities by timestamp.
 		usort(
 			$activities,
 			function ( $a, $b ) {
@@ -990,7 +1078,7 @@ class DashboardApiHandler {
 			}
 		);
 
-		// Limit to requested number
+		// Limit to requested number.
 		$activities = array_slice( $activities, 0, $limit );
 
 		return new WP_REST_Response(

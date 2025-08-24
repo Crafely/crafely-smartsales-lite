@@ -1,125 +1,182 @@
 <?php
+/**
+ * Crafely SmartSales Lite
+ *
+ * @package CrafelySmartSalesLite
+ */
 
-namespace AISMARTSALES\Includes\Core;
+namespace CSMSL\Includes\Core;
 
-use AISMARTSALES\Includes\Api\Roles\RolesManager;
+use CSMSL\Includes\Api\Roles\RolesManager;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
-class Activation
-{
-    public static function activate()
-    {
-        $roles_manager = new RolesManager();
-        $roles_manager->register_custom_roles();
-        self::create_tables();
-        self::set_default_options();
-        self::backup_user_roles();
-        flush_rewrite_rules();
-    }
 
-    public static function deactivate()
-    {
-        if (defined('SMARTSALES_DEV_MODE') && SMARTSALES_DEV_MODE) {
-            self::cleanup_roles();
-        }
-        self::cleanup_tables();
-        self::cleanup_options();
-        self::restore_user_roles();
-        $roles_manager = new RolesManager();
-        $roles_manager->remove_custom_roles();
-        flush_rewrite_rules();
-    }
+/**
+ * Class Activation
+ *
+ * Handles plugin activation and deactivation tasks, including:
+ * - Registering and removing custom roles
+ * - Creating and cleaning up database tables
+ * - Setting and deleting default plugin options
+ * - Backing up and restoring user roles
+ * - Flushing rewrite rules
+ *
+ * @package CSMSL\Includes\Core
+ */
+class Activation {
 
-    private static function create_tables()
-    {
-        global $wpdb;
-        // Add table creation logic here
-    }
+	/**
+	 * Run on plugin activation.
+	 *
+	 * Registers custom roles, creates necessary tables, sets default options,
+	 * backs up user roles, and flushes rewrite rules.
+	 *
+	 * @return void
+	 */
+	public static function activate() {
+		$roles_manager = new RolesManager();
+		$roles_manager->register_custom_roles();
+		self::create_tables();
+		self::set_default_options();
+		self::backup_user_roles();
+		flush_rewrite_rules();
+	}
 
-    private static function set_default_options()
-    {
-        add_option('SMARTSALES_VERSION', SMARTSALES_VERSION);
-    }
+	/**
+	 * Run on plugin deactivation.
+	 *
+	 * Cleans up roles, tables, options, restores user roles, removes custom roles,
+	 * and flushes rewrite rules. Roles cleanup runs only in development mode.
+	 *
+	 * @return void
+	 */
+	public static function deactivate() {
+		if ( defined( 'CSMSL_DEV_MODE' ) && CSMSL_DEV_MODE ) {
+			self::cleanup_roles();
+		}
+		self::cleanup_tables();
+		self::cleanup_options();
+		self::restore_user_roles();
+		$roles_manager = new RolesManager();
+		$roles_manager->remove_custom_roles();
+		flush_rewrite_rules();
+	}
 
-    private static function cleanup_tables()
-    {
-        global $wpdb;
-        // Add table cleanup logic here
-    }
+	/**
+	 * Create custom plugin tables.
+	 *
+	 * @return void
+	 */
+	private static function create_tables() {
+		global $wpdb;
+		// Add table creation logic here.
+	}
 
-    private static function cleanup_options()
-    {
-        delete_option('SMARTSALES_VERSION');
-    }
+	/**
+	 * Set default plugin options.
+	 *
+	 * @return void
+	 */
+	private static function set_default_options() {
+		add_option( 'CSMSL_VERSION', CSMSL_VERSION );
+	}
 
-    private static function cleanup_roles()
-    {
-        $roles_manager = new RolesManager();
-        $roles_manager->remove_custom_roles();
-    }
+	/**
+	 * Cleanup custom plugin tables.
+	 *
+	 * @return void
+	 */
+	private static function cleanup_tables() {
+		global $wpdb;
+		// Add table cleanup logic here.
+	}
 
-    private static function backup_user_roles()
-    {
-        $users = get_users();
-        $backup = array();
+	/**
+	 * Delete plugin options.
+	 *
+	 * @return void
+	 */
+	private static function cleanup_options() {
+		delete_option( 'CSMSL_VERSION' );
+	}
 
-        foreach ($users as $user) {
-            if (!empty($user->roles)) {
-                // Store the user's current roles
-                $backup[$user->ID] = array(
-                    'roles' => $user->roles,
-                    'capabilities' => get_user_meta($user->ID, 'wp_capabilities', true)
-                );
-            }
-        }
+	/**
+	 * Remove custom roles.
+	 *
+	 * @return void
+	 */
+	private static function cleanup_roles() {
+		$roles_manager = new RolesManager();
+		$roles_manager->remove_custom_roles();
+	}
 
-        update_option('aismartsales_user_roles_backup', $backup);
-    }
+	/**
+	 * Backup all users' roles and capabilities.
+	 *
+	 * Stores a backup in the 'csmsl_user_roles_backup' option.
+	 *
+	 * @return void
+	 */
+	private static function backup_user_roles() {
+		$users  = get_users();
+		$backup = array();
 
-    private static function restore_user_roles()
-    {
-        $backup = get_option('aismartsales_user_roles_backup', array());
+		foreach ( $users as $user ) {
+			if ( ! empty( $user->roles ) ) {
+				$backup[ $user->ID ] = array(
+					'roles'        => $user->roles,
+					'capabilities' => get_user_meta( $user->ID, 'wp_capabilities', true ),
+				);
+			}
+		}
 
-        foreach ($backup as $user_id => $data) {
-            $user = get_user_by('id', $user_id);
-            if ($user) {
-                // Remove all roles first
-                $user->set_role('');
+		update_option( 'csmsl_user_roles_backup', $backup );
+	}
 
-                // Check if user had administrator role
-                if (in_array('administrator', $data['roles'])) {
-                    $user->set_role('administrator');
-                }
-                // If not admin but has other default WordPress roles
-                else if (array_intersect($data['roles'], array('editor', 'author', 'contributor', 'subscriber'))) {
-                    foreach ($data['roles'] as $role) {
-                        if (in_array($role, array('editor', 'author', 'contributor', 'subscriber'))) {
-                            $user->set_role($role);
-                            break;
-                        }
-                    }
-                }
-                // Default to subscriber if no valid role found
-                else {
-                    $user->set_role('subscriber');
-                }
-            }
-        }
+	/**
+	 * Restore all users' roles from backup.
+	 *
+	 * Deletes the 'csmsl_user_roles_backup' option after restoration.
+	 *
+	 * @return void
+	 */
+	private static function restore_user_roles() {
+		$backup = get_option( 'csmsl_user_roles_backup', array() );
 
-        delete_option('aismartsales_user_roles_backup');
-    }
+		foreach ( $backup as $user_id => $data ) {
+			$user = get_user_by( 'id', $user_id );
+			if ( $user ) {
+				$user->set_role( '' );
 
-    /**
-     * Manually flush rewrite rules - can be called from anywhere
-     */
-    public static function force_flush_rewrite_rules()
-    {
-        update_option('aipos_flush_rewrite_rules', true);
-        // Try to flush immediately
-        flush_rewrite_rules();
-        // Set flag to ensure it gets flushed on next page load
-        update_option('aipos_permalinks_flushed', '');
-    }
+				if ( in_array( 'administrator', $data['roles'], true ) ) {
+					$user->set_role( 'administrator' );
+				} elseif ( array_intersect( $data['roles'], array( 'editor', 'author', 'contributor', 'subscriber' ) ) ) {
+					foreach ( $data['roles'] as $role ) {
+						if ( in_array( $role, array( 'editor', 'author', 'contributor', 'subscriber' ), true ) ) {
+							$user->set_role( $role );
+							break;
+						}
+					}
+				} else {
+					$user->set_role( 'subscriber' );
+				}
+			}
+		}
+
+		delete_option( 'csmsl_user_roles_backup' );
+	}
+
+	/**
+	 * Force flush rewrite rules immediately and set flags to ensure
+	 * they are flushed on next page load.
+	 *
+	 * @return void
+	 */
+	public static function force_flush_rewrite_rules() {
+		update_option( 'csmsl_flush_rewrite_rules', true );
+		flush_rewrite_rules();
+		update_option( 'csmsl_permalinks_flushed', '' );
+	}
 }

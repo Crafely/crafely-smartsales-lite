@@ -1,0 +1,71 @@
+import * as z from 'zod'
+import { zodResponseFormat } from 'openai/helpers/zod'
+
+export const productCreateSchema = z.object({
+    name: z.string(),
+    regular_price: z.number().min(0),
+    sale_price: z.number().nullable(),
+    stock: z.number().min(0).int().nullable(),
+    sku: z.string().min(1),
+    short_description: z.string().min(10),
+    description: z.string().min(10),
+    categories: z.array(z.number()),
+    status: z.enum(['publish', 'draft', 'pending', 'private']),
+    featured: z.boolean(),
+    image: z.number().nullable().optional(),
+})
+
+const productSchema = z
+    .object({
+        product: z
+            .object({
+                name: z
+                    .string()
+                    .describe(
+                        'The name of the product. It should be concise and descriptive.'
+                    ),
+                regular_price: z
+                    .number()
+                    .describe(
+                        'The price of the product. It should be a number.'
+                    ),
+                sale_price: z
+                    .number()
+                    .describe(
+                        'The sale price of the product. It should be different from the price. If there is no sale, it should be the same as the price.'
+                    ),
+                stock: z.number().describe('The stock of the product.'),
+                sku: z.string().describe('The SKU of the product.'),
+                categories: z
+                    .array(z.number())
+                    .describe(
+                        'The category ID of the product. You can get the category IDs from the category List in context area.'
+                    ),
+                tags: z
+                    .array(z.number())
+                    .describe(
+                        'The tags ID of the product. You can get the tag IDs from the tags List in context area.'
+                    )
+                    .optional(),
+                status: z
+                    .enum(['publish', 'draft', 'pending', 'private'])
+                    .describe('The status of the product.'),
+                short_description: z
+                    .string()
+                    .describe(
+                        'A short description of the product. It should be key highlighted and concise.'
+                    ),
+                description: z
+                    .string()
+                    .describe(
+                        'A detailed description of the product. It should be formatted in HTML.'
+                    ),
+            })
+            .strict(),
+    })
+    .strict()
+
+export const productStructureSchema = zodResponseFormat(
+    productSchema,
+    'product_create_schema'
+)
