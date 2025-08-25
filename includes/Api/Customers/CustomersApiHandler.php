@@ -191,7 +191,7 @@ class CustomersApiHandler {
 		if ( ! empty( $orders ) ) {
 			foreach ( $orders as $order_id ) {
 				$order = wc_get_order( $order_id );
-				if ( $order ) {
+				if ( $order && method_exists( $order, 'get_customer_id' ) ) {
 					$customer_id = $order->get_customer_id();
 					if ( $customer_id ) {
 						if ( ! in_array( $customer_id, $customer_ids, true ) ) {

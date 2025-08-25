@@ -47,8 +47,8 @@
         "vite": "^6.0.6"
     },
     "scripts": {
-        "build": "npm run remove:dist && npm run build:free && npm run build:pos",
-        "remove:dist": "rm -rf ../crafely-smartsales-lite/assets/dist",
+        "build": "npm run remove:dist && npm run build:free",
+        "remove:dist": "rm -rf ../dist",
         "dev:free": "vite --config vite.free.config.js",
         "build:free": "vite build --config vite.free.config.js",
         "dev:core": "vite --config vite.core.config.js",
