@@ -1,48 +1,66 @@
-# AI Smart Sales
+# Crafely SmartSales Lite
 
-A WordPress plugin for creating and managing smart sales in your WooCommerce store. This plugin allows you to easily create sales campaigns, promotions, and discounts to boost your store's performance.
+A WordPress plugin (Lite) for creating and managing smart sales in your WooCommerce store. This repository contains the Vue.js assets used by the plugin's admin interface.
 
 ## Features
 
 - Create smart sales campaigns for WooCommerce products.
-- Intuitive and easy-to-use admin interface.
-- Fully responsive and compatible with the WordPress admin dashboard.
-- Built with Vue.js for a dynamic and modern front-end experience.
-- Fully integrated with WooCommerce, ensuring seamless functionality.
-- Optimized for performance and ease of use.
+- Intuitive admin interface built with Vue.js.
+- Responsive and compatible with the WordPress admin dashboard.
+- Integrated with WooCommerce for seamless discounts and promotions.
+- Optimized for performance and easy customization.
 
 ## Installation
 
-1. Download the plugin from the GitHub repository or [WordPress Plugin Directory](#).
+1. Download the plugin from your plugin source (repository or ZIP).
 2. Upload the plugin to your WordPress website:
    - Go to `Plugins` > `Add New`.
-   - Click `Upload Plugin` and choose the `ai-smart-sales.zip` file.
+   - Click `Upload Plugin` and choose `crafely-smartsales-lite.zip`.
    - Click `Install Now` and activate the plugin.
 
-Alternatively, you can manually upload the plugin to your `wp-content/plugins/` directory.
+Alternatively, place the plugin folder in `wp-content/plugins/` and activate it from the Plugins screen.
 
 ## Usage
 
-Once installed and activated, you can access the plugin by navigating to the **Woo Smart Sales** menu in the WordPress admin dashboard.
+Once installed and activated, access the plugin from the WordPress admin dashboard under the "Crafely SmartSales" (or "SmartSales") menu.
 
 ### Creating a New Sale:
-1. Navigate to the **AI Smart Sales** menu.
-2. Click **Add New Sale**.
-3. Configure the sale details, including product selection, discount type, and duration.
-4. Save your sale and it will be applied to the selected products in your store.
+1. Navigate to **Crafely SmartSales** > **Add New Sale**.
+2. Configure sale details: product selection, discount type, duration, and conditions.
+3. Save the sale; it will be applied to selected products in your store.
 
-## Development
+## Development (Vue front-end)
+
+This folder contains the Vue.js admin app used by the plugin.
 
 ### Prerequisites
 
-- PHP 7.4 or higher
-- WordPress 5.0 or higher
-- WooCommerce 3.0 or higher
 - Node.js and npm (for building the Vue.js front-end)
+- PHP 7.4+ and WordPress 5.0+
+- WooCommerce 3.0+
 
 ### Setup
 
-1. Clone this repository:
-
+1. Install dependencies:
    ```bash
-   git clone https://github.com/Re-dex/ai-smart-sales.git
+   cd assets/wp-vue
+   npm install
+   ```
+2. Development (watch):
+   ```bash
+   npm run serve
+   ```
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+4. Copy the built assets into the plugin's assets directory if your build step outputs elsewhere.
+
+## Contributing
+
+- Use the project's repository or issue tracker for bug reports and feature requests.
+- Keep UI changes isolated in the Vue app under assets/wp-vue.
+
+## License
+
+Refer to the main plugin repository for license and copyright information.
