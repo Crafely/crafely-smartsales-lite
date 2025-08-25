@@ -28,10 +28,9 @@
         printWrapper.className = 'p-0'
         printWrapper.appendChild(clone)
 
-        // Inject Tailwind (optional safety)
+        // Inject local styles for print (no external CDN)
         document.head.innerHTML = `
             ${originalHead}
-            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
             <style>
                 @media print {
                 body{
