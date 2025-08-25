@@ -318,6 +318,41 @@ All API responses follow a consistent format:
 
 ## 🏗️ Development
 
+### Source Code Documentation
+
+**Public Repository**: https://github.com/Crafely/crafely-smartsales-lite
+
+**Compiled/Minified Files Source Documentation**:
+All compressed JavaScript and CSS files in the `assets/dist/` directory are built from human-readable source code. The source files are located in the `assets/wp-vue/src/` directory structure:
+
+**Compiled Files → Source Mapping**:
+- `assets/dist/js/main.NKBt1SB0.js` → Built from Vue.js entry point at `assets/wp-vue/src/packages/free/main.ts`
+- `assets/dist/js/modules.DwMLLkSd.js` → Generated from shared utilities and components in `assets/wp-vue/src/utils/` and `assets/wp-vue/src/composable/`
+- `assets/dist/js/vendor.BQp9thdm.js` → Third-party dependencies (Vue.js 3, Vue Router, Pinia, etc.)
+- `assets/dist/js/Permission.B_m5ooZi.js` → Built from `assets/wp-vue/src/system/Permission.vue`
+- `assets/dist/js/404.C-n6Wyx-.js` → Built from `assets/wp-vue/src/system/404.vue`
+- `assets/dist/css/main.BVJDXjtJ.css` → Compiled from Tailwind CSS and component styles
+- `assets/dist/css/vendor.tQH9kz2n.css` → Third-party CSS libraries
+
+**Build System**: Uses Vite with the following configuration:
+- **Build Tool**: Vite (`assets/wp-vue/vite.free.config.js`)
+- **CSS Framework**: Tailwind CSS (`assets/wp-vue/tailwind.config.js`)
+- **TypeScript Config**: `assets/wp-vue/tsconfig.json`
+- **Package Management**: `assets/wp-vue/package.json`
+
+**Source Code Structure**:
+```
+assets/wp-vue/src/
+├── components/           # Reusable Vue components
+├── modules/             # Feature-specific modules
+├── packages/free/       # Main entry points
+├── stores/              # Pinia state management
+├── types/               # TypeScript type definitions
+├── utils/               # Utility functions
+├── composable/          # Vue composition functions
+└── system/              # System components (404, Permission)
+```
+
 ### Development Setup
 
 1. **Clone the repository**:

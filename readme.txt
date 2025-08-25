@@ -10,7 +10,23 @@ Transform your WooCommerce store into a complete Point of Sale system with AI-po
 
 == Description ==
 
-** Crafely SmartSales Lite** is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
+**Crafely SmartSales Lite** is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
+
+= 📋 Source Code & Build Information =
+
+**Source Code Repository**: https://github.com/Crafely/crafely-smartsales-lite
+
+**Compiled Files Documentation**: All compressed JavaScript and CSS files in `assets/dist/` are built from human-readable source code located in `assets/wp-vue/src/`. The plugin uses Vite build system to compile Vue.js components, TypeScript, and Tailwind CSS.
+
+**Build Instructions**:
+```
+git clone https://github.com/Crafely/crafely-smartsales-lite.git
+cd crafely-smartsales-lite
+npm install && composer install
+npm run build
+```
+
+**Source Structure**: Vue.js components in `assets/wp-vue/src/`, including modules, utilities, and UI components that are compiled into production bundles.
 
 = 🚀 Key Features =
 
