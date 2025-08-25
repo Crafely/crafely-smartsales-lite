@@ -6,6 +6,13 @@
         FormLabel,
         FormMessage,
     } from '@/components/ui/form'
+    import {
+        Select,
+        SelectContent,
+        SelectItem,
+        SelectTrigger,
+        SelectValue,
+    } from '@/components/ui/select'
     import { Input } from '@/components/ui/input'
     import { Button } from '@/components/ui/button'
     import { useForm } from 'vee-validate'
@@ -28,11 +35,11 @@
     })
 
     const props = defineProps<{
+        name: 'createForm'
         submitForm?: (
             payload: z.infer<typeof schema>,
             actions: any
         ) => Promise<void>
-        name: 'createForm' | 'editForm'
     }>()
 
     const form = useForm({
@@ -113,13 +120,15 @@
             <FormItem>
                 <FormLabel>Status</FormLabel>
                 <FormControl>
-                    <select
-                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        v-bind="componentField"
-                    >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                    <Select v-bind="componentField">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="active"> Active </SelectItem>
+                            <SelectItem value="inactive"> Inactive </SelectItem>
+                        </SelectContent>
+                    </Select>
                 </FormControl>
                 <FormMessage />
             </FormItem>
