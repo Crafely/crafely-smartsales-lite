@@ -15,12 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 $error_message = '';
 $nonce         = wp_create_nonce(action: 'csmsl_login_error_nonce');
 
-
-
-
-
-
-
 // Check if form was submitted.
 if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) ) {
 	// Check if nonce is set before verification.
@@ -102,7 +96,11 @@ if ( empty( $error_message ) ) {
 		}
 
 		if ( ! did_action( 'csmsl_render_logo' ) && ! empty( $logo_url ) ) {
-			echo '<img class="h-12 w-auto mx-auto" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr__( 'POS System Logo', 'crafely-smartsales-lite' ) . '">';
+			printf(
+				'<img class="h-12 w-auto mx-auto" src="%s" alt="%s">',
+				esc_url( $logo_url ),
+				esc_attr__( 'POS System Logo', 'crafely-smartsales-lite' )
+			);
 		}
 		?>
 		<h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900">Access POS System</h2>
