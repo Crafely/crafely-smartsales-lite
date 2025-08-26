@@ -1,7 +1,9 @@
 === Crafely SmartSales Lite ===
 Contributors: alaminit, jalal02
 Tags: pos, woocommerce, sales, inventory, ai
-Tested up to: 6.8
+Requires at least: 5.0
+Tested up to: 6.7
+Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,23 +14,7 @@ Transform your WooCommerce store into a complete Point of Sale system with AI-po
 
 **Crafely SmartSales Lite** is a comprehensive WordPress plugin that transforms your WooCommerce store into a complete Point of Sale (POS) system with advanced sales management, multi-outlet support, AI assistance, and powerful analytics. Perfect for retail stores, restaurants, and service businesses looking to unify their online and offline sales operations.
 
-= 📋 Source Code & Build Information =
-
-**Source Code Repository**: https://github.com/Crafely/crafely-smartsales-lite
-
-**Compiled Files Documentation**: All compressed JavaScript and CSS files in `assets/dist/` are built from human-readable source code located in `assets/wp-vue/src/`. The plugin uses Vite build system to compile Vue.js components, TypeScript, and Tailwind CSS.
-
-**Build Instructions**:
-```
-git clone https://github.com/Crafely/crafely-smartsales-lite.git
-cd crafely-smartsales-lite
-npm install && composer install
-npm run build
-```
-
-**Source Structure**: Vue.js components in `assets/wp-vue/src/`, including modules, utilities, and UI components that are compiled into production bundles.
-
-= 🚀 Key Features =
+=  Key Features =
 
 **💻 Modern POS System**
 * Intuitive touch-friendly POS interface accessible at `/smart-pos`
@@ -153,7 +139,7 @@ The plugin supports multiple payment methods including cash, card, bank transfer
 
 = Is there an API for developers? =
 
-Yes! Crafely SmartSales Lite provides a comprehensive REST API with endpoints for all functionality. Check the documentation for detailed API reference.
+Yes! Crafely SmartSales Lite provides a comprehensive REST API with endpoints for all functionality. Check the GitHub repository documentation for detailed API reference.
 
 = Can I customize the POS interface? =
 
@@ -162,6 +148,10 @@ The POS interface is built with Vue.js and can be customized through filters and
 = Does it support offline sales? =
 
 Yes, the POS system has offline capability to continue sales even during internet interruptions, with automatic synchronization when connection is restored.
+
+= Is the plugin translation ready? =
+
+Yes, the plugin is fully internationalized with text domain 'crafely-smartsales-lite' and ready for translation into any language.
 
 == Screenshots ==
 
@@ -195,7 +185,48 @@ This is the initial release of Crafely SmartSales Lite. Install now to transform
 
 == Support ==
 
-For support and documentation, please use the WordPress.org support forum for this plugin.
+For support and documentation:
+
+* **WordPress.org Support Forum**: Use the official support forum for this plugin
+* **Documentation**: Visit our GitHub repository for comprehensive documentation
+* **Bug Reports**: Report issues on our GitHub issue tracker
+* **Feature Requests**: Submit feature requests through GitHub
+
+Please note: Support is provided on a best-effort basis. For priority support, consider our premium offerings.
+
+== Privacy & Data Handling ==
+
+This plugin processes and stores the following data:
+
+* **Customer Information**: Names, contact details, purchase history (stored locally in your WordPress database)
+* **Sales Data**: Order information, payment details, inventory data (stored locally)
+* **User Activity**: Login sessions, POS access logs (stored locally)
+* **AI Features**: Sales analytics and recommendations (processed locally, no external data sharing)
+
+**No External Data Transmission**: All data remains on your server. No customer or sales data is transmitted to external services.
+
+**GDPR Compliance**: The plugin respects WordPress privacy tools and includes data export/deletion capabilities.
+
+== Source Code & Build Information ==
+
+**Source Code Repository**: https://github.com/Crafely/crafely-smartsales-lite
+
+**Compiled Files Documentation**: All compressed JavaScript and CSS files in `assets/dist/` are built from human-readable source code located in `assets/wp-vue/src/`. The plugin uses Vite build system to compile Vue.js components, TypeScript, and Tailwind CSS.
+
+**Build Instructions**:
+```
+git clone https://github.com/Crafely/crafely-smartsales-lite.git
+cd crafely-smartsales-lite
+npm install && composer install
+npm run build
+```
+
+**Development Dependencies**:
+* Node.js 16+ and npm for building frontend assets
+* Composer for PHP dependency management
+* All source files are human-readable and located in the repository
+
+**Source Structure**: Vue.js components in `assets/wp-vue/src/`, including modules, utilities, and UI components that are compiled into production bundles.
 
 == Contributing ==
 
