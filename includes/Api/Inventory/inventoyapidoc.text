@@ -1,0 +1,474 @@
+## Crafely SmartSales Lite - Inventory API Documentation
+
+This document outlines the REST API endpoints for inventory management within the Crafely SmartSales Lite plugin.
+
+---
+
+### **1. List All Stock Records**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock`
+*   **Method**: `GET`
+*   **Description**: Retrieves a paginated list of all stock records, optionally filtered by `product_id` and `outlet_id`. For cashiers, results are limited to their assigned outlets.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`, `csmsl_pos_cashier`
+*   **Query Parameters**:
+    *   `product_id` (optional, integer): Filter by a specific product ID.
+    *   `outlet_id` (optional, integer): Filter by a specific outlet ID.
+    *   `current_page` (optional, integer, default: `1`): The current page number for pagination.
+    *   `per_page` (optional, integer, default: `10`): The number of records per page.
+*   **Example Request**:
+    ```
+    GET /wp-json/ai-smart-sales/v1/inventory/stock
+    GET /wp-json/ai-smart-sales/v1/inventory/stock?product_id=69&outlet_id=126&current_page=1&per_page=5
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Stock records retrieved successfully.",
+        "data": [
+            {
+                "product_id": 69,
+                "product_name": "V-Neck T-Shirt",
+                "global_woocommerce_stock": 10,
+                "outlets_stock": [
+                    {
+                        "outlet_id": 126,
+                        "stock": 5,
+                        "threshold": 2
+                    },
+                    {
+                        "outlet_id": 127,
+                        "stock": 5,
+                        "threshold": 2
+                    }
+                ]
+            }
+        ],
+        "pagination": {
+            "total_items": 1,
+            "total_pages": 1,
+            "current_page": 1,
+            "per_page": 10
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Access denied. No outlets assigned.",
+        "data": [],
+        "error": {
+            "error": "Access denied. No outlets assigned."
+        },
+        "status": 403,
+        "path": "/ai-smart-sales/v1/inventory/stock"
+    }
+    ```
+
+---
+
+### **2. Get Stock for a Specific Product Across All Outlets**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock/(?P<product_id>\d+)`
+*   **Method**: `GET`
+*   **Description**: Retrieves stock information for a specific product across all available outlets.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`, `csmsl_pos_cashier`
+*   **URL Parameters**:
+    *   `product_id` (required, integer): The ID of the product.
+*   **Query Parameters**:
+    *   `current_page` (optional, integer, default: `1`): The current page number for pagination.
+    *   `per_page` (optional, integer, default: `10`): The number of records per page.
+*   **Example Request**:
+    ```
+    GET /wp-json/ai-smart-sales/v1/inventory/stock/69
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Stock records for product retrieved successfully.",
+        "data": [
+            {
+                "product_id": "69",
+                "outlet_id": "126",
+                "stock": "1",
+                "threshold": "2"
+            },
+            {
+                "product_id": "69",
+                "outlet_id": "127",
+                "stock": "2",
+                "threshold": "2"
+            }
+        ],
+        "pagination": {
+            "total_items": 2,
+            "total_pages": 1,
+            "current_page": 1,
+            "per_page": 10
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Product ID is required.",
+        "data": [],
+        "error": {
+            "error": "Product ID is required."
+        },
+        "status": 400,
+        "path": "/ai-smart-sales/v1/inventory/stock/"
+    }
+    ```
+
+---
+
+### **3. Get Stock for a Specific Product at a Specific Outlet**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock/(?P<product_id>\d+)/(?P<outlet_id>\d+)`
+*   **Method**: `GET`
+*   **Description**: Retrieves stock information for a specific product at a particular outlet.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`, `csmsl_pos_cashier`
+*   **URL Parameters**:
+    *   `product_id` (required, integer): The ID of the product.
+    *   `outlet_id` (required, integer): The ID of the outlet.
+*   **Example Request**:
+    ```
+    GET /wp-json/ai-smart-sales/v1/inventory/stock/69/126
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Stock record retrieved successfully.",
+        "data": {
+            "product_id": "69",
+            "outlet_id": "126",
+            "stock": "1",
+            "threshold": "2"
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Validation failed.",
+        "data": [],
+        "error": {
+            "product_id": "Product ID is required."
+        },
+        "status": 400,
+        "path": "/ai-smart-sales/v1/inventory/stock//"
+    }
+    ```
+
+---
+
+### **4. Adjust Stock for a Product at a Specific Outlet**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock/adjust`
+*   **Method**: `POST`
+*   **Description**: Adjusts the stock quantity for a given product at a specified outlet. Can be used for adding (positive quantity) or removing (negative quantity) stock.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`
+*   **Request Body (JSON)**:
+    *   `product_id` (required, integer): The ID of the product.
+    *   `outlet_id` (required, integer): The ID of the outlet.
+    *   `quantity` (required, integer): The amount to adjust the stock by. Use positive for additions, negative for removals.
+    *   `reason` (required, string): A description of the reason for the stock adjustment.
+    *   `threshold` (optional, integer): The low stock threshold for this product at this outlet. Defaults to WooCommerce global low stock threshold if not provided.
+*   **Example Request**:
+    ```json
+    POST /wp-json/ai-smart-sales/v1/inventory/stock/adjust
+    Content-Type: application/json
+
+    {
+        "product_id": 69,
+        "outlet_id": 126,
+        "quantity": 5,
+        "reason": "Initial stock entry",
+        "threshold": 2
+    }
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Stock adjusted for product 69 at outlet 126. New stock: 5",
+        "data": {
+            "product_id": 69,
+            "outlet_id": 126,
+            "new_stock": 5
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Insufficient stock.",
+        "data": [],
+        "error": {
+            "error": "Insufficient stock."
+        },
+        "status": 400,
+        "path": "/ai-smart-sales/v1/inventory/stock/adjust"
+    }
+    ```
+
+---
+
+### **5. Bulk Adjust Stock for Multiple Products at Various Outlets**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock/adjust/bulk`
+*   **Method**: `POST`
+*   **Description**: Performs multiple stock adjustments across different products and outlets in a single request.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`
+*   **Request Body (JSON)**:
+    *   `adjustments` (required, array of objects): An array where each object represents a single stock adjustment. Each object must contain:
+        *   `product_id` (required, integer): The ID of the product.
+        *   `outlet_id` (required, integer): The ID of the outlet.
+        *   `quantity` (required, integer): The amount to adjust the stock by. Use positive for additions, negative for removals.
+        *   `reason` (required, string): A description of the reason for the stock adjustment.
+        *   `threshold` (optional, integer): The low stock threshold for this product at this outlet. Defaults to WooCommerce global low stock threshold if not provided.
+*   **Example Request**:
+    ```json
+    POST /wp-json/ai-smart-sales/v1/inventory/stock/adjust/bulk
+    Content-Type: application/json
+
+    {
+        "adjustments": [
+            {
+                "product_id": 69,
+                "outlet_id": 126,
+                "quantity": 10,
+                "reason": "Bulk import",
+                "threshold": 3
+            },
+            {
+                "product_id": 70,
+                "outlet_id": 127,
+                "quantity": -2,
+                "reason": "Damaged items",
+                "threshold": 5
+            }
+        ]
+    }
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Bulk stock adjustments completed successfully.",
+        "data": [
+            {
+                "product_id": 69,
+                "outlet_id": 126,
+                "new_stock": 10
+            },
+            {
+                "product_id": 70,
+                "outlet_id": 127,
+                "new_stock": 8
+            }
+        ]
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Some adjustments failed.",
+        "data": [],
+        "error": {
+            "0": {
+                "insufficient_stock": "Insufficient stock.",
+                "available_stock": 5,
+                "requested_adjustment": -10
+            }
+        },
+        "status": 207,
+        "path": "/ai-smart-sales/v1/inventory/stock/adjust/bulk"
+    }
+    ```
+
+---
+
+### **6. Transfer Stock Between Outlets**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/stock/transfer`
+*   **Method**: `POST`
+*   **Description**: Transfers a specified quantity of a product from one outlet to another.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`
+*   **Request Body (JSON)**:
+    *   `product_id` (required, integer): The ID of the product to transfer.
+    *   `from_outlet_id` (required, integer): The ID of the source outlet.
+    *   `to_outlet_id` (required, integer): The ID of the destination outlet.
+    *   `quantity` (required, integer): The quantity to transfer. Must be a positive number.
+    *   `reason` (required, string): The reason for the stock transfer.
+*   **Example Request**:
+    ```json
+    POST /wp-json/ai-smart-sales/v1/inventory/stock/transfer
+    Content-Type: application/json
+
+    {
+        "product_id": 69,
+        "from_outlet_id": 126,
+        "to_outlet_id": 127,
+        "quantity": 3,
+        "reason": "Inter-outlet transfer"
+    }
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Transferred 3 units of product 69 from outlet 126 to 127.",
+        "data": {
+            "product_id": 69,
+            "from_outlet_id": 126,
+            "to_outlet_id": 127,
+            "quantity": 3,
+            "new_source_stock": 7,
+            "new_destination_stock": 8
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Insufficient stock at source outlet.",
+        "data": [],
+        "error": {
+            "error": "Insufficient stock at source outlet."
+        },
+        "status": 400,
+        "path": "/ai-smart-sales/v1/inventory/stock/transfer"
+    }
+    ```
+
+---
+
+### **7. Get Low Stock Report**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/report/low-stock`
+*   **Method**: `GET`
+*   **Description**: Retrieves a report of products that are low in stock. The report combines WooCommerce's low stock logic with our custom inventory thresholds.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`, `csmsl_pos_cashier`
+*   **Query Parameters**:
+    *   `product_id` (optional, integer): Filter the report for a specific product.
+    *   `outlet_id` (optional, integer): Filter the report for a specific outlet.
+    *   `current_page` (optional, integer, default: `1`): The current page number for pagination.
+    *   `per_page` (optional, integer, default: `10`): The number of records per page.
+*   **Example Request**:
+    ```
+    GET /wp-json/ai-smart-sales/v1/inventory/report/low-stock
+    GET /wp-json/ai-smart-sales/v1/inventory/report/low-stock?product_id=66
+    GET /wp-json/ai-smart-sales/v1/inventory/report/low-stock?product_id=66&outlet_id=126
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Low stock records retrieved successfully.",
+        "data": [
+            {
+                "product_id": 66,
+                "product_name": "V-Neck T-Shirt",
+                "global_woocommerce_stock": 1,
+                "outlets_stock": [
+                    {
+                        "outlet_id": 126,
+                        "stock": 1,
+                        "threshold": 2
+                    }
+                ],
+                "global_woocommerce_low_stock_threshold": 2
+            }
+        ],
+        "pagination": {
+            "total_items": 1,
+            "total_pages": 1,
+            "current_page": 1,
+            "per_page": 10
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Access denied. No outlets assigned.",
+        "data": [],
+        "error": {
+            "error": "Access denied. No outlets assigned."
+        },
+        "status": 403,
+        "path": "/ai-smart-sales/v1/inventory/report/low-stock"
+    }
+    ```
+
+---
+
+### **8. Get Stock Movement History Report**
+
+*   **Endpoint**: `/ai-smart-sales/v1/inventory/report/movements`
+*   **Method**: `GET`
+*   **Description**: Retrieves a paginated report of all stock movement history.
+*   **Permissions**: `administrator`, `csmsl_pos_outlet_manager`, `csmsl_pos_cashier`
+*   **Query Parameters**:
+    *   `product_id` (optional, integer): Filter by a specific product.
+    *   `outlet_id` (optional, integer): Filter by a specific outlet.
+    *   `type` (optional, string): Filter by movement type (e.g., `adjustment`, `transfer`).
+    *   `user_id` (optional, integer): Filter by the user who initiated the movement.
+    *   `start_date` (optional, string, YYYY-MM-DD): Filter for movements on or after this date.
+    *   `end_date` (optional, string, YYYY-MM-DD): Filter for movements on or before this date.
+    *   `current_page` (optional, integer, default: `1`): The current page number for pagination.
+    *   `per_page` (optional, integer, default: `10`): The number of records per page.
+*   **Example Request**:
+    ```
+    GET /wp-json/ai-smart-sales/v1/inventory/report/movements
+    GET /wp-json/ai-smart-sales/v1/inventory/report/movements?product_id=69&type=transfer&start_date=2025-08-01
+    ```
+*   **Example Success Response (JSON)**:
+    ```json
+    {
+        "success": true,
+        "message": "Stock movements retrieved successfully.",
+        "data": [
+            {
+                "product_id": "69",
+                "outlet_id": "126",
+                "type": "adjustment",
+                "quantity": "-5",
+                "reason": "Damaged",
+                "user_id": "1",
+                "created_at": "2025-08-29 21:00:00",
+                "related_outlet_id": null
+            }
+        ],
+        "pagination": {
+            "total_items": 1,
+            "total_pages": 1,
+            "current_page": 1,
+            "per_page": 10
+        }
+    }
+    ```
+*   **Example Error Response (JSON)**:
+    ```json
+    {
+        "success": false,
+        "message": "Access denied. No outlets assigned.",
+        "data": [],
+        "error": {
+            "error": "Access denied. No outlets assigned."
+        },
+        "status": 403,
+        "path": "/ai-smart-sales/v1/inventory/report/movements"
+    }
+    ```

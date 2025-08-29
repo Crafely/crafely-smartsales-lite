@@ -70,9 +70,10 @@ $core_includes = array(
 	'includes/Api/Invoices/InvoiceApiHandler.php',
 	'includes/Api/Media/MediaApiHandler.php',
 	'includes/Api/Channels/ChannelsApiHandler.php',
-	'includes/Api/AI/AIAssistancesApiHandler.php',
 	'includes/Api/App/AppApiHandler.php',
 	'includes/Api/App/WizardApiHandler.php',
+	'includes/Api/Inventory/InventoryApiHandler.php',
+	'includes/DB/InventorySchema.php',
 );
 
 foreach ( $core_includes as $file ) {
@@ -240,6 +241,9 @@ function csmsl_activate() {
 
 	// Clear permalinks.
 	flush_rewrite_rules();
+
+	// Create custom database tables.
+	CSMSL\Includes\DB\InventorySchema::create_tables();
 
 	// Set version.
 	update_option( 'CSMSL_VERSION', CSMSL_VERSION );

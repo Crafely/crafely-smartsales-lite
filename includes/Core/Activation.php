@@ -70,8 +70,7 @@ class Activation {
 	 * @return void
 	 */
 	private static function create_tables() {
-		global $wpdb;
-		// Add table creation logic here.
+		\CSMSL\Includes\DB\InventorySchema::create_tables();
 	}
 
 	/**
@@ -89,8 +88,7 @@ class Activation {
 	 * @return void
 	 */
 	private static function cleanup_tables() {
-		global $wpdb;
-		// Add table cleanup logic here.
+		\CSMSL\Includes\DB\InventorySchema::drop_tables();
 	}
 
 	/**

@@ -544,6 +544,24 @@ class ProductApiHandler extends BaseApiHandler {
 			);
 		}
 
+		// After successful product creation, create an initial inventory record.
+		global $wpdb;
+		$table_name_inventory = $wpdb->prefix . 'smartsales_inventory';
+		$default_outlet_id    = 1; // Assuming a default outlet for initial stock.
+		$initial_stock        = isset( $data['stock'] ) ? intval( $data['stock'] ) : 0;
+
+		// phpcs:ignore WordPress.DB.DirectSql.DirectSql
+		$wpdb->insert(
+			$table_name_inventory,
+			array(
+				'product_id' => $product_id,
+				'outlet_id'  => $default_outlet_id,
+				'stock'      => $initial_stock,
+				'threshold'  => 0, // Default threshold
+			),
+			array( '%d', '%d', '%d', '%d' )
+		);
+
 		// Refresh the product object to ensure all data is up-to-date.
 		$product = wc_get_product( $product_id );
 
@@ -604,10 +622,49 @@ class ProductApiHandler extends BaseApiHandler {
 		}
 
 		// Fix stock update logic.
+		// Also update smartsales_inventory table.
+		global $wpdb;
+		$table_name_inventory = $wpdb->prefix . 'smartsales_inventory';
+		$default_outlet_id    = 1; // Assuming a default outlet for initial stock.
+
 		if ( isset( $data['stock'] ) ) {
+			$new_stock_quantity = (int) $data['stock'];
 			$product->set_manage_stock( true );
-			$product->set_stock_quantity( (int) $data['stock'] );
+			$product->set_stock_quantity( $new_stock_quantity );
 			$product->set_stock_status( 'instock' );
+
+			// Update or insert into smartsales_inventory.
+			// phpcs:ignore WordPress.DB.DirectSql.DirectSql
+			$existing_inventory = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT id FROM {$table_name_inventory} WHERE product_id = %d AND outlet_id = %d",
+					$product_id,
+					$default_outlet_id
+				)
+			);
+
+			if ( $existing_inventory ) {
+				// phpcs:ignore WordPress.DB.DirectSql.DirectSql
+				$wpdb->update(
+					$table_name_inventory,
+					array( 'stock' => $new_stock_quantity ),
+					array( 'id' => $existing_inventory->id ),
+					array( '%d' ),
+					array( '%d' )
+				);
+			} else {
+				// phpcs:ignore WordPress.DB.DirectSql.DirectSql
+				$wpdb->insert(
+					$table_name_inventory,
+					array(
+						'product_id' => $product_id,
+						'outlet_id'  => $default_outlet_id,
+						'stock'      => $new_stock_quantity,
+						'threshold'  => 0,
+					),
+					array( '%d', '%d', '%d', '%d' )
+				);
+			}
 		}
 
 		if ( isset( $data['sku'] ) && ! empty( $data['sku'] ) ) {
