@@ -2,6 +2,7 @@ const animate = require("tailwindcss-animate");
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  important: true,
   darkMode: ["class"],
   safelist: ["dark"],
   prefix: "",
@@ -12,6 +13,9 @@ export default {
     "./app/**/*.{js,jsx,vue}",
     "./src/**/*.{js,jsx,vue}",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
+    "./**/*.php",
+    "./**/*.js",
+    "./**/*.vue",
   ],
 
   theme: {
@@ -63,6 +67,10 @@ export default {
           3: "hsl(var(--chart-3))",
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
+        },
+        text: {
+          DEFAULT: "oklch(var(--text) / <alpha-value>)",
+          foreground: "oklch(var(--text-foreground) / <alpha-value>)",
         },
       },
       borderRadius: {
