@@ -39,7 +39,7 @@ withDefaults(
   }
 );
 const panelRef = ref<InstanceType<typeof ResizablePanel>>();
-const { routesByRoles } = storeToRefs(useUserStore());
+const { menuItems } = storeToRefs(useUserStore());
 
 const userStore = useUserStore();
 const { authUser } = storeToRefs(userStore);
@@ -63,11 +63,8 @@ onMounted(() => {
   <div class="min-h-screen">
     <div class="border-b sticky top-0 z-50 bg-background">
       <div class="flex h-14 items-center px-2">
-        <MobileMenu
-          :activeRouteName="activeRouteName"
-          :routes="routesByRoles"
-        />
-        <MainNav :activeRouteName="activeRouteName" :routes="routesByRoles" />
+        <MobileMenu :activeRouteName="activeRouteName" :routes="menuItems" />
+        <MainNav :activeRouteName="activeRouteName" :routes="menuItems" />
         <div class="ml-auto flex items-center space-x-2">
           <div
             v-if="!hideSidebar"

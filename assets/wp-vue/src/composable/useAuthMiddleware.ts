@@ -35,19 +35,17 @@ export const useAuthMiddleware = () => {
     const { routesByRoles } = useRouteVisibility({
       userRoles: computed(() => userStore.authUser?.roles || []),
     });
-    console.log(routesByRoles.value);
     // Get route name without parameters
     const routeName = to.name?.toString() || "";
     // Check if route exists in routesByRoles (routes user is allowed to access)
-    const isRouteAllowed = routesByRoles.value.some((route) => {
+    const isRouteAllowed = routesByRoles.value?.some((route) => {
       // Check main route
       if (route.name === routeName) {
         return true;
       }
       // Check submenus if they exist
-      // console.log("check", route);
       if (route?.children) {
-        return route?.children.some((children) => children.name === routeName);
+        return route?.children?.some((children) => children.name === routeName);
       }
 
       return false;
