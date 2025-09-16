@@ -32,7 +32,7 @@ defineProps<{
               'text-sm font-medium transition-all hover:opacity-100',
               activeRouteName === route.name
                 ? 'text-primary opacity-100'
-                : 'opacity-60',
+                : 'opacity-60 text-text',
             ]"
           >
             {{ route.meta?.title }}
@@ -54,7 +54,7 @@ defineProps<{
           :class="[
             activeRouteName === route.name
               ? 'text-primary opacity-100'
-              : 'opacity-60',
+              : 'opacity-60 text-text',
           ]"
         >
           {{ route.meta?.title }}

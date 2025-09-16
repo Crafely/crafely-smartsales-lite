@@ -44,6 +44,10 @@
     --chart-4: 43 74% 66%;
 
     --chart-5: 27 87% 67%;
+
+    /* Text Specific */
+    --text: 21.126% 0.00981 285.503;
+    --text-foreground: 94.007% 0.00011 271.152;
   }
 
   .dark {
@@ -85,6 +89,10 @@
     --chart-4: 280 65% 60%;
 
     --chart-5: 340 75% 55%;
+
+    /* Text reversed */
+    --text: 94.007% 0.00011 271.152;
+    --text-foreground: 21.126% 0.00981 285.503;
   }
 }
 
@@ -148,6 +156,14 @@
   }
 }
 
+body:not(.tw-keep-wp) {
+  all: unset;
+}
+
+body {
+  @apply !bg-background !text-foreground !border-border; /* Tailwind reset */
+}
+
 #app *:not(.tw-keep-wp) {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
@@ -160,4 +176,14 @@
 
 a:not(.tw-keep-wp) {
   text-decoration: none;
+}
+
+#app h1:not(.tw-keep-wp),
+#app h2:not(.tw-keep-wp),
+#app h3:not(.tw-keep-wp),
+#app h4:not(.tw-keep-wp),
+#app h5:not(.tw-keep-wp),
+#app h6:not(.tw-keep-wp) {
+  all: unset;
+  display: block;
 }
