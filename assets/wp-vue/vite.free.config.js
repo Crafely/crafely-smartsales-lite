@@ -7,6 +7,8 @@ import autoprefixer from 'autoprefixer'
 // import unmountPlugin from './vite/plugins/unmount.plugin'
 
 export default defineConfig({
+    // Look for .env files in the root directory (wp-vue) instead of the Vite root
+    envDir: path.resolve(__dirname, './'),
     plugins: [
         vue({
             template: {

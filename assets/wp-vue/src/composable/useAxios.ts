@@ -2,7 +2,7 @@ import axios from "axios";
 import { has } from "lodash";
 
 const _getBaseURL = () => {
-  return `${window.location.origin}/wp-json/ai-smart-sales/v1`;
+  return import.meta.env.VITE_APP_API_URL || "";
 };
 
 const _getHeaders = () => {
@@ -26,6 +26,15 @@ export const useAxios = (_axiosConfig?: any) => {
     //@ts-ignore
     password: import.meta.env.VITE_APP_PASSWORD,
   };
+
+  // Check for missing credentials
+  if (!userCredentials.username || !userCredentials.password) {
+    console.warn(
+      "Auth credentials are missing or empty. Ensure VITE_APP_USER_NAME and VITE_APP_PASSWORD are set in .env file."
+    );
+  }
+  console.log("User credentials:", userCredentials);
+  console.log("All env vars:", import.meta.env);
 
   const instance = axios.create(_axiosConfig || axiosConfig);
 
