@@ -19,11 +19,11 @@ export const freeRoutes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/product',
-        name: 'app.product',
+        path: '/products',
+        name: 'app.products',
         component: () => import('@/modules/product/Index.vue'),
         meta: {
-            title: 'Product',
+            title: 'Products',
             accessibleTo: [
                 'administrator',
                 'csmsl_pos_outlet_manager',
@@ -33,11 +33,11 @@ export const freeRoutes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/customer',
-        name: 'app.customer',
+        path: '/customers',
+        name: 'app.customers',
         component: () => import('@/modules/customer/Index.vue'),
         meta: {
-            title: 'Customer',
+            title: 'Customers',
             accessibleTo: [
                 'administrator',
                 'csmsl_pos_cashier',
@@ -62,12 +62,12 @@ export const freeRoutes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/order',
-        name: 'app.order',
+        path: '/orders',
+        name: 'app.orders',
         component: () => import('@/modules/order/Index.vue'),
         meta: {
             accessibleTo: ['all'],
-            title: 'Order',
+            title: 'Orders',
             order: 5,
         },
     },
@@ -75,7 +75,7 @@ export const freeRoutes: RouteRecordRaw[] = [
         path: '/ecosystem',
         name: 'app.ecosystem',
         component: () => import('@/modules/ecosystem/Index.vue'),
-        redirect: { name: 'app.ecosystem.outlet' },
+        redirect: { name: 'app.ecosystem.outlets' },
         meta: {
             accessibleTo: ['administrator'],
             title: 'Ecosystem',
@@ -83,21 +83,21 @@ export const freeRoutes: RouteRecordRaw[] = [
         },
         children: [
             {
-                path: 'outlet',
-                name: 'app.ecosystem.outlet',
+                path: 'outlets',
+                name: 'app.ecosystem.outlets',
                 component: () => import('@/modules/ecosystem/outlet/Index.vue'),
                 meta: {
-                    title: 'Outlet',
+                    title: 'Outlets',
                     accessibleTo: ['administrator'],
                     isChild: true,
                 },
             },
             {
-                path: 'users',
-                name: 'app.ecosystem.user',
+                path: 'staffs',
+                name: 'app.ecosystem.staff',
                 component: () => import('@/modules/ecosystem/user/Index.vue'),
                 meta: {
-                    title: 'Users',
+                    title: 'Staffs',
                     isChild: true,
                 },
             },
