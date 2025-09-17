@@ -2,7 +2,7 @@ import axios from "axios";
 import { has } from "lodash";
 
 const _getBaseURL = () => {
-  return import.meta.env.VITE_APP_API_URL || "";
+   return `${window.location.origin}/wp-json/ai-smart-sales/v1`
 };
 
 const _getHeaders = () => {

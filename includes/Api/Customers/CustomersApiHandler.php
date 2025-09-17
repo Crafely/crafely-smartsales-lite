@@ -813,7 +813,22 @@ class CustomersApiHandler {
 			);
 		}
 
-		$result = wp_delete_user( $user_id );
+		// Ensure deletion functions are available and handle multisite.
+		if ( ! function_exists( 'wp_delete_user' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+		}
+		if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+			if ( ! function_exists( 'wpmu_delete_user' ) && file_exists( ABSPATH . 'wp-admin/includes/ms.php' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/ms.php';
+			}
+		}
+
+		// Perform deletion.
+		if ( function_exists( 'is_multisite' ) && is_multisite() && function_exists( 'wpmu_delete_user' ) ) {
+			$result = wpmu_delete_user( $user_id );
+		} else {
+			$result = wp_delete_user( $user_id );
+		}
 
 		if ( ! $result ) {
 			return new WP_REST_Response(

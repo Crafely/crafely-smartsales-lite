@@ -38,7 +38,7 @@ if ( isset( $_POST['login'] ) && isset( $_POST['password'] ) ) {
 			// Simple check if user has csmsl_pos_cashier role.
 			if ( in_array( 'csmsl_pos_cashier', (array) $user->roles, true ) ) {
 				// User has cashier role, redirect to POS.
-				wp_safe_redirect( home_url( '/smart-pos' ) );
+				wp_safe_redirect( home_url( '/smart-pos#/pos' ) );
 				exit;
 			} else {
 				// No cashier role.
